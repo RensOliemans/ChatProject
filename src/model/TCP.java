@@ -1,5 +1,7 @@
 package model;
 
+import controller.MultiCast;
+
 import java.net.DatagramPacket;
 import java.util.List;
 
@@ -7,6 +9,8 @@ import java.util.List;
  * Created by Rens on 5-4-2016.
  */
 public class TCP {
+
+    MultiCast multiCast = new MultiCast();
 
     public TCP() {
     }
@@ -27,5 +31,6 @@ public class TCP {
         byte[] data = recv.getData();
         //byte[0] is ACK
         //byte[1] is SEQ
+        this.multiCast.send("");
     }
 }
