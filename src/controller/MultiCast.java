@@ -70,7 +70,6 @@ public class MultiCast extends Thread {
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
             packets.add(recv);
-
             tcp.handleMessage(recv);
         } catch (IOException e) {
             e.printStackTrace();
