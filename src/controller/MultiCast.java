@@ -42,10 +42,6 @@ public class MultiCast implements Runnable{
         }
     }
 
-    public void useless() {
-        
-    }
-
     public void join() {
         try {
             this.s.joinGroup(group);
