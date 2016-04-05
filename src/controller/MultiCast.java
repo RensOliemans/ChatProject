@@ -19,16 +19,17 @@ import javax.xml.crypto.Data;
 /**
  * Created by Rens on 5-4-2016.
  */
-public class MultiCast implements Runnable{
+public class MultiCast extends Thread {
 
     //Dit is een voorbeeld van een join methode
 
-    private List<DatagramPacket> packets = new ArrayList<>();
+    private List<DatagramPacket> packets;
     private String host;
     private int port;
     private InetAddress group;
     private MulticastSocket s;
     private TCP tcp;
+    private GUI gui;
 
     public void setup(int portNumber, String macAddress) {
         try {
@@ -36,15 +37,20 @@ public class MultiCast implements Runnable{
             this.port = portNumber;
             this.group = InetAddress.getByName(host);
             this.s = new MulticastSocket(port);
-            tcp = new TCP();
+            this.tcp = new TCP();
+            this.gui = new GUI();
+            packets = new ArrayList<>();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            gui.showError("Incorrect host name, reenter MAC address");
+            gui.getHostName();
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("Incorrect port, reenter port number");
+            gui.getPortNumber();
         }
+        this.start();
     }
 
-    public void join() {
+    public void joinGroup() {
         try {
             this.s.joinGroup(group);
         } catch (UnknownHostException e) {
