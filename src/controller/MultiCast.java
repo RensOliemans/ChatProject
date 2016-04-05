@@ -31,8 +31,10 @@ public class MultiCast extends Thread {
     private TCP tcp;
     private GUI gui;
 
-    public void setup(int portNumber, String macAddress) {
+    public void setup() {
         try {
+            String macAddress = gui.getHostName();
+            int portNumber = gui.getPortNumber();
             this.host = macAddress;
             this.port = portNumber;
             this.group = InetAddress.getByName(host);
@@ -41,11 +43,13 @@ public class MultiCast extends Thread {
             this.gui = new GUI();
             packets = new ArrayList<>();
         } catch (UnknownHostException e) {
-            gui.showError("Incorrect host name, reenter MAC address");
-            gui.getHostName();
+            gui.showError("Incorrect host name");
+            //recursive call to reenter host name and port number
+            setup();
         } catch (IOException e) {
-            gui.showError("Incorrect port, reenter port number");
-            gui.getPortNumber();
+            gui.showError("Incorrect port");
+            //recursive call to reenter host name and port number
+            setup();
         }
         this.start();
     }
