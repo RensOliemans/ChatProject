@@ -33,6 +33,7 @@ public class MultiCast extends Thread {
 
     public void setup() {
         try {
+            this.gui = new GUI();
             String macAddress = gui.getHostName();
             int portNumber = gui.getPortNumber();
             this.host = macAddress;
@@ -40,7 +41,6 @@ public class MultiCast extends Thread {
             this.group = InetAddress.getByName(host);
             this.s = new MulticastSocket(port);
             this.tcp = new TCP();
-            this.gui = new GUI();
             packets = new ArrayList<>();
         } catch (UnknownHostException e) {
             gui.showError("Incorrect host name");
@@ -84,6 +84,15 @@ public class MultiCast extends Thread {
                 DatagramPacket hi = new DatagramPacket(message, message.length, group, port);
                 this.s.send(hi);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendCheat(String msg) {
+        try {
+            DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), group, port);
+            this.s.send(hi);
         } catch (IOException e) {
             e.printStackTrace();
         }

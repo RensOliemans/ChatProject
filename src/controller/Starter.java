@@ -3,6 +3,7 @@ package controller;
 import view.GUI;
 
 import java.net.MulticastSocket;
+import java.util.Scanner;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -14,6 +15,9 @@ public class Starter {
     public static void main(String[] args) {
         gui.showStartScreen();
         multiCast.setup();
-        multiCast.send("HELLO HENK");
+        while (true) {
+            String message = gui.sendMessage();
+            multiCast.sendCheat(message);
+        }
     }
 }

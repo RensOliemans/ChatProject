@@ -31,4 +31,9 @@ public class GUI {
 
     public void showStartScreen() {
     }
+
+    public String sendMessage() {
+        System.out.println("Enter message");
+        return scanner.nextLine();
+    }
 }
