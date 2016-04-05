@@ -28,4 +28,7 @@ public class GUI {
         System.out.println("Enter the port number. Should be an integer between 1 and 65536");
         return scanner.nextInt();
     }
+
+    public void showStartScreen() {
+    }
 }
