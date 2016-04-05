@@ -2,17 +2,20 @@ package model;
 
 import java.util.*;
 
+/**
+ * Created by coen on 5-4-2016.
+ */
 public class DataTable {
 
     private List<List<Integer>> data = new ArrayList<List<Integer>>();
     private int columns;
 
-    // gets number of columns in table
+    // get number of columns in table
     public int getNColumns(){
         return this.columns;
     }
 
-    // gets number of rows in table
+    // get number of rows in table
     public int getNRows(){
         return this.data.size();
     }
