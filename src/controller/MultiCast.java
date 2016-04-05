@@ -1,4 +1,4 @@
-package server;
+package controller;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -22,6 +22,8 @@ public class MultiCast {
             InetAddress group = InetAddress.getByName(host);
             MulticastSocket s = new MulticastSocket(port);
             s.joinGroup(group);
+
+
             DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), group, port);
             s.send(hi);
 
