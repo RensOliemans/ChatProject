@@ -14,6 +14,8 @@ import view.*;
 import controller.*;
 import model.*;
 
+import javax.xml.crypto.Data;
+
 /**
  * Created by Rens on 5-4-2016.
  */
@@ -21,17 +23,17 @@ public class MultiCast implements Runnable{
 
     //Dit is een voorbeeld van een join methode
 
+    private List<DatagramPacket> packets = new ArrayList<>();
+    private String host;
+    private int port;
+    private InetAddress group;
+    private MulticastSocket s;
+    private TCP tcp;
 
-    String host;
-    int port;
-    InetAddress group;
-    MulticastSocket s;
-    TCP tcp;
-
-    public void setup() {
+    public void setup(int portNumber, String macAddress) {
         try {
-            this.host = "228.5.6.7";
-            this.port = 1234;
+            this.host = macAddress;
+            this.port = portNumber;
             this.group = InetAddress.getByName(host);
             this.s = new MulticastSocket(port);
             tcp = new TCP();
@@ -57,6 +59,8 @@ public class MultiCast implements Runnable{
             byte[] buf = new byte[1000];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
+            packets.add(recv);
+
             tcp.handleMessage(recv);
         } catch (IOException e) {
             e.printStackTrace();
@@ -74,6 +78,15 @@ public class MultiCast implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public DatagramPacket getFirstPacket() {
+        DatagramPacket packet = null;
+        if (!packets.isEmpty()) {
+            packet = packets.get(0);
+            packets.remove(0);
+        }
+        return packet;
     }
 
     public void leave() {
