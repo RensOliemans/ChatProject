@@ -5,10 +5,17 @@ package model;
  */
 public class Routing {
 
+//    private ConcurrentHashMap<Integer, BasicRoute> forwardingTable = new ConcurrentHashMap<Integer, BasicRoute>();
+
     public void tick(Packet packet) {
 
-        // meet de linkcost door te kijken hoe snel de beaconing signals aankomen ofzo
-        // stuur dan de linkcost van het vorige paketje mee in de forwardingtable
+        int neighbour = packet.getSourceAddress();
+        int destination = packet.getDestinationAddress();
+        int rssi = packet.getRssi();
+        DataTable dt = packet.getData_table();
+
+
+
 
     }
 
