@@ -63,8 +63,8 @@ public class MultiCast extends Thread {
 
     public void receive() {
         try {
-            System.out.println(1);
-            byte[] buf = new byte[1000];
+            System.out.println("receive() is called");
+            byte[] buf = new byte[1];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.multicastSocket.receive(recv);
             packets.add(recv);
@@ -122,6 +122,13 @@ public class MultiCast extends Thread {
             e.printStackTrace();
         }
 
-        while (true) receive();
+        while (true) {
+            try {
+                Thread.sleep(10);
+                receive();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
