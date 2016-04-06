@@ -7,12 +7,14 @@ public class Packet {
 
     private int sourceAddress;
     private int destinationAddress;
-    private DataTable data;
+    private DataTable data_table;
+    private int rssi;
 
-    public Packet(int sourceAddress, int destinationAddress, DataTable data) {
+    public Packet(int sourceAddress, int destinationAddress, DataTable data_table, int rssi) {
         this.sourceAddress = sourceAddress;
         this.destinationAddress = destinationAddress;
-        this.data = data;
+        this.data_table = data_table;
+        this.rssi = rssi;
     }
 
     public int getSourceAddress() {
@@ -23,8 +25,10 @@ public class Packet {
         return destinationAddress;
     }
 
-    public DataTable getData() {
-        return data;
+    public DataTable getData_table() {
+        return data_table;
     }
+
+    public int getRssi() {return rssi;}
 
 }
