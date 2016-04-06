@@ -38,7 +38,7 @@ public class Security {
         }
     }
 
-    private String encrypt(String message) {
+    public String encrypt(String message) {
         try {
             //Encrypt the message
             this.cipher.init(Cipher.ENCRYPT_MODE, this.aesKey);
@@ -56,6 +56,7 @@ public class Security {
 
     public String decrypt(String message) {
         try {
+            System.out.println(message.getBytes().length);
             this.cipher.init(Cipher.DECRYPT_MODE, this.aesKey);
             String decrypted = new String(cipher.doFinal(message.getBytes()));
             return decrypted;

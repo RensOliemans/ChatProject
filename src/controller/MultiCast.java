@@ -1,7 +1,5 @@
 package controller;
 
-import com.sun.org.apache.xpath.internal.operations.Mult;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -11,10 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import view.*;
-import controller.*;
 import model.*;
-
-import javax.xml.crypto.Data;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -27,7 +22,7 @@ public class MultiCast extends Thread {
     private String host;
     private int port;
     private InetAddress group;
-    private MulticastSocket s;
+    private MulticastSocket multicastSocket;
     private TCP tcp;
     private GUI gui;
 
@@ -39,7 +34,7 @@ public class MultiCast extends Thread {
             this.host = macAddress;
             this.port = portNumber;
             this.group = InetAddress.getByName(host);
-            this.s = new MulticastSocket(port);
+            this.multicastSocket = new MulticastSocket(port);
             this.tcp = new TCP();
             packets = new ArrayList<>();
         } catch (UnknownHostException e) {
@@ -56,7 +51,7 @@ public class MultiCast extends Thread {
 
     public void joinGroup() {
         try {
-            this.s.joinGroup(group);
+            this.multicastSocket.joinGroup(group);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -68,7 +63,7 @@ public class MultiCast extends Thread {
         try {
             byte[] buf = new byte[1000];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
-            this.s.receive(recv);
+            this.multicastSocket.receive(recv);
             packets.add(recv);
             tcp.handleMessage(recv);
         } catch (IOException e) {
@@ -82,7 +77,7 @@ public class MultiCast extends Thread {
             for (byte[] message : splitmessages) {
                 message = tcp.addSendData(message);
                 DatagramPacket hi = new DatagramPacket(message, message.length, group, port);
-                this.s.send(hi);
+                this.multicastSocket.send(hi);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -92,7 +87,7 @@ public class MultiCast extends Thread {
     public void sendCheat(String msg) {
         try {
             DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), group, port);
-            this.s.send(hi);
+            this.multicastSocket.send(hi);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -109,7 +104,7 @@ public class MultiCast extends Thread {
 
     public void leave() {
         try {
-            this.s.leaveGroup(this.group);
+            this.multicastSocket.leaveGroup(this.group);
         } catch (IOException e) {
             e.printStackTrace();
         }
