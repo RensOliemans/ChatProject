@@ -3,21 +3,14 @@ package controller;
 import com.sun.org.apache.xpath.internal.operations.Mult;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-
-import view.*;
-import controller.*;
+import java.net.*;
+import java.util.*;
 import model.*;
 
 /**
  * Created by Rens on 5-4-2016.
  */
-public class MultiCast implements Runnable{
+public class MultiCast extends Thread{
 
     //Dit is een voorbeeld van een join methode
 
@@ -35,6 +28,7 @@ public class MultiCast implements Runnable{
             this.group = InetAddress.getByName(host);
             this.s = new MulticastSocket(port);
             tcp = new TCP();
+            System.out.println("setup complete");
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -42,9 +36,10 @@ public class MultiCast implements Runnable{
         }
     }
 
-    public void join() {
+    public void joinGroup() {
         try {
             this.s.joinGroup(group);
+            System.out.println("join complete");
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -70,6 +65,7 @@ public class MultiCast implements Runnable{
                 message = tcp.addSendData(message);
                 DatagramPacket hi = new DatagramPacket(message, message.length, group, port);
                 this.s.send(hi);
+                System.out.println("sending complete");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -79,6 +75,7 @@ public class MultiCast implements Runnable{
     public void leave() {
         try {
             this.s.leaveGroup(this.group);
+            System.out.println("left group");
         } catch (IOException e) {
             e.printStackTrace();
         }
