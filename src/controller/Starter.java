@@ -15,6 +15,7 @@ public class Starter {
     public static void main(String[] args) {
         gui.showStartScreen();
         multiCast.setup();
+        multiCast.joinGroup();
         while (true) {
             String message = gui.sendMessage();
             multiCast.sendCheat(message);

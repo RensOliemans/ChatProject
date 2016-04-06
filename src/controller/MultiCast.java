@@ -6,7 +6,9 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import view.*;
 import model.*;
@@ -35,7 +37,7 @@ public class MultiCast extends Thread {
             this.port = portNumber;
             this.group = InetAddress.getByName(host);
             this.multicastSocket = new MulticastSocket(port);
-            this.tcp = new TCP();
+            tcp = new TCP();
             packets = new ArrayList<>();
         } catch (UnknownHostException e) {
             gui.showError("Incorrect host name");
@@ -61,6 +63,7 @@ public class MultiCast extends Thread {
 
     public void receive() {
         try {
+            System.out.println(1);
             byte[] buf = new byte[1000];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.multicastSocket.receive(recv);
@@ -73,12 +76,12 @@ public class MultiCast extends Thread {
 
     public void send(String msg) {
         try {
-            List<byte[]> splitmessages = tcp.splitMessages(msg);
-            for (byte[] message : splitmessages) {
-                message = tcp.addSendData(message);
-                DatagramPacket hi = new DatagramPacket(message, message.length, group, port);
+//            List<byte[]> splitmessages = tcp.splitMessages(msg);
+//            for (byte[] message : splitmessages) {
+//                message = tcp.addSendData(message);
+                DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), group, port);
                 this.multicastSocket.send(hi);
-            }
+//            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -112,6 +115,13 @@ public class MultiCast extends Thread {
 
     @Override
     public void run() {
+        try {
+            tcp = new TCP();
+            this.multicastSocket = new MulticastSocket(port);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         while (true) receive();
     }
 }

@@ -21,10 +21,12 @@ public class TCP {
         this.berichten = berichten;
     }
 
+    public TCP(){}
+
 
     public byte[] addSendData(List<byte[]> msg) {
         for (int i = 0; i < msg.size(); i++){
-            TCPHeader header = new TCPHeader(1,2);
+//            TCPHeader header = new TCPHeader(1,2);
         }
 
         //A d 1 byte SEQ to the front
@@ -53,6 +55,7 @@ public class TCP {
 
     public void handleMessage(DatagramPacket recv) {
         byte[] data = recv.getData();
+        System.out.println(data.toString());
         if (data[0]!=0){
 
         }
