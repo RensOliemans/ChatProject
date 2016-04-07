@@ -18,21 +18,20 @@ import model.*;
  */
 public class MultiCast implements Runnable{
 
-    //Dit is een voorbeeld van een join methode
-
-
-    String host;
-    int port;
-    InetAddress group;
-    MulticastSocket s;
-    TCP tcp;
+    public static final String HOST = "228.0.0.0";
+    public static final int PORT = 1234;
+    private String host;
+    private int port;
+    private InetAddress group;
+    private MulticastSocket s;
+    private TCP tcp;
 
     public void setup() {
         try {
             this.host = "228.5.6.7";
             this.port = 1234;
-            this.group = InetAddress.getByName(host);
-            this.s = new MulticastSocket(port);
+            this.group = InetAddress.getByName(HOST);
+            this.s = new MulticastSocket(PORT);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -63,7 +62,7 @@ public class MultiCast implements Runnable{
 
     public void sendack(byte[] msg) {
         try {
-            DatagramPacket hi = new DatagramPacket(msg, msg.length, group, port);
+            DatagramPacket hi = new DatagramPacket(msg, msg.length, group, PORT);
             this.s.send(hi);
         }
         catch (IOException e) {
@@ -77,7 +76,7 @@ public class MultiCast implements Runnable{
             List<byte[]> splitmessages = tcp.splitMessages(msg);
             List<byte[]> message = tcp.addSendData(splitmessages);
             for (byte[] packet : message) {
-                DatagramPacket hi = new DatagramPacket(packet, packet.length, group, port);
+                DatagramPacket hi = new DatagramPacket(packet, packet.length, group, PORT);
                 this.s.send(hi);
             }
         } catch (IOException e) {
