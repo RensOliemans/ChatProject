@@ -107,8 +107,9 @@ public class MultiCast implements Runnable{
         }
     }
 
-    public void send(String msg, int computernumber) {
+    public void send(String msg, int computernumber, int whereto) {
         tcp = new TCP(computernumber);
+        senders.put((byte) whereto, tcp);
         while (!tcp.getFirstReceived()){
             byte[] first = new byte[2];
             first[0] = (byte) computernumber;
