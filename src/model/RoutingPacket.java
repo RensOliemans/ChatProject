@@ -1,0 +1,54 @@
+package model;
+
+/**
+ * Created by coen on 7-4-2016.
+ */
+public class RoutingPacket {
+
+    private int sourceAddress;
+    private int destinationAddress;
+    private int linkcost;
+    private DataTable data_table;
+    private final int ROUTINGPACKET = 2;
+
+    public RoutingPacket(int sourceAddress, int destinationAddress, int rssi, DataTable data_table) {
+        this.sourceAddress = sourceAddress;
+        this.destinationAddress = destinationAddress;
+        this.linkcost = linkcost;
+        this.data_table = data_table;
+    }
+
+    public byte[] getRoutingPacket() {
+        byte[] txpkt = new byte[0];
+
+        txpkt[0] = intToByte(ROUTINGPACKET);
+        txpkt[1] = intToByte(this.sourceAddress);
+        txpkt[2] = intToByte(this.destinationAddress);
+        txpkt[3] = intToByte(this.linkcost);
+
+        //TO DO: covert data_table to bytes
+
+        txpkt[/*laaste*/] = intToByte(1);
+
+        return txpkt;
+    }
+
+    public byte[] intArrayToByteArray(int[] iArray){
+        byte[] bArray = new byte[iArray.length];
+        for (int i = 0; i<iArray.length; i++){
+            bArray[i] = (byte)iArray[i];
+        }
+        return bArray;
+    }
+
+    public byte intToByte(int val){
+        byte b = (byte)val;
+        return b;
+    }
+
+    public byte[] StringToByte(String string){
+        byte[] b = string.getBytes();
+        return b;
+    }
+
+}

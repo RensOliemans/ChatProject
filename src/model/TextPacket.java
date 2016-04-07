@@ -30,6 +30,7 @@ public class TextPacket {
             byte[] array = StringToByte(msg);
             txpkt[i] = array[i-4];
         }
+        txpkt[msg.length()+4] = intToByte(1);
         return txpkt;
     }
 

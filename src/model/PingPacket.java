@@ -24,6 +24,9 @@ public class PingPacket {
             byte[] array = StringToByte(name);
             txpkt[i] = array[i-2];
         }
+
+        txpkt[name.length()+2] = intToByte(1);
+
         return txpkt;
     }
 
