@@ -17,14 +17,20 @@ public class PingPacket {
     public byte[] getPingPacket(){
         byte[] txpkt = new byte[(1 + name.length())];
 
+        //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(PINGPACKET);
+
+        //add the source to the packet
         txpkt[1] = intToByte(this.sourceAddress);
 
-        for (int i = 2; i < name.length() + 2; i++){
+        //add the username to the packet
+        for (int i = 2; i < (name.length() + 2); i++){
             byte[] array = StringToByte(name);
             txpkt[i] = array[i-2];
         }
 
+        //add the "Rens-bit" as last bit to the packet
+        //this is for padding purposes
         txpkt[name.length()+2] = intToByte(1);
 
         return txpkt;

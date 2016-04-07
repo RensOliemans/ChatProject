@@ -21,14 +21,25 @@ public class RoutingPacket {
     public byte[] getRoutingPacket() {
         byte[] txpkt = new byte[0];
 
+        //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(ROUTINGPACKET);
+
+        //add the source and destination to the packet
         txpkt[1] = intToByte(this.sourceAddress);
         txpkt[2] = intToByte(this.destinationAddress);
+
+        //add the linkcost to the packet
         txpkt[3] = intToByte(this.linkcost);
 
-        //TO DO: covert data_table to bytes
 
-        txpkt[/*laaste*/] = intToByte(1);
+
+        //TODO: covert data_table to bytes
+
+
+
+        //add the "Rens-bit" as last bit to the packet
+        //this is for padding purposes
+        txpkt[/*laaste byte*/] = intToByte(1);
 
         return txpkt;
     }

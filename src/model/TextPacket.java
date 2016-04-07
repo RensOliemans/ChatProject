@@ -21,16 +21,54 @@ public class TextPacket {
     public byte[] getTextPacket() {
         byte[] txpkt = new byte[(3 + msg.length())];
 
+        //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(TEXTPACKET);
+
+        //add the source and destination to the packet
         txpkt[1] = intToByte(this.sourceAddress);
         txpkt[2] = intToByte(this.destinationAddress);
-        txpkt[3] = intToByte(this.syn);
 
-        for (int i = 4; i < msg.length() + 4; i++){
-            byte[] array = StringToByte(msg);
-            txpkt[i] = array[i-4];
+        //add the SYN number to the packet (not sure if this works)
+        for (int j = 3; j< TCP.HEADER + 2; j++){
+            txpkt[j] = intToByte(256);
+            txpkt[2+TCP.HEADER] = intToByte(this.syn - ((TCP.HEADER-1)*256));
         }
-        txpkt[msg.length()+4] = intToByte(1);
+
+        /*
+        //add the SYN number to the packet (sure that this works, but this isn't scalable)
+        if(TCP.HEADER == 1){
+            txpkt[3] = intToByte(this.syn);
+        }
+        if(TCP.HEADER == 2){
+            txpkt[3] = intToByte(256);
+            txpkt[4] = intToByte(this.syn - 256);
+        }
+        if(TCP.HEADER == 3){
+            txpkt[3] = intToByte(256);
+            txpkt[4] = intToByte(256);
+            txpkt[5] = intToByte(this.syn - 512);
+        }
+        if(TCP.HEADER == 4){
+            txpkt[3] = intToByte(256);
+            txpkt[4] = intToByte(256);
+            txpkt[5] = intToByte(256);
+            txpkt[6] = intToByte(this.syn - 768);
+        }
+        if(TCP.HEADER > 4){
+            throw new IndexOutOfBoundsException("G");
+        }
+        */
+
+        //add message into the packet
+        for (int i = (3+TCP.HEADER); i < (msg.length() + (3+TCP.HEADER)); i++){
+            byte[] array = StringToByte(msg);
+            txpkt[i] = array[i-(3+TCP.HEADER)];
+        }
+
+        //add the "Rens-bit" as last bit to the packet
+        //this is for padding purposes
+        txpkt[(msg.length() + (3+TCP.HEADER))] = intToByte(1);
+
         return txpkt;
     }
 
