@@ -7,6 +7,7 @@ public class PingPacket {
 
     private int sourceAddress;
     private String name;
+    private final int PINGPACKET = 1;
 
     public PingPacket(int sourceAddress, String name){
         this.sourceAddress = sourceAddress;
@@ -16,11 +17,12 @@ public class PingPacket {
     public byte[] getPingPacket(){
         byte[] txpkt = new byte[(1 + name.length())];
 
-        txpkt[0] = intToByte(this.sourceAddress);
+        txpkt[0] = intToByte(PINGPACKET);
+        txpkt[1] = intToByte(this.sourceAddress);
 
-        for (int i = 1; i < name.length() + 3; i++){
+        for (int i = 2; i < name.length() + 2; i++){
             byte[] array = StringToByte(name);
-            txpkt[i] = array[i-1];
+            txpkt[i] = array[i-2];
         }
         return txpkt;
     }

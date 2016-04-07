@@ -9,6 +9,7 @@ public class TextPacket {
     private int destinationAddress;
     private int syn;
     private String msg;
+    private final int TEXTPACKET = 0;
 
     public TextPacket(int sourceAddress, int destinationAddress, int syn, String msg) {
         this.sourceAddress = sourceAddress;
@@ -20,13 +21,14 @@ public class TextPacket {
     public byte[] getTextPacket() {
         byte[] txpkt = new byte[(3 + msg.length())];
 
-        txpkt[0] = intToByte(this.sourceAddress);
-        txpkt[1] = intToByte(this.destinationAddress);
-        txpkt[2] = intToByte(this.syn);
+        txpkt[0] = intToByte(TEXTPACKET);
+        txpkt[1] = intToByte(this.sourceAddress);
+        txpkt[2] = intToByte(this.destinationAddress);
+        txpkt[3] = intToByte(this.syn);
 
-        for (int i = 3; i < msg.length() + 3; i++){
+        for (int i = 4; i < msg.length() + 4; i++){
             byte[] array = StringToByte(msg);
-            txpkt[i] = array[i-3];
+            txpkt[i] = array[i-4];
         }
         return txpkt;
     }
