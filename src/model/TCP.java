@@ -41,7 +41,7 @@ public class TCP {
         for (byte[] part: msg) {
             packet = new byte[DATASIZE + HEADER];
             byte[] header;
-            header = ByteBuffer.allocate(HEADER).putInt(i).array();
+            header = ByteBuffer.allocate(HEADER*4).putInt(i).array();
             for (int k = 0; k < HEADER; k++){
                 packet[k] = header[k];
             }

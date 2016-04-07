@@ -11,10 +11,25 @@ import java.util.Scanner;
 public class Starter {
     private static GUI gui = new GUI();
     private static MultiCast multiCast = new MultiCast();
+    private static Ping ping;
 
     public static void main(String[] args) {
+        if (args.length != 1) {
+            gui.showError("Wrong usage, should be \"int computernumber\"");
+            System.exit(0);
+        }
+
+        ping = new Ping(Integer.parseInt(args[0]));
+
         multiCast.setup();
-        multiCast.joinGroup();
+        multiCast.join();
+
+        Thread receiveThread = new Thread(multiCast);
+        receiveThread.start();
+
+        Thread pingThread = new Thread(ping);
+        pingThread.start();
+
         while (true) {
             String message = gui.sendMessage();
             multiCast.send(message);

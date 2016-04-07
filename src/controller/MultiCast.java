@@ -20,16 +20,16 @@ public class MultiCast implements Runnable{
 
     public static final String HOST = "228.0.0.0";
     public static final int PORT = 1234;
-    private String host;
-    private int port;
+//    private String host;
+//    private int port;
     private InetAddress group;
     private MulticastSocket s;
     private TCP tcp;
 
     public void setup() {
         try {
-            this.host = "228.5.6.7";
-            this.port = 1234;
+//            this.host = "228.5.6.7";
+//            this.port = 1234;
             this.group = InetAddress.getByName(HOST);
             this.s = new MulticastSocket(PORT);
         } catch (UnknownHostException e) {
