@@ -7,8 +7,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import view.*;
 import controller.*;
@@ -34,7 +33,6 @@ public class MultiCast implements Runnable{
             this.port = 1234;
             this.group = InetAddress.getByName(host);
             this.s = new MulticastSocket(port);
-            tcp = new TCP();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -63,16 +61,43 @@ public class MultiCast implements Runnable{
         }
     }
 
+    public void sendack(byte[] msg) {
+        try {
+            DatagramPacket hi = new DatagramPacket(msg, msg.length, group, port);
+            this.s.send(hi);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void send(String msg) {
+        tcp = new TCP();
         try {
             List<byte[]> splitmessages = tcp.splitMessages(msg);
-            for (byte[] message : splitmessages) {
-                message = tcp.addSendData(message);
-                DatagramPacket hi = new DatagramPacket(message, message.length, group, port);
+            List<byte[]> message = tcp.addSendData(splitmessages);
+            for (byte[] packet : message) {
+                DatagramPacket hi = new DatagramPacket(packet, packet.length, group, port);
                 this.s.send(hi);
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        while (tcp.getNotreceived()!=null){
+            Map<byte[], byte[]> notreceived = tcp.getNotreceived();
+            for (Map.Entry<byte[], byte[]> e : notreceived.entrySet()){
+                sendack(e.getValue());
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
