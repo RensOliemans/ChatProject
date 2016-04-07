@@ -77,33 +77,11 @@ public class MultiCast extends Thread {
 
     public void send(String msg) {
         try {
-//            List<byte[]> splitmessages = tcp.splitMessages(msg);
-//            for (byte[] message : splitmessages) {
-//                message = tcp.addSendData(message);
-                DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), group, port);
-                this.multicastSocket.send(hi);
-//            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void sendCheat(String msg) {
-        try {
             DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), group, port);
             this.multicastSocket.send(hi);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public DatagramPacket getFirstPacket() {
-        DatagramPacket packet = null;
-        if (!packets.isEmpty()) {
-            packet = packets.get(0);
-            packets.remove(0);
-        }
-        return packet;
     }
 
     public void leave() {

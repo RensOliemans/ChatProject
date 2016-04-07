@@ -18,7 +18,7 @@ public class Starter {
         multiCast.joinGroup();
         while (true) {
             String message = gui.sendMessage();
-            multiCast.sendCheat(message);
+            multiCast.send(message);
         }
     }
 }
