@@ -21,8 +21,9 @@ public class Starter {
 
         ping = new Ping(Integer.parseInt(args[0]));
 
-        multiCast.setup();
+//        multiCast.setup();
         multiCast.join();
+        multiCast.setComputerNumber(Integer.parseInt(args[0]));
 
         Thread receiveThread = new Thread(multiCast);
         receiveThread.start();

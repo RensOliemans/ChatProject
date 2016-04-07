@@ -4,11 +4,11 @@ import controller.MultiCast;
 
 import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import controller.MultiCast;
+
+import javax.xml.crypto.Data;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -95,25 +95,32 @@ public class TCP {
     }
 
     public void handleMessage(DatagramPacket recv) {
-        byte[] data = recv.getData();
-        if (data.equals((byte)0)){
-            List<Byte> bericht = order();
+        byte[] DataBytes = new byte[4];
+//        for (int i = 0; i < 4; i++) {
+//            DataBytes[i] = recv.getData()[i];
+//        }
+        System.arraycopy(recv.getData(), 0, DataBytes, 0, 4);
+        System.out.println(Arrays.equals(DataBytes, ("PING").getBytes()));
+        if (!Arrays.equals(DataBytes, ("PING").getBytes())){
+            byte[] data = recv.getData();
+            if (data.equals((byte) 0)) {
+                List<Byte> bericht = order();
 
-        }
-        if (data.length > HEADER) {
-            byte[] header = new byte[HEADER];
-            for (int i = 0; i < HEADER; i++){
-                header[i] = data[i];
             }
-            received.put(header, data);
-            this.multiCast.sendack(header);
-        }
-        else{
-            notreceived.remove(data);
-            if (notreceived == null){
-                byte[] finish = new byte[1];
-                finish[0]=(byte)0;
-                this.multiCast.sendack(finish);
+            if (data.length > HEADER) {
+                byte[] header = new byte[HEADER];
+                for (int i = 0; i < HEADER; i++) {
+                    header[i] = data[i];
+                }
+                received.put(header, data);
+                this.multiCast.sendack(header);
+            } else {
+                notreceived.remove(data);
+                if (notreceived == null) {
+                    byte[] finish = new byte[1];
+                    finish[0] = (byte) 0;
+                    this.multiCast.sendack(finish);
+                }
             }
         }
     }

@@ -25,6 +25,7 @@ public class MultiCast implements Runnable{
     private InetAddress group;
     private MulticastSocket s;
     private TCP tcp;
+    private int computerNumber;
 
     public void setup() {
         try {
@@ -39,6 +40,18 @@ public class MultiCast implements Runnable{
         }
     }
 
+    public MultiCast() {
+        try {
+            this.group = InetAddress.getByName(HOST);
+            this.s = new MulticastSocket(PORT);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public void join() {
         try {
             this.s.joinGroup(group);
@@ -50,6 +63,9 @@ public class MultiCast implements Runnable{
     }
 
     public void receive() {
+        MultiCast multiCast = new MultiCast();
+//        multiCast.setup();
+        tcp = new TCP();
         try {
             byte[] buf = new byte[1000];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
@@ -71,8 +87,13 @@ public class MultiCast implements Runnable{
     }
 
     public void sendPing() {
-        byte[] ping= "PING".getBytes();
-        DatagramPacket pingpacket = new DatagramPacket(packet)
+        try {
+            byte[] ping= "PING".getBytes();
+            DatagramPacket pingpacket = new DatagramPacket(ping, ping.length, group, PORT);
+            this.s.send(pingpacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void send(String msg) {
@@ -82,7 +103,6 @@ public class MultiCast implements Runnable{
             List<byte[]> message = tcp.addSendData(splitmessages);
             for (byte[] packet : message) {
                 DatagramPacket hi = new DatagramPacket(packet, packet.length, group, PORT);
-                System.out.println(s == null);
                 this.s.send(hi);
             }
         } catch (IOException e) {
@@ -117,5 +137,10 @@ public class MultiCast implements Runnable{
     @Override
     public void run() {
         while (true) receive();
+    }
+
+
+    public void setComputerNumber(int i) {
+        this.computerNumber = i;
     }
 }
