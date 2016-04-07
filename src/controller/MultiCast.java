@@ -70,6 +70,11 @@ public class MultiCast implements Runnable{
         }
     }
 
+    public void sendPing() {
+        byte[] ping= "PING".getBytes();
+        DatagramPacket pingpacket = new DatagramPacket(packet)
+    }
+
     public void send(String msg) {
         tcp = new TCP();
         try {
@@ -77,6 +82,7 @@ public class MultiCast implements Runnable{
             List<byte[]> message = tcp.addSendData(splitmessages);
             for (byte[] packet : message) {
                 DatagramPacket hi = new DatagramPacket(packet, packet.length, group, PORT);
+                System.out.println(s == null);
                 this.s.send(hi);
             }
         } catch (IOException e) {
