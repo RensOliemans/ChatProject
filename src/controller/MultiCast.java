@@ -133,8 +133,6 @@ public class MultiCast implements Runnable{
         }
     }
 
-    public void send(String msg) {
-        tcp = new TCP();
     public void send(String msg, int computernumber) {
         tcp = new TCP(computernumber);
         while (!tcp.getFirstReceived()){
