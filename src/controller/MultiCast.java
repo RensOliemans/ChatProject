@@ -64,9 +64,10 @@ public class MultiCast extends Thread {
     public void receive() {
         try {
             System.out.println("receive() is called");
-            byte[] buf = new byte[1];
+            byte[] buf = new byte[1000];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.multicastSocket.receive(recv);
+            System.out.println(recv.getData().toString());
             packets.add(recv);
             tcp.handleMessage(recv);
         } catch (IOException e) {
