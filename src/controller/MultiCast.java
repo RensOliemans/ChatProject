@@ -21,10 +21,9 @@ public class MultiCast implements Runnable{
 
     //Dit is een voorbeeld van een join methode
 
-    public static final String HOST = "228.0.0.0";
-    public static final int PORT = 1234;
-//    String host;
-//    int port;
+
+    String host;
+    int port;
     InetAddress group;
     MulticastSocket s;
     TCP tcp;
@@ -36,27 +35,15 @@ public class MultiCast implements Runnable{
 
     public void setup() {
         try {
-//            this.host = "228.5.6.7";
-//            this.port = 1234;
-            this.group = InetAddress.getByName(HOST);
-            this.s = new MulticastSocket(PORT);
+            this.host = "228.5.6.7";
+            this.port = 1234;
+            this.group = InetAddress.getByName(host);
+            this.s = new MulticastSocket(port);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public MultiCast() {
-        try {
-            this.group = InetAddress.getByName(HOST);
-            this.s = new MulticastSocket(PORT);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 
     public void join() {
@@ -70,9 +57,6 @@ public class MultiCast implements Runnable{
     }
 
     public void receive() {
-        MultiCast multiCast = new MultiCast();
-//        multiCast.setup();
-        tcp = new TCP();
         try {
             TCP tcpr = null;
             byte[] buf = new byte[1000];
@@ -115,7 +99,7 @@ public class MultiCast implements Runnable{
 
     public void sendack(byte[] msg) {
         try {
-            DatagramPacket hi = new DatagramPacket(msg, msg.length, group, PORT);
+            DatagramPacket hi = new DatagramPacket(msg, msg.length, group, port);
             this.s.send(hi);
         }
         catch (IOException e) {
@@ -123,18 +107,9 @@ public class MultiCast implements Runnable{
         }
     }
 
-    public void sendPing() {
-        try {
-            byte[] ping= "PING".getBytes();
-            DatagramPacket pingpacket = new DatagramPacket(ping, ping.length, group, PORT);
-            this.s.send(pingpacket);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void send(String msg, int computernumber) {
+    public void send(String msg, int computernumber, int whereto) {
         tcp = new TCP(computernumber);
+        senders.put((byte) whereto, tcp);
         while (!tcp.getFirstReceived()){
             byte[] first = new byte[2];
             first[0] = (byte) computernumber;
@@ -150,7 +125,7 @@ public class MultiCast implements Runnable{
             List<byte[]> splitmessages = tcp.splitMessages(msg);
             List<byte[]> message = tcp.addSendData(splitmessages);
             for (byte[] packet : message) {
-                DatagramPacket hi = new DatagramPacket(packet, packet.length, group, PORT);
+                DatagramPacket hi = new DatagramPacket(packet, packet.length, group, port);
                 this.s.send(hi);
             }
         } catch (IOException e) {
@@ -197,10 +172,5 @@ public class MultiCast implements Runnable{
     @Override
     public void run() {
         while (true) receive();
-    }
-
-
-    public void setComputerNumber(int i) {
-        this.computerNumber = i;
     }
 }
