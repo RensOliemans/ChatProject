@@ -7,11 +7,13 @@ public class AckPacket {
 
     private int source;
     private int destination;
+    private int ack;
     private final int ACKPACKET = 3;
 
-    public AckPacket(int source, int destination){
+    public AckPacket(int source, int destination, int ack){
         this.source = source;
         this.destination = destination;
+        this.ack = ack;
     }
 
     public byte[] getAckPacket(){
@@ -24,6 +26,9 @@ public class AckPacket {
         //add the source and destination to the packet
         txpkt[1] = intToByte(this.source);
         txpkt[2] = intToByte(this.destination);
+
+        //add the ack to the packet
+        txpkt[3] = intToByte(this.ack);
 
         return txpkt;
     }
