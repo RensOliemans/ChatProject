@@ -27,7 +27,6 @@ public class Starter {
 //        Thread receiveThread = new Thread(multiCast);
 //        receiveThread.start();
 
-        multiCast2.join();
         System.out.println("Enter computer number");
         int computerNumber = new Scanner(System.in).nextInt();
         multiCast2.setComputerNumber(computerNumber);

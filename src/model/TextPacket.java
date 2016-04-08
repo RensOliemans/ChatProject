@@ -12,10 +12,10 @@ public class TextPacket {
     private int sourceAddress;
     private int destinationAddress;
     private int syn;
-    private String msg;
+    private byte[] msg;
     private final int TEXTPACKET = 0;
 
-    public TextPacket(int sourceAddress, int destinationAddress, int syn, String msg) {
+    public TextPacket(int sourceAddress, int destinationAddress, int syn, byte[] msg) {
         this.sourceAddress = sourceAddress;
         this.destinationAddress = destinationAddress;
         this.syn = syn;
@@ -23,7 +23,7 @@ public class TextPacket {
     }
 
     public byte[] getTextPacket() {
-        byte[] txpkt = new byte[(3 + msg.length()) + MultiCast2.HEADER + 1];
+        byte[] txpkt = new byte[(3 + msg.length) + MultiCast2.HEADER + 1];
 
         //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(TEXTPACKET);
@@ -64,14 +64,14 @@ public class TextPacket {
         */
 
         //add message into the packet
-        for (int i = (3+MultiCast2.HEADER); i < (msg.length() + (3+MultiCast2.HEADER)); i++){
-            byte[] array = StringToByte(msg);
+        for (int i = (3+MultiCast2.HEADER); i < (msg.length + (3+MultiCast2.HEADER)); i++){
+            byte[] array = msg;
             txpkt[i] = array[i-(3+MultiCast2.HEADER)];
         }
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        txpkt[(msg.length() + (3+MultiCast2.HEADER))] = intToByte(1);
+        txpkt[(msg.length + (3+MultiCast2.HEADER))] = intToByte(1);
 
         return txpkt;
     }
