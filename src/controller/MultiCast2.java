@@ -91,18 +91,16 @@ public class MultiCast2 implements Runnable{
                 // textpacket
                 //Only receiver gets these
                 case 0:
-                    if (computerNumber != data[2]) {
-                        System.out.println("TEXT");
-                        syn = new byte[HEADER];
-                        for (int j = 3; j < HEADER + 1; j++) {
-                            syn[j - 3] = data[j];
-                        }
-                        sendAck(data[1], syn);
-                        byte[] message = new byte[data.length - 3 - HEADER];
-                        System.arraycopy(data, 3 + HEADER, message, 0, message.length);
-                        receiver.received.put(syn, message);
-                        gui.print(new String(message), data[1]);
+                    System.out.println("TEXT");
+                    syn = new byte[HEADER];
+                    for (int j = 3; j<HEADER+1; j++){
+                        syn[j-3] = data[j];
                     }
+                    sendAck(data[1], syn);
+                    byte[] message = new byte[data.length - 3 - HEADER];
+                    System.arraycopy(data, 3 + HEADER, message, 0, message.length);
+                    receiver.received.put(syn, message);
+                    gui.print(new String(message), data[1]);
                     break;
                 // startpacket
                 //Only receiver gets these
@@ -114,26 +112,26 @@ public class MultiCast2 implements Runnable{
                 //ackpacket
                 //Only sender gets these
                 case 4:
-                    if (computerNumber != data[2]) {
-                        syn = new byte[HEADER];
-                        for (int j = 3; j < HEADER + 1; j++) {
-                            syn[j - 3] = data[j];
-                        }
-                        if (syn.equals(0)) {
-                            sender.firstReceived = true;
-                        } else if (syn.equals(1)) {
-                            sender.finishReceived = true;
-                        } else {
-                            System.out.println(sender == null);
-                            System.out.println(data[0]);
-                            System.out.println(computerNumber);
-                            System.out.println(data[1]);
-                            System.out.println(data[2]);
-                            System.out.println("\n");
-                            sender.removeNotReceived(syn);
-                        }
-                    }
-                    break;
+//                    if (computerNumber != data[2]) {
+//                        syn = new byte[HEADER];
+//                        for (int j = 3; j < HEADER + 1; j++) {
+//                            syn[j - 3] = data[j];
+//                        }
+//                        if (syn.equals(0)) {
+//                            sender.firstReceived = true;
+//                        } else if (syn.equals(1)) {
+//                            sender.finishReceived = true;
+//                        } else {
+//                            System.out.println(sender == null);
+//                            System.out.println(data[0]);
+//                            System.out.println(computerNumber);
+//                            System.out.println(data[1]);
+//                            System.out.println(data[2]);
+//                            System.out.println("\n");
+//                            sender.removeNotReceived(syn);
+//                        }
+//                    }
+//                    break;
                 //finishpacket
                 //Only receiver gets these
                 case 5:
@@ -259,7 +257,7 @@ public class MultiCast2 implements Runnable{
 
         //First send the 'First' message
 //        while (!sender.firstReceived){
-//            sendFirst(destination);
+            sendFirst(destination);
 //            try {
 //                Thread.sleep(1000);
 //            } catch (InterruptedException e) {
