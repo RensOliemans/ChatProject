@@ -9,6 +9,7 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.*;
 import model.TCP;
+import java.nio.*;
 
 import view.*;
 import controller.*;
@@ -30,8 +31,11 @@ public class MultiCast implements Runnable{
     TCPReceive tcpreceive;
     Map<Byte, TCPReceive> receivers = new HashMap<>();
     Map<Byte, TCP> senders = new HashMap<>();
+    Map<byte[], byte[]> notReceived = new HashMap<>();
     public int computerNumber;
-
+    public static final int HEADER = 1;
+    boolean firstReceived = false;
+    boolean finishReceived = false;
 
     public void setup() {
         try {
@@ -56,41 +60,63 @@ public class MultiCast implements Runnable{
         }
     }
 
+    public static void main(String[] args) {
+        byte[] data = {1, 0, 1, 0, 1, 0, 0 ,1, 1, 1, 1, 0, 1, 0, 1, 0,1 ,1 ,1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+        int i = data.length;
+        while (i-- > 0 && data[i] == 0) {}
+        byte[] message = new byte[i - (3+1)];
+        System.arraycopy(data, 3+1, message, 0, i - (3+1));
+        for (byte ding : message) {
+            System.out.print(ding + " ");
+        }
+    }
+
     public void receive() {
         try {
-            TCP tcpr = null;
             byte[] buf = new byte[1000];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
             byte[] data = recv.getData();
-            for (Map.Entry<Byte, TCP> e : senders.entrySet()){
-                if (e.getKey().equals(data[0])){
-                    tcpr = e.getValue();
-                }
-            }
-            if ((data[1] == 1 || data[1] == 2 || data[1] == 3 || data[1] == 4) && data[0] == data[1] && data.length == 2){
-                tcpreceive = new TCPReceive(data[1]);
-                receivers.put(data[1], tcpreceive);
-                tcpreceive.handleMessage(recv);
-            }
-            else if (tcpr == null){
-                for (Map.Entry<Byte, TCPReceive> e : receivers.entrySet()){
-                    if (e.getKey().equals(data[0])){
-                        tcpreceive = e.getValue();
+            byte[] syn;
+            data = removeRensByte(data);
+            int i = data.length;
+            switch (data[0]) {
+                // textpacket
+                case 0:
+                    syn = new byte[HEADER];
+                    for (int j = 3; j<HEADER+1; j++){
+                        syn[j-3] = data[j];
                     }
-                }
-                tcpreceive.handleMessage(recv);
-            }
-            else if ((data[1] == 0 && data.length == 2) || (data.length > tcp.HEADER+1 && !(tcp.HEADER == 1 && data[1] == 0 && data[2] == 0))){
-                for (Map.Entry<Byte, TCPReceive> e : receivers.entrySet()){
-                    if (e.getKey().equals(data[0])){
-                        tcpreceive = e.getValue();
+                    sendAck(data[1], syn);
+                    byte[] message = new byte[data.length - 3 - HEADER];
+                    gui.printMessage(new String(message));
+                    tcpreceive.received.put()
+                    break;
+                // startpacket
+                case 3:
+                    sendAck(data[1], 0);
+                    TCPReceive tcpreceive= new TCPReceive(data[1]);
+                    break;
+                //ackpacket
+                case 4:
+                    syn = new byte[HEADER];
+                    for (int j = 3; j<HEADER+1; j++){
+                        syn[j-3] = data[j];
                     }
-                }
-                tcpreceive.handleMessage(recv);
-            }
-            else {
-                tcpr.handleMessage(recv);
+                    if (syn.equals(0)){
+                        firstReceived = true;
+                    }
+                    else if (syn.equals(1)){
+                        finishReceived = true;
+                    }
+                    else {
+                        notReceived.remove(syn);
+                    }
+                    break;
+                //finishpacket
+                case 5:
+                    sendAck(data[1], 1);
+                    break;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -107,13 +133,13 @@ public class MultiCast implements Runnable{
         }
     }
 
-    public void send(String msg, int computernumber, int whereto) {
-        tcp = new TCP(computernumber);
+    public void send(String msg, int whereto) {
+        tcp = new TCP(computerNumber);
         senders.put((byte) whereto, tcp);
         while (!tcp.getFirstReceived()){
             byte[] first = new byte[2];
-            first[0] = (byte) computernumber;
-            first[1] = (byte) computernumber;
+            first[0] = (byte) computerNumber;
+            first[1] = (byte) computerNumber;
             sendack(first);
             try {
                 Thread.sleep(100);
@@ -123,9 +149,11 @@ public class MultiCast implements Runnable{
         }
         try {
             List<byte[]> splitmessages = tcp.splitMessages(msg);
-            List<byte[]> message = tcp.addSendData(splitmessages);
-            for (byte[] packet : message) {
-                DatagramPacket hi = new DatagramPacket(packet, packet.length, group, port);
+            int syn = 1;
+            for (byte[] packet : splitmessages) {
+                TextPacket toSend = new TextPacket(computerNumber, destination, syn, msg);
+                DatagramPacket hi = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, port);
+                syn = syn +1;
                 this.s.send(hi);
             }
         } catch (IOException e) {
@@ -150,7 +178,7 @@ public class MultiCast implements Runnable{
         }
         while (!tcp.getFinishReceived()){
             byte[] finish = new byte[2];
-            finish[0] = (byte) computernumber;
+            finish[0] = (byte) computerNumber;
             finish[1] = (byte) 0;
             sendack(finish);
             try {
@@ -172,5 +200,9 @@ public class MultiCast implements Runnable{
     @Override
     public void run() {
         while (true) receive();
+    }
+
+    public void setComputerNumber(int i) {
+        computerNumber = i;
     }
 }

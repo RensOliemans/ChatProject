@@ -19,12 +19,12 @@ public class TCP {
     Map<byte[], byte[]> notreceived = new HashMap<byte[], byte[]>();
     public static final int DATASIZE=128;
     public static final int HEADER = 1;
-    int computernumber;
+    int destination;
     boolean finishReceived;
     boolean firstReceived;
 
-    public TCP(int computernumber) {
-        this.computernumber = computernumber;
+    public TCP(int destination) {
+        this.destination = destination;
         this.notreceived = new HashMap<byte[], byte[]>();
         this.finishReceived = false;
         this.firstReceived = false;
@@ -38,8 +38,8 @@ public class TCP {
         return finishReceived;
     }
 
-    public int getComputernumber(){
-        return computernumber;
+    public int getDestination(){
+        return destination;
     }
 
     public boolean getFirstReceived(){
@@ -51,7 +51,7 @@ public class TCP {
         List<byte[]> result = new ArrayList<byte[]>();
         for (byte[] part: msg) {
             byte[] packet = new byte[DATASIZE + HEADER + 1];
-            packet[0] = (byte) computernumber;
+            packet[0] = (byte) MultiCast.getComputerNumber();
             byte[] header;
             header = ByteBuffer.allocate(HEADER).putInt(i).array();
             for (int k = 1; k < HEADER+1; k++){
@@ -102,7 +102,7 @@ public class TCP {
         drie[0] = (byte) 3;
         byte[] vier = new byte[1];
         vier[0] = (byte) 4;
-        if (data.equals(een)||data.equals(twee)||data.equals(drie)||data.equals(vier)){
+        if (data[1] == 1||data.equals(twee)||data.equals(drie)||data.equals(vier)){
             firstReceived = true;
         }
         else {
