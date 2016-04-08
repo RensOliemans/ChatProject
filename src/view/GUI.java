@@ -18,13 +18,20 @@ import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 public class GUI extends JFrame {
 
 	private Scanner scanner;
-	private Dimension buttonsize = new Dimension(200, 40);
 	private Map<JButton,ChatWindow> chatmap = new HashMap<JButton,ChatWindow>();
-    private JPanel chatLobbyPanel = null;
-    private ChatWindow currentwindow = null;
-    private Dimension textfieldsize = new Dimension(200, 40);
-    private Dimension textareasize = new Dimension(200, 300);
-    private Dimension group22size = new Dimension(100,400);
+	private JPanel chatLobbyPanel = null;
+	private ChatWindow currentwindow = null;
+	private Dimension chatwindowsize = new Dimension(200,400);
+	private Dimension textfieldsize = new Dimension(150, 20);
+	private Dimension textareasize = new Dimension(190, 325);
+	private Dimension buttonsize = new Dimension(200, 40);
+	private Dimension group22size = new Dimension(100,400);
+	private Dimension fillupspace = new Dimension(5, 20);
+	private Dimension framesize = new Dimension(500,400);
+	private final int rens = 1;
+	private final int birte = 2;
+	private final int coen = 3;
+	private final int eric = 4;
 
 //    public GUI() {
 //        scanner = new Scanner(System.in);
@@ -61,7 +68,7 @@ public class GUI extends JFrame {
 		super("Chatlobby");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setVisible(true);
-		setSize(500, 400);
+		setSize(framesize);
 
 		/*
 		Make a new JPanel to add to the frame's content pane.
@@ -76,10 +83,9 @@ public class GUI extends JFrame {
 		JPanel group22 = new JPanel();
 		group22.setLayout(new BoxLayout(group22, BoxLayout.Y_AXIS));
 		group22.setPreferredSize(group22size);
-        group22.setMinimumSize(group22size);
-        group22.setMaximumSize(group22size);
+		group22.setMinimumSize(group22size);
+		group22.setMaximumSize(group22size);
 		group22.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Group 22"));
-		Dimension fillupspace = new Dimension(5, 20);
 		group22.add(Box.createRigidArea(fillupspace));
 		group22.add(new JLabel("Eric"));
 		group22.add(Box.createRigidArea(fillupspace));
@@ -99,25 +105,27 @@ public class GUI extends JFrame {
 		JButton chat1 = new ChatButton("Chat 1");
 		JButton chat2 = new ChatButton("Chat 2");
 		JButton chat3 = new ChatButton("Chat 3");
-//        JButton newchat = new JButton("Press here to make a new chat");
+		JButton newchat = new JButton("Press here to make a new chat");
 		chatmap.put(chat1,null);
 		chatmap.put(chat2,null);
 		chatmap.put(chat3,null);
 		chats.add(chat1);
 		chats.add(chat2);
 		chats.add(chat3);
-//        chats.add(newchat);
+		chats.add(newchat);
 		chatLobbyPanel.add(chats, BorderLayout.CENTER);
 
 		/*
 		Make a new JPanel, with a TextArea to display the chat and a TextField to type messages.
 		 */
 		ChatWindow chatpanel1 = new ChatWindow();
-        chatmap.put(chat1, chatpanel1);
-        currentwindow = chatpanel1;
+		chatmap.put(chat1, chatpanel1);
+		chatmap.put(chat2, chatpanel1);
+		chatmap.put(chat3, chatpanel1);
+		currentwindow = chatpanel1;
 		chatLobbyPanel.add(currentwindow, BorderLayout.EAST);
-        setResizable(false);
-    }
+		setResizable(false);
+	}
 
 	private class ChatChooser implements ActionListener {
 
@@ -128,20 +136,24 @@ public class GUI extends JFrame {
 					e.getKey().setBackground(Color.WHITE);
 				}
 			}
-            if (!currentwindow.equals(chatmap.get(a.getSource()))) {
-                chatLobbyPanel.remove(currentwindow);
-                currentwindow = chatmap.get(a.getSource());
-                chatLobbyPanel.add(currentwindow, BorderLayout.EAST);
-            }
+			if (!currentwindow.equals(chatmap.get(a.getSource()))) {
+				chatLobbyPanel.remove(currentwindow);
+				currentwindow = chatmap.get(a.getSource());
+				chatLobbyPanel.add(currentwindow, BorderLayout.EAST);
+			}
 		}
 	}
 
-    private class SendingField implements ActionListener {
+	private class SendingField implements ActionListener {
 
-        public void actionPerformed(ActionEvent e) {
-            ((JComponent)e.getSource()).getParent();
-        }
-    }
+		public void actionPerformed(ActionEvent e) {
+//            System.out.println(((ChatWindow)((JComponent)e.getSource()).getParent()).messages.toString());
+			JTextArea textarea = ((ChatWindow)((JComponent)e.getSource()).getParent()).messages;
+			JTextField textfield = (JTextField)e.getSource();
+			textarea.setText(textfield.getText()+ "\n \n" +textarea.getText());
+			textfield.setText("");
+		}
+	}
 
 	private class ChatButton extends JButton {
 
@@ -156,32 +168,31 @@ public class GUI extends JFrame {
 
 	private class ChatWindow extends JPanel {
 
-        public JTextField textfield;
-        public JTextArea messages;
+		public JTextField textfield;
+		public JTextArea messages;
 
-        public ChatWindow() {
-            super();
-            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            setPreferredSize(new Dimension(200, 100));
-            setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Messages"));
-            JTextArea messages = new JTextArea(10, 10);
-            messages.setEditable(false);
-            messages.setLayout(new BoxLayout(messages, BoxLayout.Y_AXIS));
-            messages.setPreferredSize(textareasize);
-            messages.setMaximumSize(textareasize);
-            messages.setMinimumSize(textareasize);
-            messages.setLineWrap(true);
-            messages.setText("\n First chat1message \n" + messages.getText());
-            messages.setText("\n Second chat1message \n" + messages.getText());
-            messages.setText("\n Third chat1message \n" + messages.getText());
-            add(messages);
-            textfield = new JTextField();
-            add(textfield);
-            textfield.setPreferredSize(textfieldsize);
-            textfield.setMaximumSize(textfieldsize);
-            textfield.setMinimumSize(textfieldsize);
-            textfield.addActionListener(new SendingField());
-        }
+		public ChatWindow() {
+			super();
+			setPreferredSize(chatwindowsize);
+			setMinimumSize(chatwindowsize);
+			setMaximumSize(chatwindowsize);
+			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Messages"));
+			messages = new JTextArea();
+			messages.setEditable(false);
+			messages.setLayout(new BoxLayout(messages, BoxLayout.Y_AXIS));
+			messages.setPreferredSize(textareasize);
+			messages.setMaximumSize(textareasize);
+			messages.setMinimumSize(textareasize);
+			messages.setLineWrap(true);
+			add(messages);
+			textfield = new JTextField();
+			add(Box.createRigidArea(new Dimension(5,5)));
+			add(textfield);
+			textfield.setPreferredSize(textfieldsize);
+			textfield.setMaximumSize(textfieldsize);
+			textfield.setMinimumSize(textfieldsize);
+			textfield.addActionListener(new SendingField());
+		}
 	}
 //    public void showError(String s) {
 //
@@ -200,8 +211,19 @@ public class GUI extends JFrame {
 //        return null;
 //    }
 
-    public void printMessage(String message) {
-        currentwindow.textfield.setText("\n " + message + "\n" + currentwindow.textfield.getText());
-    }
+	public void printMessage(String message, int pc) {
+		String name = null;
+		switch (pc) {
+			case rens:
+				name = "Rens";
+			case birte:
+				name = "Birte";
+            case coen:
+                name = "Coen";
+            case eric:
+                name = "Eric";
+		}
+		currentwindow.messages.setText("\n " + name + ": " + message + "\n" + currentwindow.messages.getText());
+	}
 
 }
