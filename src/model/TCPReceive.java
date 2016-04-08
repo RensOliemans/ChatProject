@@ -56,8 +56,8 @@ public class TCPReceive {
         return result;
     }
 
-    public void handleMessage(DatagramPacket recv) {
-        byte[] data = recv.getData();
+    public void handleMessage(byte[] data) {
+//        byte[] data = recv.getData();
         byte[] finish = new byte[3];
         finish[0] = (byte) multiCast.computerNumber;
         finish[1] = 0;

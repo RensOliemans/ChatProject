@@ -77,7 +77,7 @@ public class MultiCast implements Runnable{
         MultiCast multiCast = new MultiCast();
         byte[] recv = {/*header begin*/1, 0, 0, 1, /*data begin*/ 1, 1, 0, 0, 0, 1, /*data end*/ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-        int i = recv.length - (TCP.RENSBYTE);
+        int i = recv.length - (1);
         while (i-- > 0 && recv[i] == 0) {}
         byte[] data = new byte[i];
         System.arraycopy(recv, 0, data, 0, i);
@@ -175,7 +175,7 @@ public class MultiCast implements Runnable{
         tcp = new TCP(this.computerNumber);
         senders.put((byte) whereto, tcp);
         while (!tcp.getFirstReceived()){
-            byte[] first = new byte[2+TCP.RENSBYTE];
+            byte[] first = new byte[3];
             first[0] = (byte) this.computerNumber; //ascii
             first[1] = (byte) this.computerNumber; //ascii
             first[2] = 1;

@@ -87,8 +87,8 @@ public class TCP {
         return result;
     }
 
-    public void handleMessage(DatagramPacket recv) {
-        byte[] data = recv.getData();
+    public void handleMessage(byte[] data) {
+//        byte[] data = recv.getData();
         byte[] finish = new byte[1];
         finish[0] = (byte) 0;
         if (data.equals(finish)){
