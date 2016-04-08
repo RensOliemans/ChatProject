@@ -21,29 +21,44 @@ public class MultiCast implements Runnable{
 
     //Dit is een voorbeeld van een join methode
 
-
-    String host;
-    int port;
-    InetAddress group;
-    MulticastSocket s;
-    TCP tcp;
-    TCPReceive tcpreceive;
-    Map<Byte, TCPReceive> receivers = new HashMap<>();
-    Map<Byte, TCP> senders = new HashMap<>();
+    public static final String HOST = "228.0.0.0";
+    public static final int PORT = 1234;
+//    String host;
+//    int port;
+    private InetAddress group;
+    private MulticastSocket s;
+    private TCP tcp;
+    private TCPReceive tcpreceive;
+    private Map<Byte, TCPReceive> receivers = new HashMap<>();
+    private Map<Byte, TCP> senders = new HashMap<>();
     public int computerNumber;
 
-
+    public int getComputerNumber() {
+        return computerNumber;
+    }
     public void setup() {
         try {
-            this.host = "228.5.6.7";
-            this.port = 1234;
-            this.group = InetAddress.getByName(host);
-            this.s = new MulticastSocket(port);
+//            this.host = "228.5.6.7";
+//            this.port = 1234;
+            this.group = InetAddress.getByName(HOST);
+            this.s = new MulticastSocket(PORT);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public MultiCast() {
+        try {
+            this.group = InetAddress.getByName(HOST);
+            this.s = new MulticastSocket(PORT);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void join() {
@@ -62,35 +77,42 @@ public class MultiCast implements Runnable{
             byte[] buf = new byte[1000];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
-            byte[] data = recv.getData();
-            for (Map.Entry<Byte, TCP> e : senders.entrySet()){
-                if (e.getKey().equals(data[0])){
-                    tcpr = e.getValue();
-                }
-            }
-            if ((data[1] == 1 || data[1] == 2 || data[1] == 3 || data[1] == 4) && data[0] == data[1] && data.length == 2){
-                tcpreceive = new TCPReceive(data[1]);
-                receivers.put(data[1], tcpreceive);
-                tcpreceive.handleMessage(recv);
-            }
-            else if (tcpr == null){
-                for (Map.Entry<Byte, TCPReceive> e : receivers.entrySet()){
-                    if (e.getKey().equals(data[0])){
-                        tcpreceive = e.getValue();
+            int i = recv.getLength();
+            while (i-- > 0 && recv.getData()[i] == 0) {}
+            byte[] data = new byte[i+1];
+            System.arraycopy(recv.getData(), 0, data, 0, i+1);
+
+            byte[] DataBytes = new byte[4];
+            System.arraycopy(recv.getData(), 0, DataBytes, 0, 4);
+            if (!Arrays.equals(DataBytes, ("PING").getBytes())) {
+                for (Map.Entry<Byte, TCP> e : senders.entrySet()) {
+                    if (e.getKey().equals(data[0])) {
+                        tcpr = e.getValue();
                     }
                 }
-                tcpreceive.handleMessage(recv);
-            }
-            else if ((data[1] == 0 && data.length == 2) || (data.length > tcp.HEADER+1 && !(tcp.HEADER == 1 && data[1] == 0 && data[2] == 0))){
-                for (Map.Entry<Byte, TCPReceive> e : receivers.entrySet()){
-                    if (e.getKey().equals(data[0])){
-                        tcpreceive = e.getValue();
+                if ( data.length == 2 && (data[1] == 1 || data[1] == 2 || data[1] == 3 || data[1] == 4) && data[0] == data[1]) {
+                    tcpreceive = new TCPReceive(data[1]);
+                    receivers.put(data[1], tcpreceive);
+                    sendack(new byte[] {(byte) computerNumber, data[0]});
+                } else if (tcpr == null) {
+                    tcpreceive = new TCPReceive(data[0]);
+                    for (Map.Entry<Byte, TCPReceive> e : receivers.entrySet()) {
+                        if (e.getKey().equals(data[0])) {
+                            tcpreceive = e.getValue();
+                        }
                     }
+                    tcpreceive.handleMessage(recv);
+                } else if ((data.length == 2 && data[1] == 0) || (data.length > tcp.HEADER + 1 && !(tcp.HEADER == 1 && data[1] == 0 && data[2] == 0))) {
+                    tcpreceive = new TCPReceive(data[0]);
+                    for (Map.Entry<Byte, TCPReceive> e : receivers.entrySet()) {
+                        if (e.getKey().equals(data[0])) {
+                            tcpreceive = e.getValue();
+                        }
+                    }
+                    tcpreceive.handleMessage(recv);
+                } else {
+                    tcpr.handleMessage(recv);
                 }
-                tcpreceive.handleMessage(recv);
-            }
-            else {
-                tcpr.handleMessage(recv);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -99,7 +121,7 @@ public class MultiCast implements Runnable{
 
     public void sendack(byte[] msg) {
         try {
-            DatagramPacket hi = new DatagramPacket(msg, msg.length, group, port);
+            DatagramPacket hi = new DatagramPacket(msg, msg.length, group, PORT);
             this.s.send(hi);
         }
         catch (IOException e) {
@@ -107,13 +129,23 @@ public class MultiCast implements Runnable{
         }
     }
 
-    public void send(String msg, int computernumber, int whereto) {
-        tcp = new TCP(computernumber);
+    public void sendPing() {
+        try {
+            byte[] ping= "PING".getBytes();
+            DatagramPacket pingpacket = new DatagramPacket(ping, ping.length, group, PORT);
+            this.s.send(pingpacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void send(String msg, int whereto) {
+        tcp = new TCP(this.computerNumber);
         senders.put((byte) whereto, tcp);
         while (!tcp.getFirstReceived()){
             byte[] first = new byte[2];
-            first[0] = (byte) computernumber;
-            first[1] = (byte) computernumber;
+            first[0] = (byte) this.computerNumber;
+            first[1] = (byte) this.computerNumber;
             sendack(first);
             try {
                 Thread.sleep(100);
@@ -125,7 +157,7 @@ public class MultiCast implements Runnable{
             List<byte[]> splitmessages = tcp.splitMessages(msg);
             List<byte[]> message = tcp.addSendData(splitmessages);
             for (byte[] packet : message) {
-                DatagramPacket hi = new DatagramPacket(packet, packet.length, group, port);
+                DatagramPacket hi = new DatagramPacket(packet, packet.length, group, PORT);
                 this.s.send(hi);
             }
         } catch (IOException e) {
@@ -150,7 +182,7 @@ public class MultiCast implements Runnable{
         }
         while (!tcp.getFinishReceived()){
             byte[] finish = new byte[2];
-            finish[0] = (byte) computernumber;
+            finish[0] = (byte) this.computerNumber;
             finish[1] = (byte) 0;
             sendack(finish);
             try {
@@ -172,5 +204,9 @@ public class MultiCast implements Runnable{
     @Override
     public void run() {
         while (true) receive();
+    }
+
+    public void setComputerNumber(int computerNumber) {
+        this.computerNumber = computerNumber;
     }
 }

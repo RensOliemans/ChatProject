@@ -1,5 +1,6 @@
 package view;
 
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -36,4 +37,6 @@ public class GUI {
         System.out.println("Enter message");
         return scanner.nextLine();
     }
+
+    public void printMessage(List<Byte> goodOrder, int computernumber) {}
 }

@@ -33,7 +33,7 @@ public class Starter {
 
         while (true) {
             String message = gui.sendMessage();
-            multiCast.send(message);
+            multiCast.send(message, 1/*placeholder*/);
         }
     }
 }

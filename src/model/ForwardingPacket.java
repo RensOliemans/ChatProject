@@ -19,8 +19,6 @@ public class ForwardingPacket {
 
     public byte[] getForwardingPacket() {
         byte[] txpkt = new byte[0];
-
-
         return txpkt;
     }
 
