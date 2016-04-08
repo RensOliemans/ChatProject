@@ -13,18 +13,20 @@ import model.Sender;
 import model.*;
 import view.GUI;
 
-import javax.xml.crypto.Data;
-import javax.xml.soap.Text;
+//import javax.xml.crypto.Data;
+//import javax.xml.soap.Text;
 
 /**
  * Created by Rens on 5-4-2016.
+ * This is the main class that does the sending and the receiving.
+ * Every 'person' that is connected has an instance of MultiCast.
  */
 public class MultiCast2 implements Runnable{
 
     //Dit is een voorbeeld van een join methode
 
-    public static final String HOST = "228.0.0.0";
-    public static final int PORT = 1234;
+    private static final String HOST = "228.0.0.0";
+    private static final int PORT = 1234;
     //    String host;
 //    int port;
     private InetAddress group;
@@ -35,8 +37,8 @@ public class MultiCast2 implements Runnable{
     private Map<Byte, Receiver> receivers = new HashMap<>();
     //Byte is the destination, sender is you
     private Map<Byte, Sender> senders = new HashMap<>();
-    public int computerNumber;
-    public static final int DATASIZE=128;
+    private int computerNumber;
+    private static final int DATASIZE=128;
     public static final int HEADER = 1;
 
 
@@ -74,6 +76,12 @@ public class MultiCast2 implements Runnable{
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
             byte[] data = recv.getData();
+            //You get a packet. This is of the following format:
+            //data[0] = indication byte
+            //data[1] = source of the sender
+            //data[2] = destination of the sender - you (compare with computernumber)
+            //data[3-x] = data/ack number/ack indication bit (with a start/fin message
+            //At the end of the data and the whole packet, rens byte.
             byte[] syn;
             data = removeRensByte(data);
             int i = data.length;
@@ -87,57 +95,83 @@ public class MultiCast2 implements Runnable{
                     receiver = e.getValue();
                 }
             }
-            if (computerNumber != data[1]) {
+            if (computerNumber == data[2] && computerNumber != data[1]) {
+                //You only want a message if the destination of the packet is you (computerNumber == data[2])
+                //You do not want a message if the source of the packet was you (computerNumber != data[1])
                 for (byte b : data) {
                     System.out.print(b);
                 }
                 switch (data[0]) {
-                    // textpacket
+
+                    // datapacket
                     //Only receiver gets these
                     case 0:
-                        System.out.println("TEXT");
+                        //You receive a data packet. This means that you first want to save all of the packets, and
+                        //when you have received all packets, then you send them to the GUI to show them
+
+                        //SYN is a byte array with length: header.
+                        //TODO: vragen aan birte wat dit doet. (oke het doet niks, vragen waarom het er is)
                         syn = new byte[HEADER];
                         for (int j = 3; j < HEADER + 1; j++) {
                             syn[j - 3] = data[j];
                         }
+
+                        //You receive a datapacket so you want to send an ack. You do this by putting the source as the destination.
                         sendAck(data[1], syn);
+
+                        //This copies the actual data (so without the header) to the byte[] message
                         byte[] message = new byte[data.length - 3 - HEADER];
                         System.arraycopy(data, 3 + HEADER, message, 0, message.length);
+
+                        //pass them to the receiver. They store them in a HashMap. After all packets have been received
+                        // (if all packets and the final packet has been acked,
+                        // the sender knows that the receiver has received all packets, so the sender instructs the receiver
+                        // to put them in order and to forward them to the GUI.
                         receiver.received.put(syn, message);
                         gui.print(new String(message), data[1]);
                         break;
+
                     // startpacket
                     //Only receiver gets these
                     case 3:
+                        //You receive a start packet so you have to return with a special ack:
+                        //an ack with data: 0
+
+                        //This line creates a 0
+                        //TODO: vragen aan birte waarom het zo wordt gedaan en niet gewoon met sendAck(data[1], (byte) 0);
                         byte[] nul = ByteBuffer.allocate(HEADER * 4).putInt(0).array();
                         sendAck(data[1], nul);
+                        //You initialize a receiver with the source (sender), so you can put the datapackets in a 'new' receiver.
+                        //NOTE: Receiver here is no person, however the receiver of a link between a receiver and a sender
+                        //After the message has been sent, the receiver is destroyed. A 'person' (instance of MultiCast2)
+                        //can be both a receiver as a sender
                         receiver = new Receiver(data[1]);
                         break;
+
                     //ackpacket
                     //Only sender gets these
                     case 4:
-                        if (computerNumber != data[2]) {
-                            syn = new byte[HEADER];
-                            for (int j = 3; j < HEADER + 1; j++) {
-                                syn[j - 3] = data[j];
-                            }
-                            if (syn.equals(0)) {
-                                sender.firstReceived = true;
-                            } else if (syn.equals(1)) {
-                                sender.finishReceived = true;
-                            } else {
-                                System.out.println(sender == null);
-                                System.out.println(data[0]);
-                                System.out.println(computerNumber);
-                                System.out.println(data[1]);
-                                System.out.println(data[2]);
-                                System.out.println("\n");
-                                sender.removeNotReceived(syn);
-                            }
+                        syn = new byte[HEADER];
+                        for (int j = 3; j < HEADER + 1; j++) {
+                            syn[j - 3] = data[j];
                         }
-//                    break;
-                        //finishpacket
-                        //Only receiver gets these
+                        if (syn.equals(0)) {
+                            sender.firstReceived = true;
+                        } else if (syn.equals(1)) {
+                            sender.finishReceived = true;
+                        } else {
+                            System.out.println(sender == null);
+                            System.out.println(data[0]);
+                            System.out.println(computerNumber);
+                            System.out.println(data[1]);
+                            System.out.println(data[2]);
+                            System.out.println("\n");
+                            sender.removeNotReceived(syn);
+                        }
+                    break;
+
+                    //finishpacket
+                    //Only receiver gets these
                     case 5:
                         byte[] een = ByteBuffer.allocate(HEADER * 4).putInt(1).array();
                         sendAck(data[1], een);
