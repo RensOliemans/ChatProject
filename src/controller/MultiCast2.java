@@ -63,7 +63,6 @@ public class MultiCast2 implements Runnable{
     }
 
     public void join() {
-//    public void joinGroup() {
         try {
             this.s.joinGroup(group);
         } catch (UnknownHostException e) {
@@ -72,19 +71,6 @@ public class MultiCast2 implements Runnable{
             e.printStackTrace();
         }
     }
-
-//    public static void main(String[] args) {
-//        MultiCast multiCast = new MultiCast();
-//        byte[] recv = {/*header begin*/1, 0, 0, 1, /*data begin*/ 1, 1, 0, 0, 0, 1, /*data end*/ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//
-//        int i = recv.length - (TCP.RENSBYTE);
-//        while (i-- > 0 && recv[i] == 0) {}
-//        byte[] data = new byte[i];
-//        System.arraycopy(recv, 0, data, 0, i);
-//        for (byte info : data) {
-//            System.out.println(info);
-//        }
-//    }
 
     private void receive() {
         byte[] buf = new byte[1000];
@@ -97,8 +83,6 @@ public class MultiCast2 implements Runnable{
         }
         byte[] data = recv.getData();
         data = removeRensByte(data);
-
-
     }
 
     private byte[] removeRensByte(byte[] data) {
@@ -107,7 +91,7 @@ public class MultiCast2 implements Runnable{
         //de message aangevuld met nullen. De rens byte
         byte[] croppedResult;
 
-        int i = data.length - (1);
+        int i = data.length - 1;
         while (i-- > 0 && data[i] == 0) {}
         croppedResult = new byte[i];
         System.arraycopy(data, 0, croppedResult, 0, i);
@@ -152,7 +136,8 @@ public class MultiCast2 implements Runnable{
     private void sendMessage(String msg, int destination) {
         try {
             //Send the entire message, split and with send data from TCP
-            int syn = 1;
+            int syn = 2; //SYN starts with 1, because SYN 0 is reserved for the ACK of the START message, and
+                            //SYN 1 is reserved for the ACK of the FIN message
             List<byte[]> splitmessages = tcp.splitMessages(msg);
             for (byte[] packet : splitmessages) {
                 TextPacket toSend = new TextPacket(computerNumber, destination, syn, msg);
@@ -211,6 +196,8 @@ public class MultiCast2 implements Runnable{
             }
         }
     }
+
+
 
 
 

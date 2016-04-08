@@ -39,7 +39,7 @@ public class RoutingPacket {
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        txpkt[/*laaste byte*/] = intToByte(1);
+//        txpkt[/*laaste byte*/] rens = intToByte(1);
 
         return txpkt;
     }

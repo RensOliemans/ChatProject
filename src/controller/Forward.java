@@ -1,7 +1,5 @@
 package controller;
 
-import model.Packet;
-
 import java.io.*;
 import java.lang.*;
 import java.net.*;
@@ -14,7 +12,6 @@ public class Forward extends Thread {
 
     protected DatagramSocket socket = null;
     protected BufferedReader in = null;
-    protected Packet input_packet = null;
     protected boolean moreQuotes = true;
 
     public Forward() throws IOException {

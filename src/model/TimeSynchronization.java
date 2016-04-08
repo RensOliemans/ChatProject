@@ -5,10 +5,10 @@ package model;
  */
 public class TimeSynchronization {
 
-    public void Time(Packet[] packets) {
+//    public void Time(Packet[] packets) {
 
 
 
-    }
+//    }
 
 }

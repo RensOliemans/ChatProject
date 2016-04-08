@@ -34,7 +34,7 @@ public class Routing {
     }
 
     public int[] tableToIntArray(){
-
+        return null;
     }
 
 
