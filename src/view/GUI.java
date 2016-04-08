@@ -105,14 +105,14 @@ public class GUI extends JFrame {
 		JButton chat1 = new ChatButton("Chat 1");
 		JButton chat2 = new ChatButton("Chat 2");
 		JButton chat3 = new ChatButton("Chat 3");
-		JButton newchat = new JButton("Press here to make a new chat");
+		JButton newchat = new JButton("New Chat");
 		chatmap.put(chat1,null);
 		chatmap.put(chat2,null);
 		chatmap.put(chat3,null);
+        chats.add(newchat);
 		chats.add(chat1);
 		chats.add(chat2);
 		chats.add(chat3);
-		chats.add(newchat);
 		chatLobbyPanel.add(chats, BorderLayout.CENTER);
 
 		/*
@@ -144,13 +144,19 @@ public class GUI extends JFrame {
 		}
 	}
 
+    private class NewChatButton implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+
+        }
+    }
+
 	private class SendingField implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
-//            System.out.println(((ChatWindow)((JComponent)e.getSource()).getParent()).messages.toString());
 			JTextArea textarea = ((ChatWindow)((JComponent)e.getSource()).getParent()).messages;
 			JTextField textfield = (JTextField)e.getSource();
-			textarea.setText(textfield.getText()+ "\n \n" +textarea.getText());
+			textarea.setText(textarea.getText() + "\n \n " + "You: " + textfield.getText() );
 			textfield.setText("");
 		}
 	}
@@ -180,11 +186,12 @@ public class GUI extends JFrame {
 			messages = new JTextArea();
 			messages.setEditable(false);
 			messages.setLayout(new BoxLayout(messages, BoxLayout.Y_AXIS));
-			messages.setPreferredSize(textareasize);
-			messages.setMaximumSize(textareasize);
-			messages.setMinimumSize(textareasize);
 			messages.setLineWrap(true);
-			add(messages);
+            JScrollPane scrollmessages = new JScrollPane(messages, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollmessages.setPreferredSize(textareasize);
+            scrollmessages.setMaximumSize(textareasize);
+            scrollmessages.setMinimumSize(textareasize);
+			add(scrollmessages);
 			textfield = new JTextField();
 			add(Box.createRigidArea(new Dimension(5,5)));
 			add(textfield);
@@ -223,7 +230,7 @@ public class GUI extends JFrame {
             case eric:
                 name = "Eric";
 		}
-		currentwindow.messages.setText("\n " + name + ": " + message + "\n" + currentwindow.messages.getText());
+		currentwindow.messages.setText(currentwindow.messages.getText() + "\n " + name + ": " + message + "\n" );
 	}
 
 }
