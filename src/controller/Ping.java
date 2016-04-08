@@ -22,7 +22,7 @@ public class Ping implements Runnable{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            multiCast.sendPing();
+//            multiCast.sendPing();
         }
 
     }
