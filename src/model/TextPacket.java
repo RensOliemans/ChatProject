@@ -55,7 +55,7 @@ public class TextPacket {
             txpkt[6] = intToByte(this.syn - 768);
         }
         if(TCP.HEADER > 4){
-            throw new IndexOutOfBoundsException("G");
+            throw new IndexOutOfBoundsException();
         }
         */
 
