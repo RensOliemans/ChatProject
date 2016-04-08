@@ -41,7 +41,7 @@ public class Starter {
         pingThread.start();
 
         while (true) {
-            multiCast2.send(gui.sendMessage(), 1);
+            multiCast2.send(gui.sendMessage(), gui.getDestination());
 //            multiCast.send(message, 1/*placeholder*/);
         }
     }

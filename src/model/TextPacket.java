@@ -23,7 +23,7 @@ public class TextPacket {
     }
 
     public byte[] getTextPacket() {
-        byte[] txpkt = new byte[(3 + msg.length())];
+        byte[] txpkt = new byte[(3 + msg.length()) + MultiCast2.HEADER + 1];
 
         //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(TEXTPACKET);

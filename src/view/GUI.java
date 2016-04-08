@@ -43,4 +43,15 @@ public class GUI {
             System.out.println(b);
         }
     }
+
+    public void print(String message, int computernumber) {
+        System.out.print("Got message: \"");
+        
+        System.out.print(message + "\", from person with computernumber " + computernumber + "\n");
+    }
+
+    public int getDestination() {
+        System.out.println("Enter destination");
+        return scanner.nextInt();
+    }
 }
