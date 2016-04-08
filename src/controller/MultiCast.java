@@ -36,18 +36,19 @@ public class MultiCast implements Runnable{
     public int getComputerNumber() {
         return computerNumber;
     }
-    public void setup() {
-        try {
-//            this.host = "228.5.6.7";
-//            this.port = 1234;
-            this.group = InetAddress.getByName(HOST);
-            this.s = new MulticastSocket(PORT);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
+//    public void setup() {
+//        try {
+////            this.host = "228.5.6.7";
+////            this.port = 1234;
+//            this.group = InetAddress.getByName(HOST);
+//            this.s = new MulticastSocket(PORT);
+//        } catch (UnknownHostException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public MultiCast() {
         try {
@@ -61,8 +62,8 @@ public class MultiCast implements Runnable{
 
     }
 
-//    public void join() {
-    public void joinGroup() {
+    public void join() {
+//    public void joinGroup() {
         try {
             this.s.joinGroup(group);
         } catch (UnknownHostException e) {
