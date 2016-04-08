@@ -61,7 +61,8 @@ public class MultiCast implements Runnable{
 
     }
 
-    public void join() {
+//    public void join() {
+    public void joinGroup() {
         try {
             this.s.joinGroup(group);
         } catch (UnknownHostException e) {
