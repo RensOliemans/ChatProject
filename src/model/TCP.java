@@ -18,7 +18,8 @@ public class TCP {
     MultiCast multiCast = new MultiCast();
     Map<byte[], byte[]> notreceived = new HashMap<byte[], byte[]>();
     public static final int DATASIZE=128;
-    public static final int HEADER = 1;
+    public static final int HEADER = 3;
+    public static final int RENSBYTE = 1; //Byte placed at the end of a message for removal of padding
     int computernumber;
     boolean finishReceived;
     boolean firstReceived;
@@ -87,8 +88,8 @@ public class TCP {
         return result;
     }
 
-    public void handleMessage(DatagramPacket recv) {
-        byte[] data = recv.getData();
+    public void handleMessage(byte[] data) {
+//        byte[] data = recv.getData();
         byte[] finish = new byte[1];
         finish[0] = (byte) 0;
         if (data.equals(finish)){
@@ -102,7 +103,11 @@ public class TCP {
         drie[0] = (byte) 3;
         byte[] vier = new byte[1];
         vier[0] = (byte) 4;
-        if (data.equals(een)||data.equals(twee)||data.equals(drie)||data.equals(vier)){
+        for (byte b : data) {
+            System.out.println(b);
+        }
+        if (data[1] == this.computernumber) {
+            System.out.println("FirstReceived = true");
             firstReceived = true;
         }
         else {

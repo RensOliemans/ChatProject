@@ -1,13 +1,13 @@
 package controller;
 
-import com.sun.org.apache.xpath.internal.operations.Mult;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.*;
+
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import model.TCP;
 
 import view.*;
@@ -73,47 +73,71 @@ public class MultiCast implements Runnable{
         }
     }
 
+    public static void main(String[] args) {
+        MultiCast multiCast = new MultiCast();
+        byte[] recv = {/*header begin*/1, 0, 0, 1, /*data begin*/ 1, 1, 0, 0, 0, 1, /*data end*/ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+        int i = recv.length - (TCP.RENSBYTE);
+        while (i-- > 0 && recv[i] == 0) {}
+        byte[] data = new byte[i];
+        System.arraycopy(recv, 0, data, 0, i);
+        for (byte info : data) {
+            System.out.println(info);
+        }
+    }
+
     public void receive() {
         try {
-            TCP tcpr = null;
+            TCP tcpr = new TCP(computerNumber);
             byte[] buf = new byte[1000];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
+            byte[] data = recv.getData();
+            //Removal of the last 0's (The DatagramPacket is filled with 1000 bytes. If the message is
+            // less than 1000 bytes, 0's are added. They are removed here.
+            //Last byte is 'Rens byte', always a 1 so no 0's at the end of the message are removed.
+//            System.out.println(new String(recv.getData()));
             int i = recv.getLength();
-            while (i-- > 0 && recv.getData()[i] == 0) {}
-            byte[] data = new byte[i+1];
-            System.arraycopy(recv.getData(), 0, data, 0, i+1);
+            while (i-- >= 0 && recv.getData()[i] == 0) {}
+            data = new byte[i];
+            System.arraycopy(recv.getData(), 0, data, 0, i);
 
-            byte[] DataBytes = new byte[4];
-            System.arraycopy(recv.getData(), 0, DataBytes, 0, 4);
-            if (!Arrays.equals(DataBytes, ("PING").getBytes())) {
+            byte[] DataBytes = new byte[Math.min(data.length, 4)];
+            System.arraycopy(data, 0, DataBytes, 0, data.length);
+            if (!Arrays.equals(DataBytes, ("PING").getBytes())/* && data[1] != computerNumber*/) {
+//                System.out.println("yo 1");
                 for (Map.Entry<Byte, TCP> e : senders.entrySet()) {
                     if (e.getKey().equals(data[0])) {
                         tcpr = e.getValue();
                     }
                 }
                 if ( data.length == 2 && (data[1] == 1 || data[1] == 2 || data[1] == 3 || data[1] == 4) && data[0] == data[1]) {
+                    System.out.println("yo 2");
                     tcpreceive = new TCPReceive(data[1]);
                     receivers.put(data[1], tcpreceive);
-                    sendack(new byte[] {(byte) computerNumber, data[0]});
-                } else if (tcpr == null) {
+                    sendack(new byte[] { (byte) computerNumber, data[0], 1});
+                /*} else if (tcpr == null) {
+                    System.out.println("yo 3");
                     tcpreceive = new TCPReceive(data[0]);
                     for (Map.Entry<Byte, TCPReceive> e : receivers.entrySet()) {
                         if (e.getKey().equals(data[0])) {
                             tcpreceive = e.getValue();
                         }
                     }
-                    tcpreceive.handleMessage(recv);
+                    tcpreceive.handleMessage(recv);*/
                 } else if ((data.length == 2 && data[1] == 0) || (data.length > tcp.HEADER + 1 && !(tcp.HEADER == 1 && data[1] == 0 && data[2] == 0))) {
+                    System.out.println("yo 4");
                     tcpreceive = new TCPReceive(data[0]);
                     for (Map.Entry<Byte, TCPReceive> e : receivers.entrySet()) {
                         if (e.getKey().equals(data[0])) {
                             tcpreceive = e.getValue();
                         }
                     }
-                    tcpreceive.handleMessage(recv);
+                    tcpreceive.handleMessage(data);
                 } else {
-                    tcpr.handleMessage(recv);
+                    System.out.println("yo 5");
+                    System.out.println(recv.getData());
+                    tcpr.handleMessage(data);
                 }
             }
         } catch (IOException e) {
@@ -132,25 +156,30 @@ public class MultiCast implements Runnable{
     }
 
     public void sendPing() {
-        try {
-            byte[] ping= "PING".getBytes();
-            DatagramPacket pingpacket = new DatagramPacket(ping, ping.length, group, PORT);
-            this.s.send(pingpacket);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+            byte[] ping= "PING".getBytes(); //1 is the 'Rens byte'
+            byte[] actualping = new byte[ping.length+1];
+            System.arraycopy(ping, 0, actualping, 0, ping.length);
+            actualping[actualping.length-1] = 1;
+            DatagramPacket pingpacket = new DatagramPacket(actualping, actualping.length, group, PORT);
+//            this.s.send(pingpacket);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void send(String msg, int whereto) {
         tcp = new TCP(this.computerNumber);
         senders.put((byte) whereto, tcp);
         while (!tcp.getFirstReceived()){
-            byte[] first = new byte[2];
-            first[0] = (byte) this.computerNumber;
-            first[1] = (byte) this.computerNumber;
+            byte[] first = new byte[2+TCP.RENSBYTE];
+            first[0] = (byte) this.computerNumber; //ascii
+            first[1] = (byte) this.computerNumber; //ascii
+            first[2] = 1;
             sendack(first);
+            receive();
             try {
-                Thread.sleep(100);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
