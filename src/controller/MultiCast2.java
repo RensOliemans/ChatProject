@@ -11,6 +11,7 @@ import model.TCP;
 
 import model.*;
 
+import javax.xml.crypto.Data;
 import javax.xml.soap.Text;
 
 /**
@@ -86,12 +87,35 @@ public class MultiCast2 implements Runnable{
 //    }
 
     public void receive() {
+        byte[] buf = new byte[1000];
+        DatagramPacket recv = new DatagramPacket(buf, buf.length);
+        try {
+            this.s.receive(recv);
+            //Receive the message and put in in recv
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        byte[] data = recv.getData();
+        data = data.removeRensByte(data);
+
 
     }
 
+    private data[] removeRensByte(byte[] data) {
+        //De 'Rens' byte is vernoemd naar de geniaalste coder die er bestaat.
+        //Het houdt in dat bij het receiven een buffer van 1000 bytes komt, maar bij het binnenkomen wordt
+        //de message aangevuld met nullen. De rens byte
+        byte[] croppedResult[]
+    }
+
     public void sendack(int destination) {
-        byte[] ack = new byte[3];
-        ack[0] = (byte) 4; //Value of the 'ack' indication byte
+        AckPacket ackPacket = new AckPacket(computerNumber, destination);
+        DatagramPacket ack = new DatagramPacket(ackPacket.getAckPacket(), ackPacket.getAckPacket().length, group, PORT);
+        try {
+            this.s.send(ack);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendPing() {
@@ -99,26 +123,20 @@ public class MultiCast2 implements Runnable{
     }
 
     private void sendFirst(int destination) {
-        byte[] first = new byte[3];
-        first[0] = (byte) 3; //Value of the 'first' indication byte
-        first[1] = (byte) computerNumber;
-        first[2] = (byte) destination;
-        DatagramPacket firstPacket = new DatagramPacket(first, first.length, group, PORT);
+        FirstPacket firstPacket = new FirstPacket(computerNumber, destination);
+        DatagramPacket first = new DatagramPacket(firstPacket.getFirstPacket(), firstPacket.getFirstPacket().length, group, PORT);
         try {
-            this.s.send(firstPacket);
+            this.s.send(first);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void sendFinish(int destination) {
-        byte[] finish = new byte[3];
-        finish[0] = (byte) 5;
-        finish[1] = (byte) computerNumber;
-        finish[2] = (byte) destination;
-        DatagramPacket finishPacket = new DatagramPacket(finish, finish.length, group, PORT);
+        FinishPacket finishPacket = new FinishPacket(computerNumber, destination);
+        DatagramPacket finish = new DatagramPacket(finishPacket.getFinishPacket(), finishPacket.getFinishPacket().length, group, PORT);
         try {
-            this.s.send(finishPacket);
+            this.s.send(finish);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -127,11 +145,13 @@ public class MultiCast2 implements Runnable{
     private void sendMessage(String msg, int destination) {
         try {
             //Send the entire message, split and with send data from TCP
+            int syn = 1;
             List<byte[]> splitmessages = tcp.splitMessages(msg);
-            List<byte[]> message = tcp.addSendData(splitmessages);
-            for (byte[] packet : message) {
-                DatagramPacket messagePacket = new DatagramPacket(packet, packet.length, group, PORT);
+            for (byte[] packet : splitmessages) {
+                TextPacket toSend = new TextPacket(computerNumber, destination, syn, msg);
+                DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
                 this.s.send(messagePacket);
+                syn++;
             }
         } catch (IOException e) {
             e.printStackTrace();
