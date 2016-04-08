@@ -30,6 +30,10 @@ public class AckPacket {
         //add the ack to the packet
         txpkt[3] = intToByte(this.ack);
 
+        //add the "Rens-bit" as last bit to the packet
+        //this is for padding purposes
+        txpkt[4] = intToByte(1);
+
         return txpkt;
     }
 

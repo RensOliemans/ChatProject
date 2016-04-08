@@ -25,6 +25,10 @@ public class StartPacket {
         txpkt[1] = intToByte(this.source);
         txpkt[2] = intToByte(this.destination);
 
+        //add the "Rens-bit" as last bit to the packet
+        //this is for padding purposes
+        txpkt[3] = intToByte(1);
+
         return txpkt;
     }
 
