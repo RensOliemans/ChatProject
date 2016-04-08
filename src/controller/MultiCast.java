@@ -105,10 +105,12 @@ public class MultiCast implements Runnable{
             byte[] DataBytes = new byte[Math.min(data.length, 4)];
             System.arraycopy(data, 0, DataBytes, 0, data.length);
             if (!Arrays.equals(DataBytes, ("PING").getBytes())/* && data[1] != computerNumber*/) {
-//                System.out.println("yo 1");
                 for (Map.Entry<Byte, TCP> e : senders.entrySet()) {
+                    System.out.println("yo 1");
                     if (e.getKey().equals(data[0])) {
+                        System.out.println("check");
                         tcpr = e.getValue();
+                        System.out.println(tcpr.getFirstReceived());
                     }
                 }
                 if ( data.length == 2 && (data[1] == 1 || data[1] == 2 || data[1] == 3 || data[1] == 4) && data[0] == data[1]) {
@@ -137,7 +139,8 @@ public class MultiCast implements Runnable{
                 } else {
                     System.out.println("yo 5");
                     System.out.println(recv.getData());
-                    tcpr.handleMessage(data);
+                    tcp = tcpr;
+                    tcp.handleMessage(data);
                 }
             }
         } catch (IOException e) {
@@ -177,7 +180,7 @@ public class MultiCast implements Runnable{
             first[1] = (byte) this.computerNumber; //ascii
             first[2] = 1;
             sendack(first);
-            receive();
+//            receive();
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

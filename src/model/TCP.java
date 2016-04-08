@@ -2,13 +2,11 @@ package model;
 
 import controller.MultiCast;
 
-import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import controller.MultiCast;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -20,12 +18,12 @@ public class TCP {
     public static final int DATASIZE=128;
     public static final int HEADER = 3;
     public static final int RENSBYTE = 1; //Byte placed at the end of a message for removal of padding
-    int computernumber;
+    int destination;
     boolean finishReceived;
     boolean firstReceived;
 
-    public TCP(int computernumber) {
-        this.computernumber = computernumber;
+    public TCP(int destination) {
+        this.destination = destination;
         this.notreceived = new HashMap<byte[], byte[]>();
         this.finishReceived = false;
         this.firstReceived = false;
@@ -39,8 +37,8 @@ public class TCP {
         return finishReceived;
     }
 
-    public int getComputernumber(){
-        return computernumber;
+    public int getDestination(){
+        return destination;
     }
 
     public boolean getFirstReceived(){
@@ -52,11 +50,11 @@ public class TCP {
         List<byte[]> result = new ArrayList<byte[]>();
         for (byte[] part: msg) {
             byte[] packet = new byte[DATASIZE + HEADER + 1];
-            packet[0] = (byte) computernumber;
-            byte[] header;
-            header = ByteBuffer.allocate(HEADER).putInt(i).array();
+            packet[0] = (byte) destination;
+            byte[] syn;
+            syn = ByteBuffer.allocate(HEADER*4).putInt(i).array();
             for (int k = 1; k < HEADER+1; k++){
-                packet[k] = header[k];
+                packet[k] = syn[k];
             }
             int j = HEADER+1;
             for (byte a : part) {
@@ -64,7 +62,8 @@ public class TCP {
                 j = j + 1;
             }
             result.add(packet);
-            notreceived.put(header, packet);
+            notreceived.put(syn, part);
+//            notreceived.put(syn, packet);
             i = i+1;
         }
         return result;
@@ -106,7 +105,7 @@ public class TCP {
         for (byte b : data) {
             System.out.println(b);
         }
-        if (data[1] == this.computernumber) {
+        if (data[1] == this.destination) {
             System.out.println("FirstReceived = true");
             firstReceived = true;
         }
