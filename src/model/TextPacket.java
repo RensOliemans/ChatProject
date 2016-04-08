@@ -2,7 +2,9 @@ package model;
 
 /**
  * Created by coen on 7-4-2016.
+ * coen is best wel goed
  */
+
 public class TextPacket {
 
     private int sourceAddress;
