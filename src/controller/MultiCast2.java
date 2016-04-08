@@ -170,10 +170,10 @@ public class MultiCast2 implements Runnable{
                         for (int j = 3; j < HEADER + 1; j++) {
                             syn[j - 3] = data[j];
                         }
-                        if (syn.equals(0)) {
+                        if (syn == new byte[] {0}) {
                             //This means that the receiver received their StartPacket packet
                             sender.firstReceived = true;
-                        } else if (syn.equals(1)) {
+                        } else if (syn == new byte[] {1}) {
                             //This means that the receiver received their FinishPacket packet
                             sender.finishReceived = true;
                         } else {
@@ -223,7 +223,7 @@ public class MultiCast2 implements Runnable{
 
         int i = data.length - 1;
         //i wordt de lengte van de message
-        while (i-- > 0 && data[i] == 0) {}
+        while (i-- > 0 && data[i] == 0);
         croppedResult = new byte[i];
         System.arraycopy(data, 0, croppedResult, 0, i);
 
@@ -289,19 +289,18 @@ public class MultiCast2 implements Runnable{
      * @param String msg, the unsplitted message in String
      * @result List<byte[]> result, a List of byte arrays of sizes DATASIZE
      */
-    public List<byte[]> splitMessages(byte[] msg) {
+    private List<byte[]> splitMessages(byte[] msg) {
         List<byte[]> result = new ArrayList<byte[]>();
-        byte[] message = msg;
-        int messagelength = message.length;
-        while (messagelength > DATASIZE){
+        int messageLength = msg.length;
+        while (messageLength > DATASIZE){
             byte[] packet = new byte[DATASIZE];
-            System.arraycopy(message, message.length-messagelength, packet, 0, messagelength);
+            System.arraycopy(msg, msg.length-messageLength, packet, 0, messageLength);
             result.add(packet);
-            messagelength = messagelength - DATASIZE;
+            messageLength = messageLength - DATASIZE;
         }
-        if (messagelength > 0){
-            byte[] packet = new byte[messagelength];
-            System.arraycopy(message, message.length-messagelength, packet, 0, messagelength);
+        if (messageLength > 0){
+            byte[] packet = new byte[messageLength];
+            System.arraycopy(msg, msg.length-messageLength, packet, 0, messageLength);
             result.add(packet);
         }
         return result;

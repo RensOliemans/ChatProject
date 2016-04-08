@@ -10,6 +10,7 @@ import java.util.*;
  */
 public class Forward extends Thread {
 
+    //TODO: ask coen why protected instead of private?
     protected DatagramSocket socket = null;
     protected BufferedReader in = null;
     protected boolean moreQuotes = true;
@@ -66,6 +67,7 @@ public class Forward extends Thread {
         socket.close();
     }
 
+    //TODO: ask coen why protected ipv private?
     protected String getNextQuote() {
         String returnValue = null;
         try {

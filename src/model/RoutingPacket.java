@@ -19,19 +19,17 @@ public class RoutingPacket {
     }
 
     public byte[] getRoutingPacket() {
-        byte[] routingpacket = new byte[0];
+        byte[] routingPacket = new byte[0];
 
         //add the incation byte that indicates what type of packet this is
-        routingpacket[0] = intToByte(ROUTINGPACKET);
+        routingPacket[0] = (byte) ROUTINGPACKET;
 
         //add the source and destination to the packet
-        routingpacket[1] = intToByte(this.sourceAddress);
-        routingpacket[2] = intToByte(this.destinationAddress);
+        routingPacket[1] = (byte) this.sourceAddress;
+        routingPacket[2] = (byte) this.destinationAddress;
 
         //add the linkcost to the packet
-        routingpacket[3] = intToByte(this.linkcost);
-
-
+        routingPacket[3] = (byte) this.linkcost;
 
         //TODO: covert data_table to bytes
 
@@ -41,7 +39,7 @@ public class RoutingPacket {
         //this is for padding purposes
 //        routingpacket[/*laaste byte*/] rens = intToByte(1);
 
-        return routingpacket;
+        return routingPacket;
     }
 
     public byte[] intArrayToByteArray(int[] iArray){
@@ -52,14 +50,5 @@ public class RoutingPacket {
         return bArray;
     }
 
-    public byte intToByte(int val){
-        byte b = (byte)val;
-        return b;
-    }
-
-    public byte[] StringToByte(String string){
-        byte[] b = string.getBytes();
-        return b;
-    }
 
 }

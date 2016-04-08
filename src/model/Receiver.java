@@ -13,9 +13,10 @@ import view.GUI;
  */
 public class Receiver {
 
-    public Boolean allReceived = false;
+    private Boolean allReceived = false;
     public Map<byte[], byte[]> received = new HashMap<byte[], byte[]>();
-    public int sender;
+    //TODO: what to do here?
+    private int sender;
     public List<Byte> goodOrder = null;
 
     public Receiver(int sender) {
@@ -25,14 +26,19 @@ public class Receiver {
         this.goodOrder = null;
     }
 
+    public Boolean getAllReceived() {
+        return allReceived;
+    }
+
     public void order(){
         List<Byte> result = new ArrayList<>();
         for (int i = 2; i < this.received.size()+1; i++) {
             for (Map.Entry<byte[], byte[]> e : this.received.entrySet()) {
+                //TODO: this below doesn't work. Ask birte what it should be (with == instead of equals)
                 if (e.getKey().equals(i)) {
                     byte[] packet = e.getValue();
-                    for (int k = 0; k < packet.length; k++) {
-                        result.add(packet[k]);
+                    for (byte b : packet) {
+                        result.add(b);
                     }
                 }
             }

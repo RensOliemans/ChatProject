@@ -15,35 +15,35 @@ public class PingPacket {
     }
 
     public byte[] getPingPacket(){
-        byte[] pingpacket = new byte[(1 + name.length())];
+        byte[] pingPacket = new byte[(1 + name.length())];
 
         //add the incation byte that indicates what type of packet this is
-        pingpacket[0] = intToByte(PINGPACKET);
+        pingPacket[0] = (byte) PINGPACKET;
 
         //add the source to the packet
-        pingpacket[1] = intToByte(this.sourceAddress);
+        pingPacket[1] = (byte) this.sourceAddress;
 
         //add the username to the packet
         for (int i = 2; i < (name.length() + 2); i++){
-            byte[] array = StringToByte(name);
-            pingpacket[i] = array[i-2];
+            byte[] array = name.getBytes();
+            pingPacket[i] = array[i-2];
         }
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        pingpacket[name.length()+2] = intToByte(1);
+        pingPacket[name.length()+2] = (byte) 1;
 
-        return pingpacket;
+        return pingPacket;
     }
 
-    public byte intToByte(int val){
-        byte b = (byte)val;
-        return b;
-    }
-
-    public byte[] StringToByte(String string){
-        byte[] b = string.getBytes();
-        return b;
-    }
+//    public byte intToByte(int val){
+//        byte b = (byte)val;
+//        return b;
+//    }
+//
+//    public byte[] StringToByte(String string){
+//        byte[] b = string.getBytes();
+//        return b;
+//    }
 
 }

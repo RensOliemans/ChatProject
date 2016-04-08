@@ -73,7 +73,7 @@ public class DataTable {
         }
     }
 
-    // retreive a row from the data table
+    // retrieve a row from the data table
     public Integer[] getRow(int row){
         if (row < 0 || row >= this.data.size()){
             throw new IllegalArgumentException("Row index (" + row + ") out of range (0.." + this.data.size() + ").");

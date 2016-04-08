@@ -20,12 +20,12 @@ public class AckPacket {
 
         byte[] txpkt = new byte[4+this.ack.length];
 
-        //add the incation byte that indicates what type of packet this is
-        txpkt[0] = intToByte(ACKPACKET);
+        //add the indication byte that indicates what type of packet this is
+        txpkt[0] = (byte) ACKPACKET;
 
         //add the source and destination to the packet
-        txpkt[1] = intToByte(this.source);
-        txpkt[2] = intToByte(this.destination);
+        txpkt[1] = (byte) this.source;
+        txpkt[2] = (byte) this.destination;
 
         //add the ack to the packet
         for (int i = 0; i < this.ack.length; i++) {
@@ -34,19 +34,19 @@ public class AckPacket {
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        txpkt[txpkt.length-1] = intToByte(1);
+        txpkt[txpkt.length-1] = (byte) 1;
 
         return txpkt;
     }
-
-    public byte intToByte(int val){
-        byte b = (byte)val;
-        return b;
-    }
-
-    public byte[] StringToByte(String string){
-        byte[] b = string.getBytes();
-        return b;
-    }
+//
+//    public byte intToByte(int val){
+//        byte b = (byte)val;
+//        return b;
+//    }
+//
+//    public byte[] StringToByte(String string){
+//        byte[] b = string.getBytes();
+//        return b;
+//    }
 
 }

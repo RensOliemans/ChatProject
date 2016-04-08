@@ -8,6 +8,8 @@ import java.net.*;
  */
 public class MultiCastClient {
 
+    //TODO: what does this class do?
+
     public static void main(String[] args) throws IOException {
 
         if (args.length != 1) {

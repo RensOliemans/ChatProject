@@ -10,27 +10,15 @@ import java.util.Scanner;
  */
 public class Starter {
     private static GUI gui = new GUI();
-//    private static MultiCast multiCast = new MultiCast();
     private static MultiCast2 multiCast2 = new MultiCast2();
-    private static Ping ping;
 
     public static void main(String[] args) {
-//        if (args.length != 1) {
-//            gui.showError("Wrong usage, should be \"int computernumber\"");
-//            System.exit(0);
-//        }
-
-
-//        multiCast.setup();
-//        multiCast.join();
-//        multiCast.setComputerNumber(Integer.parseInt(args[0]));
-//        Thread receiveThread = new Thread(multiCast);
-//        receiveThread.start();
-
+        //TODO: change this for the GUI
         System.out.println("Enter computer number");
         int computerNumber = new Scanner(System.in).nextInt();
+
         multiCast2.setComputerNumber(computerNumber);
-        ping = new Ping(computerNumber);
+        Ping ping = new Ping(computerNumber);
 
 
         Thread receiveThread = new Thread(multiCast2);
