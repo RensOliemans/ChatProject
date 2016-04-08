@@ -18,7 +18,7 @@ public class AckPacket {
 
     public byte[] getAckPacket(){
 
-        byte[] txpkt = new byte[0];
+        byte[] txpkt = new byte[4];
 
         //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(ACKPACKET);
@@ -28,12 +28,13 @@ public class AckPacket {
         txpkt[2] = intToByte(this.destination);
 
         //add the ack to the packet
-//        TODO: solve for longer acks
-//        txpkt[3] = intToByte(this.ack);
+        for (int i = 0; i < this.ack.length; i++) {
+            txpkt[3+i] = this.ack[i];
+        }
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        txpkt[4] = intToByte(1);
+        txpkt[txpkt.length] = intToByte(1);
 
         return txpkt;
     }

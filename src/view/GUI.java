@@ -38,5 +38,9 @@ public class GUI {
         return scanner.nextLine();
     }
 
-    public void printMessage(List<Byte> goodOrder, int computernumber) {}
+    public void printMessage(List<Byte> goodOrder, int computernumber) {
+        for (Byte b : goodOrder) {
+            System.out.println(b);
+        }
+    }
 }

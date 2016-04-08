@@ -7,7 +7,7 @@ public class Ping implements Runnable{
 
     private int computerNumber;
 
-    private MultiCast multiCast = new MultiCast();
+    private MultiCast2 multiCast = new MultiCast2();
 
     public Ping(int computerNumber) {
         this.computerNumber = computerNumber;

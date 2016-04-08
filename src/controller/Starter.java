@@ -15,12 +15,11 @@ public class Starter {
     private static Ping ping;
 
     public static void main(String[] args) {
-        if (args.length != 1) {
-            gui.showError("Wrong usage, should be \"int computernumber\"");
-            System.exit(0);
-        }
+//        if (args.length != 1) {
+//            gui.showError("Wrong usage, should be \"int computernumber\"");
+//            System.exit(0);
+//        }
 
-        ping = new Ping(Integer.parseInt(args[0]));
 
 //        multiCast.setup();
 //        multiCast.join();
@@ -30,7 +29,10 @@ public class Starter {
 
         multiCast2.join();
         System.out.println("Enter computer number");
-        multiCast2.setComputerNumber(new Scanner(System.in).nextInt());
+        int computerNumber = new Scanner(System.in).nextInt();
+        multiCast2.setComputerNumber(computerNumber);
+        ping = new Ping(computerNumber);
+
 
         Thread receiveThread = new Thread(multiCast2);
         receiveThread.start();
