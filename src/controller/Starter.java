@@ -1,5 +1,6 @@
 package controller;
 
+import model.Routing;
 import view.GUI;
 
 import java.net.MulticastSocket;
@@ -10,14 +11,43 @@ import java.util.Scanner;
  */
 public class Starter {
     private static GUI gui = new GUI();
-    private static MultiCast multiCast = new MultiCast();
+    //    private static MultiCast multiCast = new MultiCast();
+    private static MultiCast2 multiCast2 = new MultiCast2();
+    private static Ping ping;
+    private static Routing routing;
 
     public static void main(String[] args) {
-        multiCast.setup();
-        multiCast.joinGroup();
+//        if (args.length != 1) {
+//            gui.showError("Wrong usage, should be \"int computernumber\"");
+//            System.exit(0);
+//        }
+
+
+//        multiCast.setup();
+//        multiCast.join();
+//        multiCast.setComputerNumber(Integer.parseInt(args[0]));
+//        Thread receiveThread = new Thread(multiCast);
+//        receiveThread.start();
+
+        multiCast2.join();
+        System.out.println("Enter computer number");
+        int computerNumber = new Scanner(System.in).nextInt();
+        multiCast2.setComputerNumber(computerNumber);
+        ping = new Ping(computerNumber);
+        routing = new Routing(computerNumber);
+
+        Thread receiveThread = new Thread(multiCast2);
+        receiveThread.start();
+
+        Thread pingThread = new Thread(ping);
+        pingThread.start();
+
+        Thread routingThread = new Thread(routing);
+        routingThread.start();
+
         while (true) {
-            String message = gui.sendMessage();
-            multiCast.send(message);
+            multiCast2.send(gui.sendMessage(), gui.getDestination());
+//            multiCast.send(message, 1/*placeholder*/);
         }
     }
 }

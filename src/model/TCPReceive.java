@@ -56,8 +56,8 @@ public class TCPReceive {
         return result;
     }
 
-    public void handleMessage(DatagramPacket recv) {
-        byte[] data = recv.getData();
+    public void handleMessage(byte[] data) {
+//        byte[] data = recv.getData();
         byte[] finish = new byte[3];
         finish[0] = (byte) multiCast.computerNumber;
         finish[1] = 0;
@@ -66,7 +66,10 @@ public class TCPReceive {
             this.goodOrder = order();
             allReceived = true;
             this.multiCast.sendack(finish);
-            gui.printMessage(this.goodOrder, getComputernumber());
+//            gui.printMessage(this.goodOrder, getComputernumber());
+        }
+        else if (data[0] == data[1] && data[0]==computernumber){
+//            this.multiCast.sendack();
         }
         else {
             byte[] header = new byte[HEADER];

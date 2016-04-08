@@ -16,7 +16,7 @@ public class FinishPacket {
 
     public byte[] getFinishPacket(){
 
-        byte[] txpkt = new byte[0];
+        byte[] txpkt = new byte[4];
 
         //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(FINISHPACKET);

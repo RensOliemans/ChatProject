@@ -8,10 +8,10 @@ public class RoutingPacket {
     private int sourceAddress;
     private int destinationAddress;
     private int linkcost;
-    private DataTable data_table;
-    private final int ROUTINGPACKET = 2;
+    private int[] data_table;
+    private final int ROUTINGPACKET = 1;
 
-    public RoutingPacket(int sourceAddress, int destinationAddress, int rssi, DataTable data_table) {
+    public RoutingPacket(int sourceAddress, int destinationAddress, int linkcost, int[] data_table) {
         this.sourceAddress = sourceAddress;
         this.destinationAddress = destinationAddress;
         this.linkcost = linkcost;
@@ -19,7 +19,7 @@ public class RoutingPacket {
     }
 
     public byte[] getRoutingPacket() {
-        byte[] txpkt = new byte[0];
+        byte[] txpkt = new byte[13];
 
         //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(ROUTINGPACKET);
@@ -31,15 +31,14 @@ public class RoutingPacket {
         //add the linkcost to the packet
         txpkt[3] = intToByte(this.linkcost);
 
-
-
-        //TODO: covert data_table to bytes
-
-
+        //add the data_table to the packet
+        for (int i = 4; i<12; i++){
+            txpkt[i] = intToByte(this.data_table[i-4]);
+        }
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        txpkt[/*laaste byte*/] = intToByte(1);
+        txpkt[12] = intToByte(1);
 
         return txpkt;
     }

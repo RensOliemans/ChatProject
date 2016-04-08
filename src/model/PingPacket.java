@@ -7,7 +7,7 @@ public class PingPacket {
 
     private int sourceAddress;
     private String name;
-    private final int PINGPACKET = 1;
+    private final int PINGPACKET = 2;
 
     public PingPacket(int sourceAddress, String name){
         this.sourceAddress = sourceAddress;

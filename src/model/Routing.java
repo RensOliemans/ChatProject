@@ -1,42 +1,77 @@
 package model;
 
 import java.util.concurrent.ConcurrentHashMap;
+import controller.MultiCast;
 
 /**
  * Created by Rens on 5-4-2016.
  */
-public class Routing {
+public class Routing implements Runnable{
 
-    //this class needs to receive:
-    //een int[2] with source and pings per second in that order
+    private int linkcost;
+    private int sourceAdress;
+    private int[] forwardingTable = new int[8];
+    private MultiCast multiCast;
 
-    private int linkcost; //this is the pings per second
-    private int source; //this is the source of the ping
+    public Routing(int computerNumber) {
+        multiCast = new MultiCast();
+        multiCast.setComputerNumber(computerNumber);
+    }
 
-    private ConcurrentHashMap<Integer, Integer> forwardingTable = new ConcurrentHashMap<Integer, Integer>();
 
-    public void setTable(int[] info){
+    public void setLinkCost(int receivedInt){
+        this.linkcost = 1000 - receivedInt;
+        forwardingTable[this.sourceAdress-1] = this.sourceAdress;
+        forwardingTable[this.sourceAdress+3] = this.linkcost;
+    }
 
-        this.linkcost = info[0];
-        this.source = info[1];
+    public void setSourceAddress(int sourceAdress){
+        this.sourceAdress = sourceAdress;
+    }
 
-        if (forwardingTable.containsKey(source)){
-            if (forwardingTable.get(source) < linkcost){
-                forwardingTable.replace(source,forwardingTable.get(source), linkcost);
+    public void setForwardingTable(int[] receivedTable){
+
+        for (int j = 1; j < 5; j++){
+            if (forwardingTable[j-1] == j){
+                if (receivedTable[j+3] < forwardingTable[j+3]){
+                    forwardingTable[j+3] = receivedTable[j+3];
+                }
+            } else {
+                forwardingTable[j-1] = j;
+                forwardingTable[j+3] = receivedTable[j+3];
             }
-        } else {
-            forwardingTable.put(source, linkcost);
         }
-    }
-
-    public void emptyTable() {
-        forwardingTable.replaceAll(null);
-    }
-
-    public int[] tableToIntArray(){
 
     }
 
+    public int[] getForwardingTable(){
+        return this.forwardingTable;
+    }
 
+    @Override
+    public void run() {
+        while(true) {
+            multiCast.sendPing();
 
+            //wait 5 seconds
+            try {
+                Thread.sleep(50000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public int[] byteArrayToIngerArray(byte[] bArray){
+        int[] iArray = new int[bArray.length];
+        for (int g = 0; g<bArray.length; g++){
+            if((int)bArray[g] < 0){
+                iArray[g] = 256+(int)bArray[g];
+            } else {
+                iArray[g] = (int)bArray[g];
+            }
+        }
+        return iArray;
+    }
 }

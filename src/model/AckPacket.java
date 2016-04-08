@@ -18,7 +18,7 @@ public class AckPacket {
 
     public byte[] getAckPacket(){
 
-        byte[] txpkt = new byte[0];
+        byte[] txpkt = new byte[5];
 
         //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(ACKPACKET);
