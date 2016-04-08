@@ -1,5 +1,8 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by coen on 7-4-2016.
  */
@@ -9,6 +12,7 @@ public class TextPacket {
     private int destinationAddress;
     private int syn;
     private String msg;
+    public static final int DATASIZE = 128;
 
     public TextPacket(int sourceAddress, int destinationAddress, int syn, String msg) {
         this.sourceAddress = sourceAddress;
@@ -18,11 +22,12 @@ public class TextPacket {
     }
 
     public byte[] getTextPacket() {
-        byte[] txpkt = new byte[(3 + msg.length())];
+        byte[] txpkt = new byte[(4 + msg.length())];
 
-        txpkt[0] = intToByte(this.sourceAddress);
-        txpkt[1] = intToByte(this.destinationAddress);
-        txpkt[2] = intToByte(this.syn);
+        txpkt[0] = (byte) 0;
+        txpkt[1] = intToByte(this.sourceAddress);
+        txpkt[2] = intToByte(this.destinationAddress);
+        txpkt[3] = intToByte(this.syn);
 
         for (int i = 3; i < msg.length() + 3; i++){
             byte[] array = StringToByte(msg);

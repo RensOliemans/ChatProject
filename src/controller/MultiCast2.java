@@ -11,6 +11,8 @@ import model.TCP;
 
 import model.*;
 
+import javax.xml.soap.Text;
+
 /**
  * Created by Rens on 5-4-2016.
  */
