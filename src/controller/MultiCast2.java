@@ -86,7 +86,7 @@ public class MultiCast2 implements Runnable{
 //        }
 //    }
 
-    public void receive() {
+    private void receive() {
         byte[] buf = new byte[1000];
         DatagramPacket recv = new DatagramPacket(buf, buf.length);
         try {
@@ -96,20 +96,27 @@ public class MultiCast2 implements Runnable{
             e.printStackTrace();
         }
         byte[] data = recv.getData();
-        data = data.removeRensByte(data);
+        data = removeRensByte(data);
 
 
     }
 
-    private data[] removeRensByte(byte[] data) {
+    private byte[] removeRensByte(byte[] data) {
         //De 'Rens' byte is vernoemd naar de geniaalste coder die er bestaat.
         //Het houdt in dat bij het receiven een buffer van 1000 bytes komt, maar bij het binnenkomen wordt
         //de message aangevuld met nullen. De rens byte
-        byte[] croppedResult[]
+        byte[] croppedResult;
+
+        int i = data.length - (1);
+        while (i-- > 0 && data[i] == 0) {}
+        croppedResult = new byte[i];
+        System.arraycopy(data, 0, croppedResult, 0, i);
+
+        return croppedResult;
     }
 
-    public void sendack(int destination) {
-        AckPacket ackPacket = new AckPacket(computerNumber, destination);
+    public void sendAck(int destination, int ackNumber) {
+        AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber);
         DatagramPacket ack = new DatagramPacket(ackPacket.getAckPacket(), ackPacket.getAckPacket().length, group, PORT);
         try {
             this.s.send(ack);
@@ -123,8 +130,8 @@ public class MultiCast2 implements Runnable{
     }
 
     private void sendFirst(int destination) {
-        FirstPacket firstPacket = new FirstPacket(computerNumber, destination);
-        DatagramPacket first = new DatagramPacket(firstPacket.getFirstPacket(), firstPacket.getFirstPacket().length, group, PORT);
+        StartPacket firstPacket = new StartPacket(computerNumber, destination);
+        DatagramPacket first = new DatagramPacket(firstPacket.getStartPacket(), firstPacket.getStartPacket().length, group, PORT);
         try {
             this.s.send(first);
         } catch (IOException e) {
