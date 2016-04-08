@@ -7,10 +7,10 @@ public class AckPacket {
 
     private int source;
     private int destination;
-    private int ack;
+    private byte[] ack;
     private final int ACKPACKET = 3;
 
-    public AckPacket(int source, int destination, int ack){
+    public AckPacket(int source, int destination, byte[] ack){
         this.source = source;
         this.destination = destination;
         this.ack = ack;
@@ -28,7 +28,8 @@ public class AckPacket {
         txpkt[2] = intToByte(this.destination);
 
         //add the ack to the packet
-        txpkt[3] = intToByte(this.ack);
+//        TODO: solve for longer acks
+//        txpkt[3] = intToByte(this.ack);
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes

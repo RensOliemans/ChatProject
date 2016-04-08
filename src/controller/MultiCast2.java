@@ -14,6 +14,8 @@ import model.*;
 import javax.xml.crypto.Data;
 import javax.xml.soap.Text;
 
+import static model.TCP.HEADER;
+
 /**
  * Created by Rens on 5-4-2016.
  */
@@ -72,17 +74,56 @@ public class MultiCast2 implements Runnable{
         }
     }
 
-    private void receive() {
-        byte[] buf = new byte[1000];
-        DatagramPacket recv = new DatagramPacket(buf, buf.length);
+    public void receive() {
         try {
+            byte[] buf = new byte[1000];
+            DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
-            //Receive the message and put in in recv
+            byte[] data = recv.getData();
+            byte[] syn;
+            data = removeRensByte(data);
+            int i = data.length;
+            switch (data[0]) {
+                // textpacket
+                case 0:
+                    syn = new byte[HEADER];
+                    for (int j = 3; j<HEADER+1; j++){
+                        syn[j-3] = data[j];
+                    }
+                    sendAck(data[1], syn);
+                    byte[] message = new byte[data.length - 3 - HEADER];
+                    gui.printMessage(new String(message));
+                    tcpreceive.received.put();
+                    break;
+                // startpacket
+                case 3:
+                    sendAck(data[1], 0);
+                    TCPReceive tcpreceive= new TCPReceive(data[1]);
+                    break;
+                //ackpacket
+                case 4:
+                    syn = new byte[HEADER];
+                    for (int j = 3; j<HEADER+1; j++){
+                        syn[j-3] = data[j];
+                    }
+                    if (syn.equals(0)){
+                        firstReceived = true;
+                    }
+                    else if (syn.equals(1)){
+                        finishReceived = true;
+                    }
+                    else {
+                        notReceived.remove(syn);
+                    }
+                    break;
+                //finishpacket
+                case 5:
+                    sendAck(data[1], 1);
+                    break;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        byte[] data = recv.getData();
-        data = removeRensByte(data);
     }
 
     private byte[] removeRensByte(byte[] data) {
@@ -99,7 +140,7 @@ public class MultiCast2 implements Runnable{
         return croppedResult;
     }
 
-    public void sendAck(int destination, int ackNumber) {
+    public void sendAck(int destination, byte[] ackNumber) {
         AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber);
         DatagramPacket ack = new DatagramPacket(ackPacket.getAckPacket(), ackPacket.getAckPacket().length, group, PORT);
         try {

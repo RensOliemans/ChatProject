@@ -69,57 +69,58 @@ public class MultiCast implements Runnable{
         }
     }
 
-    public void receive() {
-        try {
-            byte[] buf = new byte[1000];
-            DatagramPacket recv = new DatagramPacket(buf, buf.length);
-            this.s.receive(recv);
-            byte[] data = recv.getData();
-            byte[] syn;
-            data = removeRensByte(data);
-            int i = data.length;
-            switch (data[0]) {
-                // textpacket
-                case 0:
-                    syn = new byte[HEADER];
-                    for (int j = 3; j<HEADER+1; j++){
-                        syn[j-3] = data[j];
-                    }
-                    sendAck(data[1], syn);
-                    byte[] message = new byte[data.length - 3 - HEADER];
-                    gui.printMessage(new String(message));
-                    tcpreceive.received.put()
-                    break;
-                // startpacket
-                case 3:
-                    sendAck(data[1], 0);
-                    TCPReceive tcpreceive= new TCPReceive(data[1]);
-                    break;
-                //ackpacket
-                case 4:
-                    syn = new byte[HEADER];
-                    for (int j = 3; j<HEADER+1; j++){
-                        syn[j-3] = data[j];
-                    }
-                    if (syn.equals(0)){
-                        firstReceived = true;
-                    }
-                    else if (syn.equals(1)){
-                        finishReceived = true;
-                    }
-                    else {
-                        notReceived.remove(syn);
-                    }
-                    break;
-                //finishpacket
-                case 5:
-                    sendAck(data[1], 1);
-                    break;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public void receive() {
+//        try {
+//            byte[] buf = new byte[1000];
+//            DatagramPacket recv = new DatagramPacket(buf, buf.length);
+//            this.s.receive(recv);
+//            byte[] data = recv.getData();
+//            byte[] syn;
+//            data = removeRensByte(data);
+//            int i = data.length;
+//            switch (data[0]) {
+//                // textpacket
+//                case 0:
+//                    syn = new byte[HEADER];
+//                    for (int j = 3; j<HEADER+1; j++){
+//                        syn[j-3] = data[j];
+//                    }
+//                    sendAck(data[1], syn);
+//                    byte[] message = new byte[data.length - 3 - HEADER];
+//                    gui.printMessage(new String(message));
+//                    tcpreceive.received.put()
+//                    break;
+//                // startpacket
+//                case 3:
+//                    sendAck(data[1], 0);
+//                    TCPReceive tcpreceive= new TCPReceive(data[1]);
+//                    break;
+//                //ackpacket
+//                case 4:
+//                    syn = new byte[HEADER];
+//                    for (int j = 3; j<HEADER+1; j++){
+//                        syn[j-3] = data[j];
+//                    }
+//
+//                    if (syn.equals(0)){
+//                        firstReceived = true;
+//                    }
+//                    else if (syn.equals(1)){
+//                        finishReceived = true;
+//                    }
+//                    else {
+//                        notReceived.remove(syn);
+//                    }
+//                    break;
+//                //finishpacket
+//                case 5:
+//                    sendAck(data[1], 1);
+//                    break;
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 
     public void sendack(byte[] msg) {
@@ -132,9 +133,6 @@ public class MultiCast implements Runnable{
         }
     }
 
-<<<<<<< Temporary merge branch 1
-    public void send(String msg, int computernumber, int whereto) {
-=======
     public void sendPing() {
         try {
             byte[] ping= "PING".getBytes();
@@ -146,7 +144,6 @@ public class MultiCast implements Runnable{
     }
 
     public void send(String msg, int computernumber) {
->>>>>>> Temporary merge branch 2
         tcp = new TCP(computernumber);
         senders.put((byte) whereto, tcp);
         while (!tcp.getFirstReceived()){
