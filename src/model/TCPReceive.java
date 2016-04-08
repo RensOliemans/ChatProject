@@ -18,7 +18,7 @@ public class TCPReceive {
     Boolean allReceived = false;
     Map<byte[], byte[]> received = new HashMap<byte[], byte[]>();
     static final int HEADER = 1;
-    private int computernumber;
+    int computernumber;
     List<Byte> goodOrder = null;
     private GUI gui = new GUI();
 
@@ -56,10 +56,10 @@ public class TCPReceive {
         return result;
     }
 
-    public void handleMessage(byte[]data) {
-//        byte[] data = recv.getData();
+    public void handleMessage(DatagramPacket recv) {
+        byte[] data = recv.getData();
         byte[] finish = new byte[3];
-        finish[0] = (byte) multiCast.getComputerNumber();
+        finish[0] = (byte) multiCast.computerNumber;
         finish[1] = 0;
         finish[2] = 0;
         if (data[1] == 0 && data.length ==2){
@@ -67,9 +67,8 @@ public class TCPReceive {
             allReceived = true;
             this.multiCast.sendack(finish);
             gui.printMessage(this.goodOrder, getComputernumber());
-        } else if ((data[0] == 1 || data[0] == 2 || data[0] == 3 || data[0] == 4) && data[1] == data[0] && data.length == 2) {
-
-        } else {
+        }
+        else {
             byte[] header = new byte[HEADER];
             for (int i = 0; i < HEADER; i++){
                 header[i] = data[i];
@@ -79,5 +78,3 @@ public class TCPReceive {
         }
     }
 }
-
-

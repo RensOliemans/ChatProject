@@ -1,22 +1,42 @@
 package model;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
- * Created by coen on 5-4-2016.
+ * Created by Rens on 5-4-2016.
  */
 public class Routing {
 
-//    private ConcurrentHashMap<Integer, BasicRoute> forwardingTable = new ConcurrentHashMap<Integer, BasicRoute>();
+    //this class needs to receive:
+    //een int[2] with source and pings per second in that order
 
-    public void tick(Packet packet) {
+    private int linkcost; //this is the pings per second
+    private int source; //this is the source of the ping
 
-        int neighbour = packet.getSourceAddress();
-        int destination = packet.getDestinationAddress();
-        int rssi = packet.getRssi();
-        DataTable dt = packet.getData_table();
+    private ConcurrentHashMap<Integer, Integer> forwardingTable = new ConcurrentHashMap<Integer, Integer>();
 
+    public void setTable(int[] info){
 
+        this.linkcost = info[0];
+        this.source = info[1];
 
+        if (forwardingTable.containsKey(source)){
+            if (forwardingTable.get(source) < linkcost){
+                forwardingTable.replace(source,forwardingTable.get(source), linkcost);
+            }
+        } else {
+            forwardingTable.put(source, linkcost);
+        }
+    }
+
+    public void emptyTable() {
+        forwardingTable.replaceAll(null);
+    }
+
+    public int[] tableToIntArray(){
 
     }
+
+
 
 }

@@ -5,8 +5,10 @@ import controller.MultiCast;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.net.DatagramPacket;
 import java.util.List;
 import java.util.Map;
+import controller.MultiCast;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -16,14 +18,13 @@ public class TCP {
     MultiCast multiCast = new MultiCast();
     Map<byte[], byte[]> notreceived = new HashMap<byte[], byte[]>();
     public static final int DATASIZE=128;
-    public static final int HEADER = 3;
-    public static final int RENSBYTE = 1; //Byte placed at the end of a message for removal of padding
-    int destination;
+    public static final int HEADER = 1;
+    int computernumber;
     boolean finishReceived;
     boolean firstReceived;
 
-    public TCP(int destination) {
-        this.destination = destination;
+    public TCP(int computernumber) {
+        this.computernumber = computernumber;
         this.notreceived = new HashMap<byte[], byte[]>();
         this.finishReceived = false;
         this.firstReceived = false;
@@ -37,8 +38,8 @@ public class TCP {
         return finishReceived;
     }
 
-    public int getDestination(){
-        return destination;
+    public int getComputernumber(){
+        return computernumber;
     }
 
     public boolean getFirstReceived(){
@@ -50,11 +51,11 @@ public class TCP {
         List<byte[]> result = new ArrayList<byte[]>();
         for (byte[] part: msg) {
             byte[] packet = new byte[DATASIZE + HEADER + 1];
-            packet[0] = (byte) destination;
-            byte[] syn;
-            syn = ByteBuffer.allocate(HEADER*4).putInt(i).array();
+            packet[0] = (byte) computernumber;
+            byte[] header;
+            header = ByteBuffer.allocate(HEADER).putInt(i).array();
             for (int k = 1; k < HEADER+1; k++){
-                packet[k] = syn[k];
+                packet[k] = header[k];
             }
             int j = HEADER+1;
             for (byte a : part) {
@@ -62,8 +63,7 @@ public class TCP {
                 j = j + 1;
             }
             result.add(packet);
-            notreceived.put(syn, part);
-//            notreceived.put(syn, packet);
+            notreceived.put(header, packet);
             i = i+1;
         }
         return result;
@@ -87,8 +87,8 @@ public class TCP {
         return result;
     }
 
-    public void handleMessage(byte[] data) {
-//        byte[] data = recv.getData();
+    public void handleMessage(DatagramPacket recv) {
+        byte[] data = recv.getData();
         byte[] finish = new byte[1];
         finish[0] = (byte) 0;
         if (data.equals(finish)){
@@ -102,11 +102,7 @@ public class TCP {
         drie[0] = (byte) 3;
         byte[] vier = new byte[1];
         vier[0] = (byte) 4;
-        for (byte b : data) {
-            System.out.println(b);
-        }
-        if (data[1] == this.destination) {
-            System.out.println("FirstReceived = true");
+        if (data.equals(een)||data.equals(twee)||data.equals(drie)||data.equals(vier)){
             firstReceived = true;
         }
         else {
