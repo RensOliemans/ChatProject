@@ -29,8 +29,8 @@ public class MultiCast extends Thread {
     public void setup() {
         try {
             this.gui = new GUI();
-            String macAddress = gui.getHostName();
-            int portNumber = gui.getPortNumber();
+            String macAddress = gui.askForInput("Enter the hostname");
+            int portNumber = Integer.parseInt(gui.askForInput("Enter the port number. Should be an integer between 1 and 65536"));
             this.host = macAddress;
             this.port = portNumber;
             this.group = InetAddress.getByName(host);
