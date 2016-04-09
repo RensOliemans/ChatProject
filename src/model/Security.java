@@ -18,14 +18,14 @@ public class Security {
 
     private SecretKey symmetricKey;
     private KeyPair RSAKeyPair;
-
+    private String xform = "RSA/ECB/PKCS1Padding";
 
     private KeyPair generateRSAKeyPair() {
         KeyPair kp = null;
         //Generate a key
         try {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-            kpg.initialize(8192); //keysize 512
+            kpg.initialize(4096); //keysize 8192 bits, 1024 bytes
             kp = kpg.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -124,26 +124,66 @@ public class Security {
         return decryptedString;
     }
 
+    private byte[] EncryptSecretKey() {
+        Cipher cipher = null;
+        byte[] key = null;
+
+        try {
+            cipher = Cipher.getInstance(xform);
+            cipher.init(Cipher.ENCRYPT_MODE, RSAKeyPair.getPublic());
+            key = cipher.doFinal(symmetricKey.getEncoded());
+        } catch (Exception e) {
+            System.out.println("exception encoding key: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return key;
+    }
+
+    private SecretKey decryptAESKey(byte[] data) {
+        SecretKey key = null;
+        PrivateKey privateKey = null;
+        Cipher cipher = null;
+        try {
+            privateKey = RSAKeyPair.getPrivate();
+
+            cipher = Cipher.getInstance(xform);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+            key = new SecretKeySpec(cipher.doFinal(data), "AES");
+        } catch (Exception e) {
+            System.out.println("Error decrypting the aes key: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+        return key;
+    }
+
+
+
+
     private String encryptRSA(String text, PublicKey publicKey) {
-        String xform = "RSA";
         try {
             Cipher cipher = Cipher.getInstance(xform);
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             return new String(cipher.doFinal(text.getBytes()));
         } catch (Exception e) {
+            System.out.println("Exception encoding key: " + e.getMessage());
             e.printStackTrace();
             return "Error in RSA encryption";
         }
     }
 
     private String decryptRSA(String text, PrivateKey privateKey) {
-        String xform = "RSA";
+        Cipher cipher = null;
+
         try {
-            Cipher cipher = Cipher.getInstance(xform);
+            cipher = Cipher.getInstance(xform);
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             return new String(cipher.doFinal(text.getBytes()));
         } catch (Exception e) {
+            System.out.println("Exception decoding key: " + e.getMessage());
             e.printStackTrace();
+            System.out.println(text.getBytes().length);
             return "Error in RSA decryption";
         }
     }
@@ -151,55 +191,28 @@ public class Security {
 
 
     public static void main(String[] args) {
-        while (true) {
-            long startTime = System.currentTimeMillis();
-            Security security = new Security();
-            long subTime = System.currentTimeMillis();
-            security.symmetricKey = security.generateAESKey();
-            System.out.println("Time to create AES key: " + (System.currentTimeMillis() - subTime));
-            subTime = System.currentTimeMillis();
-            security.RSAKeyPair = security.generateRSAKeyPair();
-            System.out.println("Time to create RSA key: " + (System.currentTimeMillis() - subTime));
+        long startTime = System.currentTimeMillis();
+        Security security = new Security();
+        long subTime = System.currentTimeMillis();
+        security.symmetricKey = security.generateAESKey();
+        System.out.println("Time to create AES key: " + (System.currentTimeMillis() - subTime)/1000.0 + " seconds");
+        subTime = System.currentTimeMillis();
+        security.RSAKeyPair = security.generateRSAKeyPair();
+        System.out.println("Time to create RSA key: " + (System.currentTimeMillis() - subTime)/1000.0 + " seconds");
 
+        System.out.println("AES key: " + Base64.encodeBase64String(security.symmetricKey.getEncoded()));
+        byte[] encryptedAESKey = security.EncryptSecretKey();
+        System.out.println("Encrypted AES key: " + Base64.encodeBase64String(encryptedAESKey));
 
-//            System.out.print("Generated AES key: ");
-//            System.out.println(new String(security.symmetricKey.getEncoded()) + "\n");
+        SecretKey decryptedAESKey = security.decryptAESKey(encryptedAESKey);
+        System.out.println("Decrypted AES key: " + Base64.encodeBase64String(decryptedAESKey.getEncoded()));
 
-            System.out.print("Enter the text to be encrypted: ");
-            String value = new Scanner(System.in).nextLine();
-
-//            System.out.print("\nEncrypted text via AES: ");
-//            subTime = System.currentTimeMillis();
-//            String encryptedText = security.encryptsymm(value, security.symmetricKey);
-//            System.out.println("Time to encrypt via AES: " + (System.currentTimeMillis() - subTime));
-//            System.out.println(encryptedText);
-//
-//            System.out.print("Decrypted text (symmetric, AES): ");
-//            subTime = System.currentTimeMillis();
-//            String decryptedText = security.decryptsymm(encryptedText, security.symmetricKey);
-//            System.out.println("Time to decrypt via AES: " + (System.currentTimeMillis() - subTime));
-//            System.out.println(decryptedText);
-
-            System.out.println("Original plaintext message and symmetric key:");
-            String symmKeyString = new String(security.symmetricKey.getEncoded());
-            System.out.println("Plaintext: \"" + value + "\"" + ", Key: " + "\"" + symmKeyString + "\"");
-
-            String encryptedMsg = security.encryptsymm(value, security.symmetricKey);
-            System.out.println("Encrypted plaintext message via symmetric key: " + encryptedMsg);
-
-            String encrypteSymKey = security.encryptRSA(new String(security.symmetricKey.getEncoded()), security.RSAKeyPair.getPublic());
-            System.out.println("symmetric key encrypted in RSA: " + security.encryptRSA(new String(security.symmetricKey.getEncoded()), security.RSAKeyPair.getPublic()));
-
-            String decryptedSymKey = security.decryptRSA(encrypteSymKey, security.RSAKeyPair.getPrivate());
-            System.out.println("symmetric key decrypted via RSA: " + decryptedSymKey);
+        System.out.println("Total time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
 
 
 
 
-            System.out.println("\n\n\n\n\nWant to try again?");
 
 
-
-        }
     }
 }
