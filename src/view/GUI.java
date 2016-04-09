@@ -1,29 +1,29 @@
 package view;
 
-import com.sun.org.apache.bcel.internal.generic.CHECKCAST;
-import com.sun.xml.internal.messaging.saaj.soap.JpegDataContentHandler;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Scanner;
 import java.awt.*;
 import javax.swing.*;
 import java.util.*;
-
-import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
+import controller.*;
 
 /**
  * Created by Eric on 6-4-2016.
  */
 public class GUI extends JFrame {
 
-	private Scanner scanner;
-	private Map<JButton,ChatWindow> chatmap = new HashMap<JButton,ChatWindow>();
-	private JPanel chatLobbyPanel = null;
+    private int pcnumber;
+    private Scanner scanner;
+	private JPanel chats;
+    private Map<JButton,ChatWindow> chatmap = new HashMap<JButton,ChatWindow>();
+    private JPanel chatLobbyPanel = null;
 	private ChatWindow currentwindow = null;
 	private Dimension chatwindowsize = new Dimension(200,400);
 	private Dimension textfieldsize = new Dimension(150, 20);
-	private Dimension textareasize = new Dimension(190, 325);
+	private Dimension textareasize = new Dimension(190, 315);
 	private Dimension buttonsize = new Dimension(200, 40);
 	private Dimension group22size = new Dimension(100,400);
 	private Dimension fillupspace = new Dimension(5, 20);
@@ -32,40 +32,56 @@ public class GUI extends JFrame {
 	private final int birte = 2;
 	private final int coen = 3;
 	private final int eric = 4;
+    private JCheckBox rensbox;
+    private JCheckBox ericbox;
+    private JCheckBox coenbox;
+    private JCheckBox birtebox;
+    private int groupnumber;
+    private MultiCast multiCast;
 
-//    public GUI() {
-//        scanner = new Scanner(System.in);
-//    }
+    public GUI() {
+        scanner = new Scanner(System.in);
+    }
 
 
-	public void showError(String s) {
-		System.out.println("ERROR: " + s);
-	}
+//	public void showError(String s) {
+//		System.out.println("ERROR: " + s);
+//	}
 
+    public void showError(String s) {
+        JOptionPane.showMessageDialog(this, "Error: " + s, "ERROR", JOptionPane.ERROR_MESSAGE);
+    }
 
-	public String getHostName() {
-		System.out.println("Enter the host name.");
-		return scanner.nextLine();
-	}
+//	public String getHostName() {
+//		System.out.println("Enter the host name.");
+//		return scanner.nextLine();
+//	}
 
-	public int getPortNumber() {
-		System.out.println("Enter the port number. Should be an integer between 1 and 65536");
-		return scanner.nextInt();
-	}
+    public String askForInput(String question) {
+        return JOptionPane.showInputDialog(question);
+    }
 
-	public void showStartScreen() {
-	}
+//	public int getPortNumber() {
+//		System.out.println("Enter the port number. Should be an integer between 1 and 65536");
+//		return scanner.nextInt();
+//	}
 
-	public String sendMessage() {
-		System.out.println("Enter message");
-		return scanner.nextLine();
-	}
+//	public void showStartScreen() {
+//	}
 
-	public GUI() {
+//	public String sendMessage() {
+//		System.out.println("Enter message");
+//		return scanner.nextLine();
+//	}
+
+	public GUI(int pcnumber, MultiCast multiCast) {
+
 		/*
 		Create frame.
 		 */
 		super("Chatlobby");
+        this.pcnumber = pcnumber;
+        this.multiCast = multiCast;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setVisible(true);
 		setSize(framesize);
@@ -97,36 +113,21 @@ public class GUI extends JFrame {
 		chatLobbyPanel.add(group22, BorderLayout.WEST);
 
 		/*
-		Make a new JPanel, representing the available chats, with JButtons to get to the chats.
+		Make a new JPanel, representing the available chats, with a 'new chat' button to begin new chats.
 		 */
-		JPanel chats = new JPanel();
+		chats = new JPanel();
 		chats.setLayout(new BoxLayout(chats, BoxLayout.Y_AXIS));
 		chats.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Chats"));
-		JButton chat1 = new ChatButton("Chat 1");
-		JButton chat2 = new ChatButton("Chat 2");
-		JButton chat3 = new ChatButton("Chat 3");
 		JButton newchat = new JButton("New Chat");
-		chatmap.put(chat1,null);
-		chatmap.put(chat2,null);
-		chatmap.put(chat3,null);
-        chats.add(newchat);
-		chats.add(chat1);
-		chats.add(chat2);
-		chats.add(chat3);
+		newchat.addActionListener(new NewChatButton());
+		chats.add(newchat);
 		chatLobbyPanel.add(chats, BorderLayout.CENTER);
-
-		/*
-		Make a new JPanel, with a TextArea to display the chat and a TextField to type messages.
-		 */
-		ChatWindow chatpanel1 = new ChatWindow();
-		chatmap.put(chat1, chatpanel1);
-		chatmap.put(chat2, chatpanel1);
-		chatmap.put(chat3, chatpanel1);
-		currentwindow = chatpanel1;
-		chatLobbyPanel.add(currentwindow, BorderLayout.EAST);
 		setResizable(false);
 	}
 
+    /*
+    ActionListener class to implement the chat button functionality.
+     */
 	private class ChatChooser implements ActionListener {
 
 		public void actionPerformed(ActionEvent a) {
@@ -136,18 +137,115 @@ public class GUI extends JFrame {
 					e.getKey().setBackground(Color.WHITE);
 				}
 			}
-			if (!currentwindow.equals(chatmap.get(a.getSource()))) {
-				chatLobbyPanel.remove(currentwindow);
-				currentwindow = chatmap.get(a.getSource());
-				chatLobbyPanel.add(currentwindow, BorderLayout.EAST);
-			}
+            if (currentwindow != null) {
+                chatLobbyPanel.remove(currentwindow);
+            }
+            currentwindow = chatmap.get(a.getSource());
+            chatLobbyPanel.add(currentwindow, BorderLayout.EAST);
+			GUI.this.validate();
+			GUI.this.repaint();
 		}
 	}
 
-    private class NewChatButton implements ActionListener {
+    /*
+    ActionListener class to implement the 'new chat' button functionality
+     */
+	private class NewChatButton implements ActionListener {
 
-        public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(ActionEvent e) {
 
+            JPanel newchatoptions = new JPanel();
+            rensbox = new JCheckBox("Rens");
+            NameSelecting namelistener = new NameSelecting();
+            rensbox.addItemListener(namelistener);
+            birtebox = new JCheckBox("Birte");
+            birtebox.addItemListener(namelistener);
+            coenbox = new JCheckBox("Coen");
+            coenbox.addItemListener(namelistener);
+            ericbox = new JCheckBox("Eric");
+            ericbox.addItemListener(namelistener);
+            if (pcnumber != 1) {
+                newchatoptions.add(rensbox);
+            }
+            if (pcnumber != 2) {
+                newchatoptions.add(birtebox);
+            }
+            if (pcnumber != 3) {
+                newchatoptions.add(coenbox);
+            }
+            if (pcnumber != 4) {
+                newchatoptions.add(ericbox);
+            }
+            JOptionPane.showMessageDialog(GUI.this, newchatoptions, "New Chat Options", JOptionPane.PLAIN_MESSAGE);
+            JButton chat = new ChatButton(Integer.toString(groupnumber));
+            groupnumber += 1;
+            chats.add(chat);
+            int[] participants = new int[4];
+            if (namelistener.rensselected) {
+                participants[0] = 1;
+            }
+            if (namelistener.birteselected) {
+                participants[1] = 2;
+            }
+            if (namelistener.coenselected) {
+                participants[2] = 3;
+            }
+            if (namelistener.ericselected) {
+                participants[3] = 4;
+            }
+            ChatWindow chatwindow = new ChatWindow(participants);
+            namelistener.rensselected = false;
+            namelistener.birteselected = false;
+            namelistener.coenselected = false;
+            namelistener.ericselected = false;
+            chatmap.put(chat, chatwindow);
+            chatLobbyPanel.add(chatwindow, BorderLayout.EAST);
+            GUI.this.validate();
+            GUI.this.repaint();
+
+        }
+	}
+
+    private class NameSelecting implements ItemListener {
+
+        public boolean rensselected = false;
+        public boolean birteselected = false;
+        public boolean coenselected = false;
+        public boolean ericselected = false;
+
+        public void itemStateChanged(ItemEvent e) {
+            if (e.getItemSelectable().equals(rensbox)) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    rensselected = true;
+                }
+                else {
+                    rensselected = false;
+                }
+            }
+            if (e.getItemSelectable().equals((birtebox))) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    birteselected = true;
+                }
+                else {
+                    birteselected = false;
+                }
+            }
+            if (e.getItemSelectable().equals(coenbox)) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    coenselected = true;
+                }
+                else {
+                    coenselected = false;
+                }
+            }
+            if (e.getItemSelectable().equals(ericbox)) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    ericselected = true;
+                }
+                else {
+                    ericselected = false;
+                }
+            }
         }
     }
 
@@ -176,8 +274,9 @@ public class GUI extends JFrame {
 
 		public JTextField textfield;
 		public JTextArea messages;
+        public int[] participants;
 
-		public ChatWindow() {
+		public ChatWindow(int[] participants) {
 			super();
 			setPreferredSize(chatwindowsize);
 			setMinimumSize(chatwindowsize);
@@ -187,10 +286,10 @@ public class GUI extends JFrame {
 			messages.setEditable(false);
 			messages.setLayout(new BoxLayout(messages, BoxLayout.Y_AXIS));
 			messages.setLineWrap(true);
-            JScrollPane scrollmessages = new JScrollPane(messages, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            scrollmessages.setPreferredSize(textareasize);
-            scrollmessages.setMaximumSize(textareasize);
-            scrollmessages.setMinimumSize(textareasize);
+			JScrollPane scrollmessages = new JScrollPane(messages, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			scrollmessages.setPreferredSize(textareasize);
+			scrollmessages.setMaximumSize(textareasize);
+			scrollmessages.setMinimumSize(textareasize);
 			add(scrollmessages);
 			textfield = new JTextField();
 			add(Box.createRigidArea(new Dimension(5,5)));
@@ -214,9 +313,9 @@ public class GUI extends JFrame {
 //        return 0;
 //    }
 //
-//    public String sendMessage() {
-//        return null;
-//    }
+    public String sendMessage() {
+        return null;
+    }
 
 	public void printMessage(String message, int pc) {
 		String name = null;
@@ -225,10 +324,10 @@ public class GUI extends JFrame {
 				name = "Rens";
 			case birte:
 				name = "Birte";
-            case coen:
-                name = "Coen";
-            case eric:
-                name = "Eric";
+			case coen:
+				name = "Coen";
+			case eric:
+				name = "Eric";
 		}
 		currentwindow.messages.setText(currentwindow.messages.getText() + "\n " + name + ": " + message + "\n" );
 	}
