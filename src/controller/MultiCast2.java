@@ -178,6 +178,7 @@ public class MultiCast2 implements Runnable{
                             seconds1 = 0;
                             seconds2 = 0;
                             receivedPing = 0;
+                            System.out.println("presence lijst is nu als volgt: ");
                             for (int x=0; x<presence.size(); x++){
                                 System.out.println(presence.get(x));
                             }
@@ -316,7 +317,7 @@ public class MultiCast2 implements Runnable{
     }
 
     private void sendRoutingPacket(int destinationAddress, int linkcost, int[] data_table){
-        RoutingPacket routingPacket = new RoutingPacket(computerNumber, destinationAddress, 255-linkcost, data_table);
+        RoutingPacket routingPacket = new RoutingPacket(computerNumber, destinationAddress, 256-linkcost, data_table);
         DatagramPacket routing = new DatagramPacket(routingPacket.getRoutingPacket(), routingPacket.getRoutingPacket().length, group, PORT);
         try {
             this.s.send(routing);
