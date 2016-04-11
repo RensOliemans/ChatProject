@@ -390,4 +390,15 @@ public class MultiCast2 implements Runnable{
     public void setComputerNumber(int computerNumber) {
         this.computerNumber = computerNumber;
     }
+
+    public byte[] intToByteArray(int number) {
+        return ByteBuffer.allocate(4).putInt(number).array();
+    }
+
+    public int byteArrayToInt(byte[] array) {
+        return (array[0]<<24)&0xff000000|
+                (array[1]<<16)&0x00ff0000|
+                (array[2]<< 8)&0x0000ff00|
+                (array[3]<< 0)&0x000000ff;
+    }
 }
