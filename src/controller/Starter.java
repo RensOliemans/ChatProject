@@ -13,6 +13,7 @@ public class Starter {
     private static MultiCast2 multiCast2 = new MultiCast2();
 
     public static void main(String[] args) {
+        //TODO: change this for the GUI
         System.out.println("Enter computer number");
         int computerNumber = new Scanner(System.in).nextInt();
 

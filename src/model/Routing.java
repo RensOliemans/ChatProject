@@ -5,7 +5,7 @@ import controller.MultiCast2;
 /**
  * Created by Rens on 5-4-2016.
  */
-public class Routing implements Runnable{
+public class Routing /*implements Runnable*/{
 
     private int linkcost;
     private int sourceAdress;
@@ -19,9 +19,10 @@ public class Routing implements Runnable{
 
 
     public void setLinkCost(int receivedInt){
-        this.linkcost = 1000 - receivedInt;
+        this.linkcost = receivedInt;
         forwardingTable[this.sourceAdress-1] = this.sourceAdress;
         forwardingTable[this.sourceAdress+3] = this.linkcost;
+        System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
     }
 
     public void setSourceAddress(int sourceAdress){
@@ -41,26 +42,18 @@ public class Routing implements Runnable{
             }
         }
 
+        System.out.println("the forwarding table is now as followed: ");
+        for (int h = 0; h<8; h++){
+            System.out.println(forwardingTable[h]);
+        }
+
     }
 
     public int[] getForwardingTable(){
         return this.forwardingTable;
     }
 
-    @Override
-    public void run() {
-        while(true) {
-            multiCast.sendPing();
 
-            //wait 5 seconds
-            try {
-                Thread.sleep(50000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
 
     public int[] byteArrayToIngerArray(byte[] bArray){
         int[] iArray = new int[bArray.length];
