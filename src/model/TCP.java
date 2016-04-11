@@ -31,6 +31,6 @@ public class TCP {
         byte[] data = recv.getData();
         //byte[0] is ACK
         //byte[1] is SEQ
-        this.multiCast.send("");
+        this.multiCast.send("",0);
     }
 }

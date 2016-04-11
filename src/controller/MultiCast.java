@@ -28,7 +28,7 @@ public class MultiCast extends Thread {
 
     public void setup() {
         try {
-            this.gui = new GUI();
+//            this.gui = new GUI();
             String macAddress = gui.askForInput("Enter the hostname");
             int portNumber = Integer.parseInt(gui.askForInput("Enter the port number. Should be an integer between 1 and 65536"));
             this.host = macAddress;
@@ -71,7 +71,7 @@ public class MultiCast extends Thread {
         }
     }
 
-    public void send(String msg) {
+    public void send(String msg, int destination) {
         try {
             List<byte[]> splitmessages = tcp.splitMessages(msg);
             for (byte[] message : splitmessages) {
