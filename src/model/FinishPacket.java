@@ -28,7 +28,6 @@ public class FinishPacket {
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
         finpacket[3] = intToByte(1);
-        System.out.println("finpacket " + finpacket[3]);
 
         return finpacket;
     }
@@ -38,8 +37,4 @@ public class FinishPacket {
         return b;
     }
 
-    public byte[] StringToByte(String string){
-        byte[] b = string.getBytes();
-        return b;
-    }
 }

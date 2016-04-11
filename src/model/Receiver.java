@@ -43,4 +43,3 @@ public class Receiver {
         goodOrder = result;
     }
 }
-

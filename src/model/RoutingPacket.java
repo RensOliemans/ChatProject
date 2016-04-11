@@ -8,10 +8,10 @@ public class RoutingPacket {
     private int sourceAddress;
     private int destinationAddress;
     private int linkcost;
-    private DataTable data_table;
-    private final int ROUTINGPACKET = 2;
+    private int[] data_table;
+    private final int ROUTINGPACKET = 1;
 
-    public RoutingPacket(int sourceAddress, int destinationAddress, int rssi, DataTable data_table) {
+    public RoutingPacket(int sourceAddress, int destinationAddress, int linkcost, int[] data_table) {
         this.sourceAddress = sourceAddress;
         this.destinationAddress = destinationAddress;
         this.linkcost = linkcost;
@@ -19,27 +19,28 @@ public class RoutingPacket {
     }
 
     public byte[] getRoutingPacket() {
-        byte[] routingPacket = new byte[0];
+        byte[] txpkt = new byte[13];
 
         //add the incation byte that indicates what type of packet this is
-        routingPacket[0] = (byte) ROUTINGPACKET;
+        txpkt[0] = intToByte(ROUTINGPACKET);
 
         //add the source and destination to the packet
-        routingPacket[1] = (byte) this.sourceAddress;
-        routingPacket[2] = (byte) this.destinationAddress;
+        txpkt[1] = intToByte(this.sourceAddress);
+        txpkt[2] = intToByte(this.destinationAddress);
 
         //add the linkcost to the packet
-        routingPacket[3] = (byte) this.linkcost;
+        txpkt[3] = intToByte(this.linkcost);
 
-        //TODO: covert data_table to bytes
-
-
+        //add the data_table to the packet
+        for (int i = 4; i<12; i++){
+            txpkt[i] = intToByte(this.data_table[i-4]);
+        }
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-//        routingpacket[/*laaste byte*/] rens = intToByte(1);
+        txpkt[12] = intToByte(1);
 
-        return routingPacket;
+        return txpkt;
     }
 
     public byte[] intArrayToByteArray(int[] iArray){
@@ -50,5 +51,9 @@ public class RoutingPacket {
         return bArray;
     }
 
+    public byte intToByte(int val){
+        byte b = (byte)val;
+        return b;
+    }
 
 }

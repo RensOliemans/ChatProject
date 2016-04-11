@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
+import java.time.LocalTime;
 import java.util.*;
 
 import model.Sender;
@@ -20,7 +21,7 @@ import javax.crypto.SecretKey;
 import javax.xml.crypto.Data;
 import javax.xml.soap.Text;
 
-//import static com.oracle.jrockit.jfr.ContentType.Bytes;
+import static com.oracle.jrockit.jfr.ContentType.Bytes;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -34,7 +35,7 @@ public class MultiCast2 implements Runnable{
     private static final String HOST = "228.0.0.0";
     private static final int PORT = 1234;
     //    String host;
-//    int port;
+    //    int port;
     private InetAddress group;
     private MulticastSocket s;
     private Sender sender;
@@ -50,6 +51,13 @@ public class MultiCast2 implements Runnable{
     private static final int DATASIZE=128;
     public static final int HEADER = 1;
     private int synint;
+
+    private int receivedPing = 0;
+    private long seconds;
+    private long seconds2;
+    private  long seconds3 = 0;
+    private  long seconds4 = 0;
+    public List presence;
 
     /*
      * Getter for computerNumber
@@ -143,6 +151,60 @@ public class MultiCast2 implements Runnable{
                         receiver.received.put(syn, message);
 //                        gui.print(new String(message), data[1]);
                         break;
+
+                    //RoutingPacket
+                    case 1:
+                        Routing routing = new Routing(computerNumber);
+                        routing.setSourceAddress(data[1]);
+                        routing.setLinkCost(data[3]);
+                        byte[] bArray = new byte[8];
+                        for (int k=0; k<8; k++){
+                            bArray[k] = data[k+4];
+                        }
+                        routing.setForwardingTable(routing.byteArrayToIngerArray(bArray));
+                        break;
+
+                    //pingPacket
+                    case 2:
+                        if (seconds3 == 0){
+                            LocalTime time3 = LocalTime.now();
+                            seconds3 = time3.getSecond();
+                            presence.add(data[1]);
+                        }
+                        if (seconds3 != 0){
+                            LocalTime time4 = LocalTime.now();
+                            seconds4 = time4.getSecond();
+                        }
+                        if (seconds4 - seconds3 >= 4.5){
+                            seconds3 = 0;
+                            seconds4 = 0;
+                            presence.clear();
+                        }
+
+
+                        if (receivedPing == 0){
+                            if (seconds2 - seconds >= 4.5) {
+                                LocalTime time = LocalTime.now();
+                                seconds = time.getSecond();
+                                seconds2 = seconds;
+                            }
+                            if (seconds2 - seconds <= 1){
+                                receivedPing++;
+                            }
+                        } else {
+                            LocalTime time2 = LocalTime.now();
+                            seconds2 = time2.getSecond();
+                            receivedPing++;
+                        }
+                        if (seconds2 - seconds > 1 && receivedPing != 0){
+                            int[] emptyForwardingTable = new int[8];
+                            sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
+                            System.out.println("receivedPing= " + receivedPing);
+                            receivedPing = 0;
+
+                        }
+                        break;
+
                     // startpacket
                     //Only receiver gets these
                     case 3:
@@ -155,6 +217,7 @@ public class MultiCast2 implements Runnable{
                         receiver = new Receiver(data[1]);
                         receivers.put(data[1], receiver);
                         break;
+
                     //ackpacket
                     //Only sender gets these
                     case 4:
@@ -182,8 +245,8 @@ public class MultiCast2 implements Runnable{
                             System.out.println("after remove " + sender.getNotReceived());
                         }
                         break;
-                        //finishpacket
-                        //Only receiver gets these
+                    //finishpacket
+                    //Only receiver gets these
                     case 5:
                         byte[] een = new byte[HEADER];
                         for (int j = 0; j<HEADER; j++){
@@ -252,7 +315,15 @@ public class MultiCast2 implements Runnable{
      * Sends a ping to everyone on the network.
      */
     public void sendPing() {
-
+        for (int i = 0; i < 255; i++){
+            PingPacket burstPacket = new PingPacket(computerNumber, "Een naam hier plaatsen");
+            DatagramPacket burst = new DatagramPacket(burstPacket.getPingPacket(), burstPacket.getPingPacket().length, group, PORT);
+            try {
+                this.s.send(burst);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /*
@@ -279,6 +350,16 @@ public class MultiCast2 implements Runnable{
         DatagramPacket finish = new DatagramPacket(finishPacket.getFinishPacket(), finishPacket.getFinishPacket().length, group, PORT);
         try {
             this.s.send(finish);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendRoutingPacket(int destinationAddress, int linkcost, int[] data_table){
+        RoutingPacket routingPacket = new RoutingPacket(computerNumber, destinationAddress, 255-linkcost, data_table);
+        DatagramPacket routing = new DatagramPacket(routingPacket.getRoutingPacket(), routingPacket.getRoutingPacket().length, group, PORT);
+        try {
+            this.s.send(routing);
         } catch (IOException e) {
             e.printStackTrace();
         }
