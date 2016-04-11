@@ -38,11 +38,13 @@ public class GUI extends JFrame {
         setPreferredSize(framesize);
         setMinimumSize(framesize);
         setMaximumSize(framesize);
-//        peopleOnline = new JPanel();
-//        peopleOnline.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "People Online"));
-//        add(peopleOnline);
+        setLayout(new BorderLayout());
+        peopleOnline = new JPanel();
+        peopleOnline.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Group22"));
+        peopleOnline.setPreferredSize(new Dimension(100,280));
+        add(peopleOnline, BorderLayout.WEST);
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         }
         catch (InterruptedException e) {
             e.printStackTrace();
