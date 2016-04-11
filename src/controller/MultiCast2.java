@@ -135,7 +135,7 @@ public class MultiCast2 implements Runnable{
             }
             if (computerNumber != data[1]) {
                 for (byte b : data) {
-                    System.out.print(b);
+//                    System.out.print(b);
                 }
                 switch (data[0]) {
                     // textpacket
