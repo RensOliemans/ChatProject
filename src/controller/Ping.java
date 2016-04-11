@@ -5,24 +5,21 @@ package controller;
  */
 public class Ping implements Runnable{
 
-    private int computerNumber;
-
     private MultiCast2 multiCast = new MultiCast2();
+    private int computerNumber;
 
     public Ping(int computerNumber) {
         this.computerNumber = computerNumber;
     }
 
-
     private void ping() {
         while (true) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-//            TODO: do something
-            multiCast.sendPing();
+            multiCast.sendPing(this.computerNumber, "oooo");
         }
 
     }

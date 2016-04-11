@@ -53,11 +53,9 @@ public class MultiCast2 implements Runnable{
     private int synint;
 
     private int receivedPing = 0;
-    private long seconds;
+    private long seconds1;
     private long seconds2;
-    private  long seconds3 = 0;
-    private  long seconds4 = 0;
-    public List presence;
+    public List presence = new ArrayList<>();
 
     /*
      * Getter for computerNumber
@@ -134,9 +132,6 @@ public class MultiCast2 implements Runnable{
                 }
             }
             if (computerNumber != data[1]) {
-                for (byte b : data) {
-                    System.out.print(b);
-                }
                 switch (data[0]) {
                     // textpacket
                     //Only receiver gets these
@@ -164,43 +159,32 @@ public class MultiCast2 implements Runnable{
 
                     //pingPacket
                     case 2:
-                        if (seconds3 == 0){
-                            LocalTime time3 = LocalTime.now();
-                            seconds3 = time3.getSecond();
+                        if (!presence.contains(data[1]) && data[1] != 0){
                             presence.add(data[1]);
                         }
-                        if (seconds3 != 0){
-                            LocalTime time4 = LocalTime.now();
-                            seconds4 = time4.getSecond();
+                        if (receivedPing == 0){
+                            seconds1 = System.currentTimeMillis();
+                            receivedPing ++;
+                        } else {
+                            seconds2 = System.currentTimeMillis();
+                            receivedPing ++;
                         }
-                        if (seconds4 - seconds3 >= 4.5){
-                            seconds3 = 0;
-                            seconds4 = 0;
+                        if ((seconds2 - seconds1 > 3000) && (receivedPing != 0)){
+                            int[] emptyForwardingTable = new int[8];
+                            sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
+                            System.out.println("received ping pakkets= " + receivedPing);
+                        }
+                        if ((seconds2 - seconds1 > 4500) && (receivedPing != 0)){
+                            seconds1 = 0;
+                            seconds2 = 0;
+                            receivedPing = 0;
+                            for (int x=0; x<presence.size(); x++){
+                                System.out.println(presence.get(x));
+                            }
                             presence.clear();
                         }
 
 
-                        if (receivedPing == 0){
-                            if (seconds2 - seconds >= 4.5) {
-                                LocalTime time = LocalTime.now();
-                                seconds = time.getSecond();
-                                seconds2 = seconds;
-                            }
-                            if (seconds2 - seconds <= 1){
-                                receivedPing++;
-                            }
-                        } else {
-                            LocalTime time2 = LocalTime.now();
-                            seconds2 = time2.getSecond();
-                            receivedPing++;
-                        }
-                        if (seconds2 - seconds > 1 && receivedPing != 0){
-                            int[] emptyForwardingTable = new int[8];
-                            sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
-                            System.out.println("receivedPing= " + receivedPing);
-                            receivedPing = 0;
-
-                        }
                         break;
 
                     // startpacket
@@ -289,9 +273,10 @@ public class MultiCast2 implements Runnable{
     /*
      * Sends a ping to everyone on the network.
      */
-    public void sendPing() {
+    public void sendPing(int computerNumber, String name) {
+        System.out.println("computernumber given with pingpackets= " + computerNumber);
         for (int i = 0; i < 255; i++){
-            PingPacket burstPacket = new PingPacket(computerNumber, "Een naam hier plaatsen");
+            PingPacket burstPacket = new PingPacket(computerNumber, name);
             DatagramPacket burst = new DatagramPacket(burstPacket.getPingPacket(), burstPacket.getPingPacket().length, group, PORT);
             try {
                 this.s.send(burst);
@@ -376,7 +361,7 @@ public class MultiCast2 implements Runnable{
             List<byte[]> splitmessages = splitMessages(msg);
             for (byte[] packet : splitmessages) {
                 TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(packet));
-                System.out.println(seq[0] + "" + seq[1] + seq[2] + seq[3]);
+                System.out.println("sequence number is= " + seq[0] + "" + seq[1] + "" + seq[2] + "" + seq[3]);
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
                 this.s.send(messagePacket);
                 boolean alAanwezig = false;
@@ -402,7 +387,7 @@ public class MultiCast2 implements Runnable{
 
         //If packets have been lost (not acked after 100ms), resend them until everything has been acked
         while (sender.getNotReceived().size()>0){
-            System.out.println("nog niet leeg");
+            System.out.println("notreceived is nog niet leeg");
             Map<byte[], byte[]> notreceived = sender.getNotReceived();
             for (Map.Entry<byte[], byte[]> e : notreceived.entrySet()){
                 sendMessage(e.getValue(), destination);
