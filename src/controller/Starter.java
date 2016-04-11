@@ -9,7 +9,7 @@ import java.util.Scanner;
  * Created by Rens on 5-4-2016.
  */
 public class Starter {
-    private static GUI gui = new GUI();
+    private static GUI gui;
     private static MultiCast2 multiCast2 = new MultiCast2();
 
     public static void main(String[] args) {
@@ -20,18 +20,14 @@ public class Starter {
         multiCast2.setComputerNumber(computerNumber);
         Ping ping = new Ping(computerNumber);
 
-
+        gui = new GUI(computerNumber, multiCast2);
         Thread receiveThread = new Thread(multiCast2);
         receiveThread.start();
 
         Thread pingThread = new Thread(ping);
         pingThread.start();
 
-        int destination = gui.getDestination();
-
-        while (true) {
-            multiCast2.send(gui.sendMessage(), destination);
-//            multiCast.send(message, 1/*placeholder*/);
-        }
+        
     }
 }
+

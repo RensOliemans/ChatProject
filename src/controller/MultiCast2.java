@@ -64,7 +64,7 @@ public class MultiCast2 implements Runnable{
         try {
             this.group = InetAddress.getByName(HOST);
             this.s = new MulticastSocket(PORT);
-            gui = new GUI();
+//            gui = new GUI(computerNumber, this);
             join();
         } catch (UnknownHostException e) {
             e.printStackTrace();

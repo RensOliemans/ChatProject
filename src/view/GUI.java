@@ -39,9 +39,9 @@ public class GUI extends JFrame {
 	private JCheckBox coenbox;
 	private JCheckBox birtebox;
 	private int groupnumber;
-	private MultiCast multiCast;
+	private MultiCast2 multiCast;
 
-	public GUI(int pcnumber, MultiCast multiCast) {
+	public GUI(int pcnumber, MultiCast2 multiCast) {
 
 		/*
 		Create frame.
@@ -377,7 +377,7 @@ public class GUI extends JFrame {
 	}
 
 	public static void main(String[] args) {
-        new GUI(4, new MultiCast());
+        new GUI(4, new MultiCast2());
     }
 
 }
