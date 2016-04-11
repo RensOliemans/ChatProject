@@ -421,4 +421,3 @@ public class GUI extends JFrame {
         return scanner.nextInt();
     }
 }
-}
