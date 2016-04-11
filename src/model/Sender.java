@@ -1,12 +1,11 @@
 package model;
 
 
+import controller.MultiCast2;
+
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.net.DatagramPacket;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -30,12 +29,23 @@ public class Sender {
         this.notReceived.put(key, value);
     }
 
-    public void removeNotReceived(byte[] key) {
+    public synchronized void removeNotReceived(byte[] key) {
+//        List<byte[]> toremove = new ArrayList<>();
+
+
+        Iterator<Map.Entry<byte[], byte[]>> iter = notReceived.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry<byte[], byte[]> keyToCheck = iter.next();
+            if (MultiCast2.byteToInt())
+        }
+        byte[] toRemove = new byte[key.length];
         for (Map.Entry<byte[], byte[]> e: notReceived.entrySet()){
             if (java.util.Arrays.equals(e.getKey(), key)){
-                notReceived.remove(e.getKey());
+                toRemove = e.getKey();
+                break;
             }
         }
+        notReceived.remove(toRemove);
         //this.notReceived.remove(key);
     }
 

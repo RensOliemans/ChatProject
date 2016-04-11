@@ -1,6 +1,8 @@
 package controller;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -135,7 +137,6 @@ public class MultiCast2 implements Runnable{
                     // textpacket
                     //Only receiver gets these
                     case 0:
-                        System.out.println("TEXT");
                         seq = new byte[HEADER*4];
                         System.arraycopy(data, 3, seq, 0, HEADER*4);
                         sendAck(data[1], seq);
@@ -208,10 +209,8 @@ public class MultiCast2 implements Runnable{
                     //ackpacket
                     //Only sender gets these
                     case 4:
-                        System.out.println(computerNumber);
                         System.out.println("ACK");
                         seq = new byte[HEADER*4];
-                        System.out.println(data.length);
                         System.arraycopy(data, 3, seq, 0, HEADER*4);
                         seqint = byteToInt(seq);
                         if (seqint == 0) {
@@ -371,9 +370,15 @@ public class MultiCast2 implements Runnable{
 
     private void sendImage(String imageName, int destination) {
         try {
+            //Open image
             File imgPath = new File(imageName);
             BufferedImage bufferedImage = ImageIO.read(imgPath);
 
+            //get DataBufferBytes from Raster
+            WritableRaster raster = bufferedImage.getRaster();
+            DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+
+            sendMessage(data.getData(), destination);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -447,7 +452,8 @@ public class MultiCast2 implements Runnable{
 
         //If the receiver received their 'First' message and replied with an ack, send the message
         System.out.println("Het firstreceived zetten is goed gegaan");
-        sendMessage(msg.getBytes(), destination);
+        sendImage(msg, destination);
+//        sendMessage(msg.getBytes(), destination);
 
         //After the message has been sent, send the 'Finish' message and wait for ack
         while (!sender.finishReceived){
