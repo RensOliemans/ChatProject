@@ -99,7 +99,7 @@ public class MultiCast2 implements Runnable{
     /*
      * This joins the group of the Internet Address
      * */
-    private void join() {
+    public void join() {
         try {
             this.s.joinGroup(group);
         } catch (IOException e) {
@@ -149,6 +149,60 @@ public class MultiCast2 implements Runnable{
                         System.arraycopy(data, 3 + seq.length, message, 0, message.length);
                         receiver.received.put(seq, message);
                         break;
+
+                    //RoutingPacket
+                    case 1:
+                        Routing routing = new Routing(computerNumber);
+                        routing.setSourceAddress(data[1]);
+                        routing.setLinkCost(data[3]);
+                        byte[] bArray = new byte[8];
+                        for (int k=0; k<8; k++){
+                            bArray[k] = data[k+4];
+                        }
+                        routing.setForwardingTable(routing.byteArrayToIngerArray(bArray));
+                        break;
+
+                    //pingPacket
+                    case 2:
+                        if (seconds3 == 0){
+                            LocalTime time3 = LocalTime.now();
+                            seconds3 = time3.getSecond();
+                            presence.add(data[1]);
+                        }
+                        if (seconds3 != 0){
+                            LocalTime time4 = LocalTime.now();
+                            seconds4 = time4.getSecond();
+                        }
+                        if (seconds4 - seconds3 >= 4.5){
+                            seconds3 = 0;
+                            seconds4 = 0;
+                            presence.clear();
+                        }
+
+
+                        if (receivedPing == 0){
+                            if (seconds2 - seconds >= 4.5) {
+                                LocalTime time = LocalTime.now();
+                                seconds = time.getSecond();
+                                seconds2 = seconds;
+                            }
+                            if (seconds2 - seconds <= 1){
+                                receivedPing++;
+                            }
+                        } else {
+                            LocalTime time2 = LocalTime.now();
+                            seconds2 = time2.getSecond();
+                            receivedPing++;
+                        }
+                        if (seconds2 - seconds > 1 && receivedPing != 0){
+                            int[] emptyForwardingTable = new int[8];
+                            sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
+                            System.out.println("receivedPing= " + receivedPing);
+                            receivedPing = 0;
+
+                        }
+                        break;
+
                     // startpacket
                     //Only receiver gets these
                     case 3:
