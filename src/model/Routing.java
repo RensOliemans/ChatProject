@@ -19,9 +19,10 @@ public class Routing implements Runnable{
 
 
     public void setLinkCost(int receivedInt){
-        this.linkcost = 1000 - receivedInt;
+        this.linkcost = receivedInt;
         forwardingTable[this.sourceAdress-1] = this.sourceAdress;
         forwardingTable[this.sourceAdress+3] = this.linkcost;
+        System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
     }
 
     public void setSourceAddress(int sourceAdress){
@@ -39,6 +40,11 @@ public class Routing implements Runnable{
                 forwardingTable[j-1] = j;
                 forwardingTable[j+3] = receivedTable[j+3];
             }
+        }
+
+        System.out.println("the forwarding table is now as followed: ");
+        for (int h = 0; h<8; h++){
+            System.out.println(h);
         }
 
     }

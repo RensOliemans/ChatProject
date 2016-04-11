@@ -7,7 +7,7 @@ public class StartPacket {
 
     private int source;
     private int destination;
-    private final int STARTPACKET = 4;
+    private final int STARTPACKET = 3;
 
     public StartPacket(int source, int destination){
         this.source = source;

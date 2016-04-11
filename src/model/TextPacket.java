@@ -2,6 +2,8 @@ package model;
 
 import controller.MultiCast2;
 
+import static controller.MultiCast2.HEADER;
+
 /**
  * Created by coen on 7-4-2016.
  * coen is best wel goed
@@ -23,7 +25,7 @@ public class TextPacket {
     }
 
     public byte[] getTextPacket() {
-        byte[] txpkt = new byte[(msg.length() + (3+ MultiCast2.HEADER))+1];
+        byte[] txpkt = new byte[(msg.length() + (3+ HEADER*4))+1];
 
         //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(TEXTPACKET);
@@ -32,15 +34,19 @@ public class TextPacket {
         txpkt[1] = intToByte(this.sourceAddress);
         txpkt[2] = intToByte(this.destinationAddress);
 
-        //add the SYN number to the packet (not sure if this works)
-        if (MultiCast2.HEADER == 1){
-            txpkt[2+MultiCast2.HEADER] = intToByte(this.syn - ((MultiCast2.HEADER-1)*256));
-        } else {
-            for (int j = 3; j< MultiCast2.HEADER + 2; j++){
-                txpkt[j] = intToByte(256);
-                txpkt[2+MultiCast2.HEADER] = intToByte(this.syn - ((MultiCast2.HEADER-1)*256));
-            }
+        for (int i = 0; i < this.syn.length; i++) {
+            txpkt[3+i] = this.syn[i];
         }
+
+        //add the SYN number to the packet (not sure if this works)
+//        if (HEADER == 1){
+//            txpkt[2+ HEADER] = intToByte(this.syn - ((HEADER-1)*256));
+//        } else {
+//            for (int j = 3; j< HEADER + 2; j++){
+//                txpkt[j] = intToByte(256);
+//                txpkt[2+ HEADER] = intToByte(this.syn - ((HEADER-1)*256));
+//            }
+//        }
 
         /*
         //add the SYN number to the packet (sure that this works, but this isn't scalable)
@@ -68,14 +74,14 @@ public class TextPacket {
         */
 
         //add message into the packet
-        for (int i = (3+MultiCast2.HEADER); i < (msg.length() + (3+MultiCast2.HEADER)); i++){
-            byte[] array = StringToByte(msg);
-            txpkt[i] = array[i-(3+MultiCast2.HEADER)];
+        for (int i = (3+HEADER*4); i < (msg.length() + (3+HEADER*4)); i++){
+            byte[] array = msg.getBytes();
+            txpkt[i] = array[i-(3+ HEADER*4)];
         }
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        txpkt[(msg.length() + (3+MultiCast2.HEADER))] = intToByte(1);
+        txpkt[txpkt.length-1] = intToByte(1);
 
         return txpkt;
     }
