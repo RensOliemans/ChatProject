@@ -24,13 +24,13 @@ public class MultiCast extends Thread {
     private InetAddress group;
     private MulticastSocket multicastSocket;
     private TCP tcp;
-    private GUI gui;
+    private GUIold GUIold;
 
     public void setup() {
         try {
-//            this.gui = new GUI();
-            String macAddress = gui.askForInput("Enter the hostname");
-            int portNumber = Integer.parseInt(gui.askForInput("Enter the port number. Should be an integer between 1 and 65536"));
+//            this.GUIold = new GUIold();
+            String macAddress = GUIold.askForInput("Enter the hostname");
+            int portNumber = Integer.parseInt(GUIold.askForInput("Enter the port number. Should be an integer between 1 and 65536"));
             this.host = macAddress;
             this.port = portNumber;
             this.group = InetAddress.getByName(host);
@@ -38,11 +38,11 @@ public class MultiCast extends Thread {
             this.tcp = new TCP();
             packets = new ArrayList<>();
         } catch (UnknownHostException e) {
-            gui.showError("Incorrect host name");
+            GUIold.showError("Incorrect host name");
             //recursive call to reenter host name and port number
             setup();
         } catch (IOException e) {
-            gui.showError("Incorrect port");
+            GUIold.showError("Incorrect port");
             //recursive call to reenter host name and port number
             setup();
         }

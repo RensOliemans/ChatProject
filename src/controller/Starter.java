@@ -1,22 +1,19 @@
 package controller;
 
-import view.GUI;
-
-import java.net.MulticastSocket;
-import java.util.Scanner;
+import view.GUIold;
 
 /**
  * Created by Rens on 5-4-2016.
  */
 public class Starter {
-    private static GUI gui;
+    private static GUIold GUIold;
     private static MultiCast multiCast = new MultiCast();
 
     public static void main(String[] args) {
-        gui = new GUI(4, multiCast);
+        GUIold = new GUIold(4, multiCast);
 //        multiCast.setup();
 //        while (true) {
-//            String message = gui.sendMessage();
+//            String message = GUIold.sendMessage();
 //            multiCast.sendCheat(message);
 //        }
     }
