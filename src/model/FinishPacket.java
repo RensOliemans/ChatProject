@@ -16,20 +16,20 @@ public class FinishPacket {
 
     public byte[] getFinishPacket(){
 
-        byte[] txpkt = new byte[4];
+        byte[] finpacket = new byte[4];
 
         //add the incation byte that indicates what type of packet this is
-        txpkt[0] = intToByte(FINISHPACKET);
+        finpacket[0] = intToByte(FINISHPACKET);
 
         //add the source and destination to the packet
-        txpkt[1] = intToByte(this.source);
-        txpkt[2] = intToByte(this.destination);
+        finpacket[1] = intToByte(this.source);
+        finpacket[2] = intToByte(this.destination);
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        txpkt[3] = intToByte(1);
+        finpacket[3] = intToByte(1);
 
-        return txpkt;
+        return finpacket;
     }
 
     public byte intToByte(int val){

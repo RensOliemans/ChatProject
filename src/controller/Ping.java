@@ -15,14 +15,14 @@ public class Ping implements Runnable{
 
 
     private void ping() {
-//        multiCast.setup();
         while (true) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-//            multiCast.sendPing();
+//            TODO: do something
+            multiCast.sendPing();
         }
 
     }
