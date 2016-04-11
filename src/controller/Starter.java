@@ -18,6 +18,7 @@ public class Starter {
         int computerNumber = new Scanner(System.in).nextInt();
 
         multiCast2.setComputerNumber(computerNumber);
+        multiCast2.generateKeys();
         Ping ping = new Ping(computerNumber);
 
         gui = new GUI(computerNumber, multiCast2);

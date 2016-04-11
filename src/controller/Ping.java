@@ -21,8 +21,8 @@ public class Ping implements Runnable{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            //TODO: do something
-//            multiCast.sendPing();
+//            TODO: do something
+            multiCast.sendPing();
         }
 
     }

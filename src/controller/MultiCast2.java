@@ -20,7 +20,7 @@ import javax.crypto.SecretKey;
 import javax.xml.crypto.Data;
 import javax.xml.soap.Text;
 
-import static com.oracle.jrockit.jfr.ContentType.Bytes;
+//import static com.oracle.jrockit.jfr.ContentType.Bytes;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -69,7 +69,6 @@ public class MultiCast2 implements Runnable{
         try {
             this.group = InetAddress.getByName(HOST);
             this.s = new MulticastSocket(PORT);
-            security = new Security();
 //            gui = new GUI(computerNumber, this);
             join();
         } catch (UnknownHostException e) {
@@ -77,7 +76,10 @@ public class MultiCast2 implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    public void generateKeys() {
+        security = new Security();
     }
 
     /*
