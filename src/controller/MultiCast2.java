@@ -328,7 +328,7 @@ public class MultiCast2 implements Runnable{
             //SYN 1 is reserved for the ACK of the FIN message
             List<byte[]> splitmessages = splitMessages(msg);
             for (byte[] packet : splitmessages) {
-                TextPacket toSend = new TextPacket(computerNumber, destination, seqint, new String(packet));
+                TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(packet));
                 System.out.println(seq[0] + "" + seq[1] + seq[2] + seq[3]);
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
                 this.s.send(messagePacket);
