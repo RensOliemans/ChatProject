@@ -7,7 +7,7 @@ public class StartPacket {
 
     private int source;
     private int destination;
-    private final int STARTPACKET = 4;
+    private final int STARTPACKET = 3;
 
     public StartPacket(int source, int destination){
         this.source = source;
@@ -16,20 +16,20 @@ public class StartPacket {
 
     public byte[] getStartPacket(){
 
-        byte[] txpkt = new byte[4];
+        byte[] startpacket = new byte[4];
 
         //add the incation byte that indicates what type of packet this is
-        txpkt[0] = intToByte(STARTPACKET);
+        startpacket[0] = intToByte(STARTPACKET);
 
         //add the source and destination to the packet
-        txpkt[1] = intToByte(this.source);
-        txpkt[2] = intToByte(this.destination);
+        startpacket[1] = intToByte(this.source);
+        startpacket[2] = intToByte(this.destination);
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        txpkt[3] = intToByte(1);
+        startpacket[3] = intToByte(1);
 
-        return txpkt;
+        return startpacket;
     }
 
     public byte intToByte(int val){
