@@ -11,11 +11,11 @@ public class TextPacket {
 
     private int sourceAddress;
     private int destinationAddress;
-    private int syn;
+    private byte[] syn;
     private String msg;
     private final int TEXTPACKET = 0;
 
-    public TextPacket(int sourceAddress, int destinationAddress, int syn, String msg) {
+    public TextPacket(int sourceAddress, int destinationAddress, byte[] syn, String msg) {
         this.sourceAddress = sourceAddress;
         this.destinationAddress = destinationAddress;
         this.syn = syn;
