@@ -50,12 +50,15 @@ public class MultiCast2 implements Runnable{
         return computerNumber;
     }
 
-    public byte[] intToByte(int i){
-        return new byte[2];
+    public static byte[] intToByte(int number) {
+        return ByteBuffer.allocate(4).putInt(number).array();
     }
 
-    public int byteToInt(byte[] b){
-        return 0;
+    public static int byteToInt(byte[] array) {
+        return (array[0]<<24)&0xff000000|
+                (array[1]<<16)&0x00ff0000|
+                (array[2]<< 8)&0x0000ff00|
+                (array[3]<< 0)&0x000000ff;
     }
 
     public MultiCast2() {
@@ -102,6 +105,7 @@ public class MultiCast2 implements Runnable{
                 }
             }
             if (computerNumber != data[1]) {
+                System.out.println("Dit is de binnengekomen data: ");
                 for (byte b : data) {
                     System.out.print(b);
                 }
@@ -131,6 +135,7 @@ public class MultiCast2 implements Runnable{
                     case 4:
                         System.out.println("ACK");
                         seq = new byte[HEADER*4];
+
                         System.arraycopy(data, 3, seq, 0, HEADER*4);
                         seqint = byteToInt(seq);
                         if (seqint == 0) {
@@ -148,6 +153,7 @@ public class MultiCast2 implements Runnable{
                     case 5:
                         seq = intToByte(1);
                         sendAck(data[1], seq);
+                        System.out.println("Hij gaat nu in order");
                         receiver.order();
                         System.out.println(new String (String.valueOf(receiver.goodOrder)));
                         break;
@@ -214,7 +220,7 @@ public class MultiCast2 implements Runnable{
         int messagelength = message.length;
         while (messagelength > DATASIZE){
             byte[] packet = new byte[DATASIZE];
-            System.arraycopy(message, message.length-messagelength, packet, 0, messagelength);
+            System.arraycopy(message, message.length-messagelength, packet, 0, DATASIZE);
             result.add(packet);
             messagelength = messagelength - DATASIZE;
         }
@@ -235,14 +241,16 @@ public class MultiCast2 implements Runnable{
     private void sendMessage(String msg, int destination) {
         try {
             //Send the entire message, split and with send data from TCP
-            int seqint = 2; //SYN starts with 1, because SYN 0 is reserved for the ACK of the START message, and
+            int seqint = 2;
+            byte[] seq = intToByte(seqint);
+            //SYN starts with 1, because SYN 0 is reserved for the ACK of the START message, and
             //SYN 1 is reserved for the ACK of the FIN message
             List<byte[]> splitmessages = splitMessages(msg);
             for (byte[] packet : splitmessages) {
-                TextPacket toSend = new TextPacket(computerNumber, destination, seqint, msg);
+                TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(packet));
+                System.out.println(seq[0] + "" + seq[1] + seq[2] + seq[3]);
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
                 this.s.send(messagePacket);
-                byte[] seq = intToByte(seqint);
                 boolean alAanwezig = false;
                 for (Map.Entry<byte[], byte[]> e: sender.getNotReceived().entrySet()){
                     if (java.util.Arrays.equals(e.getKey(), seq)){

@@ -40,8 +40,10 @@ public class Starter {
         Thread pingThread = new Thread(ping);
         pingThread.start();
 
+        int destination = gui.getDestination();
+
         while (true) {
-            multiCast2.send(gui.sendMessage(), gui.getDestination());
+            multiCast2.send(gui.sendMessage(), destination);
 //            multiCast.send(message, 1/*placeholder*/);
         }
     }
