@@ -9,23 +9,40 @@ import java.util.Scanner;
  * Created by Rens on 5-4-2016.
  */
 public class Starter {
-    private static GUI gui;
+    private static GUI gui = new GUI();
+    //    private static MultiCast multiCast = new MultiCast();
     private static MultiCast2 multiCast2 = new MultiCast2();
+    private static Ping ping;
 
     public static void main(String[] args) {
-        //TODO: change this for the GUI
+//        if (args.length != 1) {
+//            gui.showError("Wrong usage, should be \"int computernumber\"");
+//            System.exit(0);
+//        }
+
+
+//        multiCast.setup();
+//        multiCast.join();
+//        multiCast.setComputerNumber(Integer.parseInt(args[0]));
+//        Thread receiveThread = new Thread(multiCast);
+//        receiveThread.start();
+
+        multiCast2.join();
         System.out.println("Enter computer number");
         int computerNumber = new Scanner(System.in).nextInt();
-
         multiCast2.setComputerNumber(computerNumber);
-        Ping ping = new Ping(computerNumber);
+        ping = new Ping(computerNumber);
 
-        gui = new GUI(/*computerNumber, multiCast2*/);
+
         Thread receiveThread = new Thread(multiCast2);
         receiveThread.start();
 
         Thread pingThread = new Thread(ping);
         pingThread.start();
 
+        while (true) {
+            multiCast2.send(gui.sendMessage(), gui.getDestination());
+//            multiCast.send(message, 1/*placeholder*/);
+        }
     }
 }

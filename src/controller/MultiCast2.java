@@ -91,7 +91,7 @@ public class MultiCast2 implements Runnable{
     /*
      * This joins the group of the Internet Address
      * */
-    private void join() {
+    public void join() {
         try {
             this.s.joinGroup(group);
         } catch (IOException e) {
