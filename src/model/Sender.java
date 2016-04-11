@@ -33,11 +33,11 @@ public class Sender {
 //        List<byte[]> toremove = new ArrayList<>();
 
 
-        Iterator<Map.Entry<byte[], byte[]>> iter = notReceived.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry<byte[], byte[]> keyToCheck = iter.next();
-            if (MultiCast2.byteToInt())
-        }
+//        Iterator<Map.Entry<byte[], byte[]>> iter = notReceived.entrySet().iterator();
+//        while (iter.hasNext()) {
+//            Map.Entry<byte[], byte[]> keyToCheck = iter.next();
+//            if (MultiCast2.byteToInt())
+//        }
         byte[] toRemove = new byte[key.length];
         for (Map.Entry<byte[], byte[]> e: notReceived.entrySet()){
             if (java.util.Arrays.equals(e.getKey(), key)){
