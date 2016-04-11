@@ -3,12 +3,16 @@ package model;
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
+import com.sun.istack.internal.Nullable;
 import org.apache.commons.codec.binary.Base64;
 
 /**
  * Created by Rens on 5-4-2016.
+ * This is the main security class, which holds
  */
 public class Security {
     //TODO: implement the following:
@@ -16,7 +20,9 @@ public class Security {
     //  1.  Send the receiver the symmetric key, encrypted with their public key
     //  2.
 
-    private SecretKey symmetricKey;
+    //HashMap with K: computerNumber and V: SecretKey.
+    private Map<Integer, SecretKey> symmetricKeys = new HashMap<>();
+    private SecretKey ownSymmetricKey;
     private KeyPair RSAKeyPair;
     private static final String xform = "RSA/ECB/PKCS1Padding";
 
@@ -26,7 +32,7 @@ public class Security {
     }
 
     public byte[] getEncryptedAESKey(PublicKey publicKey) {
-        return EncryptSecretKey(publicKey);
+        return EncryptOwnSecretKey(publicKey);
     }
 
 
@@ -44,12 +50,16 @@ public class Security {
         return kp;
     }
 
-    public SecretKey generateAESKey() {
+    public SecretKey generateAESKey(int computerNumber) {
         KeyGenerator keyGen = null;
         try {
+
             keyGen = KeyGenerator.getInstance("AES");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+        }
+        if (!symmetricKeys.containsKey(computerNumber)) {
+            symmetricKeys.put(computerNumber, keyGen.generateKey());
         }
         return keyGen.generateKey();
     }
@@ -94,14 +104,14 @@ public class Security {
     }
 
 
-    private byte[] EncryptSecretKey(PublicKey publicKey) {
+    private byte[] EncryptOwnSecretKey(PublicKey publicKey) {
         Cipher cipher = null;
         byte[] key = null;
 
         try {
             cipher = Cipher.getInstance(xform);
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            key = cipher.doFinal(symmetricKey.getEncoded());
+            key = cipher.doFinal(ownSymmetricKey.getEncoded());
         } catch (Exception e) {
             System.out.println("exception encoding key: " + e.getMessage());
             e.printStackTrace();
