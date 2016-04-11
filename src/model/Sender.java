@@ -6,6 +6,9 @@ import controller.MultiCast2;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.net.DatagramPacket;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -13,12 +16,16 @@ import java.net.DatagramPacket;
 public class Sender {
 
     //HashMap with Key: SYN and Value: Message, just message, no header
-    private Map<byte[], byte[]> notReceived = new HashMap<byte[], byte[]>();
+    public Map<byte[], byte[]> notReceived = new ConcurrentHashMap<byte[], byte[]>();
+    int f = 0;
     private int receiver;
+    public Lock senderLock = new ReentrantLock();
     public boolean finishReceived;
     public boolean firstReceived;
+    public List<byte[]> received;
 
     public Sender(int receiver) {
+        this.received = new ArrayList<>();
         this.receiver = receiver;
         this.notReceived = new HashMap<byte[], byte[]>();
         this.finishReceived = false;
@@ -29,28 +36,29 @@ public class Sender {
         this.notReceived.put(key, value);
     }
 
-    public synchronized void removeNotReceived(byte[] key) {
-//        List<byte[]> toremove = new ArrayList<>();
-
-
-        Iterator<Map.Entry<byte[], byte[]>> iter = notReceived.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry<byte[], byte[]> keyToCheck = iter.next();
-            if (MultiCast2.byteToInt())
-        }
-        byte[] toRemove = new byte[key.length];
-        for (Map.Entry<byte[], byte[]> e: notReceived.entrySet()){
-            if (java.util.Arrays.equals(e.getKey(), key)){
-                toRemove = e.getKey();
-                break;
-            }
-        }
-        notReceived.remove(toRemove);
-        //this.notReceived.remove(key);
+    public void removeNotReceived(byte[] key) {
+        this.f++;
+        System.out.println(f);
+//        senderLock.lock();
+//        byte[] toRemove = null;
+        notReceived.remove(key);
+        System.out.println(notReceived.containsKey(key));
+//        for (Map.Entry<byte[], byte[]> entry : notReceived.entrySet()) {
+//            toRemove = entry.getKey();
+//            Object value = entry.getValue();
+//            if (MultiCast2.byteToInt(toRemove) == MultiCast2.byteToInt(key)) {
+//                break;
+//            }
+//        }
+//        notReceived.remove(toRemove);
+//        senderLock.unlock();
     }
 
     public Map<byte[], byte[]> getNotReceived() {
-        return notReceived;
+        senderLock.lock();
+        Map<byte[], byte[]> result = notReceived;
+        senderLock.unlock();
+        return result;
     }
 
     public void setFirstReceivedTrue(){

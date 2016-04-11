@@ -13,7 +13,10 @@ import java.nio.ByteBuffer;
 import java.security.PublicKey;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import com.sun.media.sound.SoftTuning;
 import model.Sender;
 
 import model.*;
@@ -47,10 +50,9 @@ public class MultiCast2 implements Runnable{
     //Byte is the destination, sender is you
     private Map<Byte, Sender> senders = new HashMap<>();
     private int computerNumber;
-    private static final int DATASIZE=128;
+    private static final int DATASIZE=2500;
     public static final int HEADER = 1;
     private int synint;
-
     private int receivedPing = 0;
     private long seconds;
     private long seconds2;
@@ -220,7 +222,8 @@ public class MultiCast2 implements Runnable{
                             System.out.println("Finish ack received");
                             sender.setFinishReceivedTrue();
                         } else {
-                            sender.removeNotReceived(seq);
+                            System.out.println(sender.notReceived.containsKey(seq));
+                            sender.notReceived.remove(seq);
                         }
                         break;
                         //finishpacket
@@ -276,7 +279,7 @@ public class MultiCast2 implements Runnable{
      */
     private void sendAck(int destination, byte[] ackNumber) {
         AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber);
-        System.out.println(computerNumber + ", " + destination + ", " + ackNumber[0]);
+        System.out.println(computerNumber + ", " + destination + ", " + ackNumber[3]);
         byte[] packet = ackPacket.getAckPacket();
         DatagramPacket ack = new DatagramPacket(packet, packet.length, group, PORT);
         try {
@@ -387,13 +390,15 @@ public class MultiCast2 implements Runnable{
     /*
      * This message sends a message (
      */
-    private void sendMessage(byte[] msg, int destination) {
+    private synchronized void sendMessage(byte[] msg, int destination) {
+
         try {
             //Send the entire message, split and with send data from TCP
-            int seqint = 2;
+            int seqint = 3;
             //SEQ starts with 2, because SEQ 0 is reserved for the ACK of the START message, and
             //SEQ 1 is reserved for the ACK of the FIN message
             List<byte[]> splitmessages = splitMessages(msg);
+            System.out.println("size: " + splitmessages.size());
             for (byte[] packet : splitmessages) {
                 byte[] seq = intToByte(seqint);
                 TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(packet));
@@ -401,13 +406,14 @@ public class MultiCast2 implements Runnable{
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
                 this.s.send(messagePacket);
                 boolean alAanwezig = false;
-                for (Map.Entry<byte[], byte[]> e: sender.getNotReceived().entrySet()){
-                    if (java.util.Arrays.equals(e.getKey(), seq)){
+                for (Map.Entry<byte[], byte[]> e : sender.notReceived.entrySet()) {
+                    if (byteToInt(e.getKey()) ==  byteToInt(seq)) {
                         alAanwezig = true;
                     }
                 }
                 if (!alAanwezig){
-                    sender.putNotReceived(seq, packet);
+//                    sender.putNotReceived(seq, packet);
+                    sender.notReceived.put(seq, packet);
                 }
                 seqint++;
             }
@@ -416,20 +422,20 @@ public class MultiCast2 implements Runnable{
         }
 
         try {
-            Thread.sleep(100);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         //If packets have been lost (not acked after 100ms), resend them until everything has been acked
-        while (sender.getNotReceived().size()>0){
+        while (sender.getNotReceived().size() > 0) {
             System.out.println("nog niet leeg");
             Map<byte[], byte[]> notreceived = sender.getNotReceived();
             for (Map.Entry<byte[], byte[]> e : notreceived.entrySet()){
                 sendMessage(e.getValue(), destination);
             }
             try {
-                Thread.sleep(100);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
