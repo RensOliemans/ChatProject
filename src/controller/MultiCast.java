@@ -1,5 +1,6 @@
 package controller;
 
+import java.awt.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -7,6 +8,7 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.List;
 
 import model.TCP;
 
@@ -36,10 +38,14 @@ public class MultiCast implements Runnable{
     private TCPReceive tcpreceive;
     private Map<Byte, TCPReceive> receivers = new HashMap<>();
     private Map<Byte, TCP> senders = new HashMap<>();
+    public List presence;
     public int computerNumber;
     private int receivedPing = 0;
     private long seconds;
     private long seconds2;
+    private  long seconds3 = 0;
+    private  long seconds4 = 0;
+
 
     public int getComputerNumber() {
         return computerNumber;
@@ -114,6 +120,21 @@ public class MultiCast implements Runnable{
 
                 //pingPacket
                 case 2:
+                    if (seconds3 == 0){
+                        LocalTime time3 = LocalTime.now();
+                        seconds3 = time3.getSecond();
+                        presence.add(data[1]);
+                    }
+                    if (seconds3 != 0){
+                        LocalTime time4 = LocalTime.now();
+                        seconds4 = time4.getSecond();
+                    }
+                    if (seconds4 - seconds3 >= 4.5){
+                        seconds3 = 0;
+                        seconds4 = 0;
+                        presence.clear();
+                    }
+
 
                     if (receivedPing == 0){
                         if (seconds2 - seconds >= 4.5) {

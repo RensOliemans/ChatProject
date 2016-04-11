@@ -31,9 +31,13 @@ public class TextPacket {
         txpkt[2] = intToByte(this.destinationAddress);
 
         //add the SYN number to the packet (not sure if this works)
-        for (int j = 3; j< TCP.HEADER + 2; j++){
-            txpkt[j] = intToByte(256);
+        if (TCP.HEADER == 1){
             txpkt[2+TCP.HEADER] = intToByte(this.syn - ((TCP.HEADER-1)*256));
+        } else {
+            for (int j = 3; j< TCP.HEADER + 2; j++){
+                txpkt[j] = intToByte(256);
+                txpkt[2+TCP.HEADER] = intToByte(this.syn - ((TCP.HEADER-1)*256));
+            }
         }
 
         /*
