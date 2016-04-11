@@ -8,6 +8,7 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
 import java.util.*;
 
 import model.Sender;
@@ -15,6 +16,7 @@ import model.Sender;
 import model.*;
 import view.GUI;
 
+import javax.crypto.SecretKey;
 import javax.xml.crypto.Data;
 import javax.xml.soap.Text;
 
@@ -38,6 +40,9 @@ public class MultiCast2 implements Runnable{
     private Sender sender;
     private Receiver receiver;
     private GUI gui;
+    private Security security;
+    private Map<Integer, SecretKey> symmetricKeys = new HashMap<>(); //HashMap with K: computerNumber and V: our symmetric key
+    private Map<Integer, PublicKey> publicKeys = new HashMap<>(); //HashMap with K: computerNumber and V: their public keys
     private Map<Byte, Receiver> receivers = new HashMap<>();
     //Byte is the destination, sender is you
     private Map<Byte, Sender> senders = new HashMap<>();
@@ -64,6 +69,7 @@ public class MultiCast2 implements Runnable{
         try {
             this.group = InetAddress.getByName(HOST);
             this.s = new MulticastSocket(PORT);
+            security = new Security();
 //            gui = new GUI(computerNumber, this);
             join();
         } catch (UnknownHostException e) {
@@ -380,6 +386,14 @@ public class MultiCast2 implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void requestPublicKeys(int destination) {
+
+    }
+
+    private void hoi() {
+
     }
 
     @Override

@@ -21,10 +21,17 @@ public class Security {
     //  2.
 
     //HashMap with K: computerNumber and V: SecretKey.
-    private Map<Integer, SecretKey> symmetricKeys = new HashMap<>();
     private SecretKey ownSymmetricKey;
     private KeyPair RSAKeyPair;
     private static final String xform = "RSA/ECB/PKCS1Padding";
+
+    public Security() {
+        System.out.println("Generating public and private keys...");
+        long startTime = System.currentTimeMillis();
+        generateRSAKeyPair();
+        System.out.println("Successfully created 512 byte RSA keys in : " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
+
+    }
 
 
     public PublicKey getPublicKey() {
@@ -42,7 +49,7 @@ public class Security {
         //Generate a key
         try {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-            kpg.initialize(4096); //keysize 8192 bits, 1024 bytes
+            kpg.initialize(4096); //keysize: 4096 bits, 512 bytes
             kp = kpg.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -57,9 +64,6 @@ public class Security {
             keyGen = KeyGenerator.getInstance("AES");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-        }
-        if (!symmetricKeys.containsKey(computerNumber)) {
-            symmetricKeys.put(computerNumber, keyGen.generateKey());
         }
         return keyGen.generateKey();
     }
@@ -168,23 +172,7 @@ public class Security {
 
 
 
-//    public static void main(String[] args) {
-//        long startTime = System.currentTimeMillis();
-//        Security security = new Security();
-//        long subTime = System.currentTimeMillis();
-//        security.symmetricKey = security.generateAESKey();
-//        System.out.println("Time to create AES key: " + (System.currentTimeMillis() - subTime)/1000.0 + " seconds");
-//        subTime = System.currentTimeMillis();
-//        security.RSAKeyPair = security.generateRSAKeyPair();
-//        System.out.println("Time to create RSA key: " + (System.currentTimeMillis() - subTime)/1000.0 + " seconds");
-//
-//        System.out.println("AES key: " + Base64.encodeBase64String(security.symmetricKey.getEncoded()));
-//        byte[] encryptedAESKey = security.EncryptSecretKey();
-//        System.out.println("Encrypted AES key: " + Base64.encodeBase64String(encryptedAESKey));
-//
-//        SecretKey decryptedAESKey = security.decryptAESKey(encryptedAESKey);
-//        System.out.println("Decrypted AES key: " + Base64.encodeBase64String(decryptedAESKey.getEncoded()));
-//
-//        System.out.println("Total time: " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
-//    }
+    public static void main(String[] args) {
+        Security security = new Security();
+    }
 }
