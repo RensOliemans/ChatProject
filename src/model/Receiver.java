@@ -27,9 +27,12 @@ public class Receiver {
 
     public void order(){
         List<Byte> result = new ArrayList<>();
-        for (int i = 2; i < this.received.size()+1; i++) {
-            for (Map.Entry<byte[], byte[]> e : this.received.entrySet()) {
-                if (e.getKey().equals(i)) {
+        for (int i = 2; i < this.received.size()+2; i++) {
+            byte[] j = new byte[1];
+            j[0] = (byte) i;
+            for (Map.Entry<byte[], byte[]> e: this.received.entrySet()){
+                System.out.println("seq nummer" + e.getKey());
+                if (java.util.Arrays.equals(e.getKey(), j)){
                     byte[] packet = e.getValue();
                     for (int k = 0; k < packet.length; k++) {
                         result.add(packet[k]);
@@ -40,4 +43,3 @@ public class Receiver {
         goodOrder = result;
     }
 }
-

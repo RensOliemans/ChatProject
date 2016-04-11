@@ -1,7 +1,6 @@
 package model;
 
-import java.util.concurrent.ConcurrentHashMap;
-import controller.MultiCast;
+import controller.MultiCast2;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -11,10 +10,10 @@ public class Routing implements Runnable{
     private int linkcost;
     private int sourceAdress;
     private int[] forwardingTable = new int[8];
-    private MultiCast multiCast;
+    private MultiCast2 multiCast;
 
     public Routing(int computerNumber) {
-        multiCast = new MultiCast();
+        multiCast = new MultiCast2();
         multiCast.setComputerNumber(computerNumber);
     }
 

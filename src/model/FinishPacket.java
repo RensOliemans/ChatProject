@@ -37,8 +37,4 @@ public class FinishPacket {
         return b;
     }
 
-    public byte[] StringToByte(String string){
-        byte[] b = string.getBytes();
-        return b;
-    }
 }

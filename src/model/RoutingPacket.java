@@ -56,9 +56,4 @@ public class RoutingPacket {
         return b;
     }
 
-    public byte[] StringToByte(String string){
-        byte[] b = string.getBytes();
-        return b;
-    }
-
 }

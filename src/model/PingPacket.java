@@ -17,7 +17,7 @@ public class PingPacket {
     public byte[] getPingPacket(){
         byte[] pingpacket = new byte[(1 + name.length())];
 
-        //add the incation byte that indicates what type of packet this is
+        //add the indication byte that indicates what type of packet this is
         pingpacket[0] = intToByte(PINGPACKET);
 
         //add the source to the packet
