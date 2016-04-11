@@ -55,8 +55,8 @@ public class MultiCast2 implements Runnable{
     private int receivedPing = 0;
     private long seconds;
     private long seconds2;
-    private  long seconds3 = 0;
-    private  long seconds4 = 0;
+    private long seconds3 = 0;
+    private long seconds4 = 0;
     public List presence;
 
     /*
