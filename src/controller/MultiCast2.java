@@ -1,11 +1,14 @@
 package controller;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import model.Sender;
@@ -15,6 +18,8 @@ import view.GUI;
 
 import javax.xml.crypto.Data;
 import javax.xml.soap.Text;
+
+import static com.oracle.jrockit.jfr.ContentType.Bytes;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -38,6 +43,7 @@ public class MultiCast2 implements Runnable{
     public int computerNumber;
     public static final int DATASIZE=128;
     public static final int HEADER = 1;
+    private int synint;
 
 
     public int getComputerNumber() {
@@ -87,59 +93,84 @@ public class MultiCast2 implements Runnable{
                     receiver = e.getValue();
                 }
             }
-            switch (data[0]) {
-                // textpacket
-                //Only receiver gets these
-                case 0:
-                    System.out.println("TEXT");
-                    syn = new byte[HEADER];
-                    for (int j = 3; j<HEADER+1; j++){
-                        syn[j-3] = data[j];
-                    }
-                    sendAck(data[1], syn);
-                    byte[] message = new byte[data.length - 3 - HEADER];
-                    System.arraycopy(data, 3 + HEADER, message, 0, message.length);
-                    receiver.received.put(syn, message);
-                    gui.print(new String(message), data[1]);
-                    break;
-                // startpacket
-                //Only receiver gets these
-                case 3:
-                    byte[] nul =  ByteBuffer.allocate(HEADER*4).putInt(0).array();
-                    sendAck(data[1], nul);
-                    receiver = new Receiver(data[1]);
-                    break;
-                //ackpacket
-                //Only sender gets these
-                case 4:
-//                    if (computerNumber != data[2]) {
-//                        syn = new byte[HEADER];
-//                        for (int j = 3; j < HEADER + 1; j++) {
-//                            syn[j - 3] = data[j];
-//                        }
-//                        if (syn.equals(0)) {
-//                            sender.firstReceived = true;
-//                        } else if (syn.equals(1)) {
-//                            sender.finishReceived = true;
-//                        } else {
-//                            System.out.println(sender == null);
-//                            System.out.println(data[0]);
-//                            System.out.println(computerNumber);
-//                            System.out.println(data[1]);
-//                            System.out.println(data[2]);
-//                            System.out.println("\n");
-//                            sender.removeNotReceived(syn);
-//                        }
-//                    }
-//                    break;
-                //finishpacket
-                //Only receiver gets these
-                case 5:
-                    byte[] een =  ByteBuffer.allocate(HEADER*4).putInt(1).array();
-                    sendAck(data[1], een);
-                    receiver.order();
-                    gui.printMessage(receiver.goodOrder, data[1]);
-                    break;
+            if (computerNumber != data[1]) {
+                for (byte b : data) {
+                    System.out.print(b);
+                }
+                switch (data[0]) {
+                    // textpacket
+                    //Only receiver gets these
+                    case 0:
+                        System.out.println("TEXT");
+                        syn = new byte[HEADER];
+                        for (int j = 0; j < HEADER; j++) {
+                            syn[j] = data[j+3];
+                        }
+                        sendAck(data[1], syn);
+                        byte[] message = new byte[data.length - 3 - HEADER];
+                        System.arraycopy(data, 3 + HEADER, message, 0, message.length);
+                        receiver.received.put(syn, message);
+//                        gui.print(new String(message), data[1]);
+                        break;
+                    // startpacket
+                    //Only receiver gets these
+                    case 3:
+                        System.out.println("START");
+                        byte[] nul = new byte[HEADER];
+                        for (int j = 0; j<HEADER; j++){
+                            nul[j] = 0;
+                        }
+                        sendAck(data[1], nul);
+                        receiver = new Receiver(data[1]);
+                        receivers.put(data[1], receiver);
+                        break;
+                    //ackpacket
+                    //Only sender gets these
+                    case 4:
+                        System.out.println("ACK");
+                        syn = new byte[HEADER];
+                        System.out.println(HEADER);
+                        for (int j = 0; j < HEADER; j++) {
+                            syn[j] = data[j+3];
+                        }
+                        if (HEADER == 1){
+                            synint = syn[0];
+                        }
+                        else {
+                            synint = ByteBuffer.wrap(syn).getInt();
+                        }
+                        System.out.println(synint);
+                        if (synint == 0) {
+                            System.out.println("Start ack received");
+                            sender.setFirstReceivedTrue();
+                        } else if (synint == 1) {
+                            sender.setFinishReceivedTrue();
+                        } else {
+                            System.out.println("before remove " + sender.getNotReceived());
+                            sender.removeNotReceived(syn);
+                            System.out.println("after remove " + sender.getNotReceived());
+                        }
+                        break;
+                        //finishpacket
+                        //Only receiver gets these
+                    case 5:
+                        byte[] een = new byte[HEADER];
+                        for (int j = 0; j<HEADER; j++){
+                            if (j < HEADER -1){
+                                een[j] = 0;
+                            }
+                            else if (j < HEADER){
+                                een[j] = 1;
+                            }
+                        }
+                        sendAck(data[1], een);
+                        receiver.order();
+                        System.out.println("hoi");
+                        System.out.println(receiver==null);
+                        System.out.println(receiver.received);
+                        System.out.println(new String (String.valueOf(receiver.goodOrder)));
+                        break;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -162,6 +193,7 @@ public class MultiCast2 implements Runnable{
 
     public void sendAck(int destination, byte[] ackNumber) {
         AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber);
+        System.out.println(computerNumber + ", " + destination + ", " + ackNumber[0]);
         byte[] packet = ackPacket.getAckPacket();
         DatagramPacket ack = new DatagramPacket(packet, packet.length, group, PORT);
         try {
@@ -212,19 +244,28 @@ public class MultiCast2 implements Runnable{
         }
         return result;
     }
+//
+//    public void intToByte (int i){
+//        BigInteger bigInt = BigInteger.valueOf(i);
+//        byte[] bytes = bigInt.toByteArray();
+//        System.out.println(bytes);
+//    }
 
     private void sendMessage(String msg, int destination) {
         try {
             //Send the entire message, split and with send data from TCP
             int syn = 2; //SYN starts with 1, because SYN 0 is reserved for the ACK of the START message, and
-                            //SYN 1 is reserved for the ACK of the FIN message
+            //SYN 1 is reserved for the ACK of the FIN message
             List<byte[]> splitmessages = splitMessages(msg);
             for (byte[] packet : splitmessages) {
                 TextPacket toSend = new TextPacket(computerNumber, destination, syn, msg);
+                System.out.println(syn);
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
                 this.s.send(messagePacket);
-                byte[] synmap = ByteBuffer.allocate(HEADER*4).putInt(syn).array();
+                byte[] synmap = new byte[HEADER];
+                synmap[0] = (byte) syn;
                 sender.putNotReceived(synmap, packet);
+                System.out.println(synmap[0] + " " + packet.toString());
                 syn++;
             }
         } catch (IOException e) {
@@ -238,7 +279,8 @@ public class MultiCast2 implements Runnable{
         }
 
         //If packets have been lost (not acked after 100ms), resend them until everything has been acked
-        while (sender.getNotReceived()!= null){
+        while (sender.getNotReceived().size()>0){
+            System.out.println("nog niet leeg");
             Map<byte[], byte[]> notreceived = sender.getNotReceived();
             for (Map.Entry<byte[], byte[]> e : notreceived.entrySet()){
                 sendMessage(new String(e.getValue()), destination);
@@ -255,17 +297,18 @@ public class MultiCast2 implements Runnable{
         sender = new Sender(destination);
         senders.put((byte) destination, sender);
 
-        //First send the 'First' message
-//        while (!sender.firstReceived){
+//        First send the 'First' message
+        while (!sender.firstReceived){
             sendFirst(destination);
-//            try {
-//                Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
         //If the receiver received their 'First' message and replied with an ack, send the message
+        System.out.println("Het firstreceived zetten is goed gegaan");
         sendMessage(msg, destination);
 
         //After the message has been sent, send the 'Finish' message and wait for ack
@@ -277,12 +320,8 @@ public class MultiCast2 implements Runnable{
                 e.printStackTrace();
             }
         }
+        System.out.println ("finish is received");
     }
-
-
-
-
-
 
     public void leave() {
         try {

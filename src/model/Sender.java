@@ -31,11 +31,24 @@ public class Sender {
     }
 
     public void removeNotReceived(byte[] key) {
-        this.notReceived.remove(key);
+        for (Map.Entry<byte[], byte[]> e: notReceived.entrySet()){
+            if (java.util.Arrays.equals(e.getKey(), key)){
+                notReceived.remove(e.getKey());
+            }
+        }
+        //this.notReceived.remove(key);
     }
 
     public Map<byte[], byte[]> getNotReceived() {
         return notReceived;
+    }
+
+    public void setFirstReceivedTrue(){
+        this.firstReceived = true;
+    }
+
+    public void setFinishReceivedTrue(){
+        this.finishReceived = true;
     }
 
     //    public void handleMessage(byte[] data) {

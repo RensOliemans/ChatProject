@@ -31,12 +31,13 @@ public class TextPacket {
         //add the source and destination to the packet
         txpkt[1] = intToByte(this.sourceAddress);
         txpkt[2] = intToByte(this.destinationAddress);
+        txpkt[3] = intToByte(this.syn);
 
         //add the SYN number to the packet (not sure if this works)
-        for (int j = 3; j< MultiCast2.HEADER + 2; j++){
-            txpkt[j] = intToByte(256);
-            txpkt[2+MultiCast2.HEADER] = intToByte(this.syn - ((MultiCast2.HEADER-1)*256));
-        }
+//        for (int j = 3; j< MultiCast2.HEADER + 2; j++){
+//            txpkt[j] = intToByte(256);
+//            txpkt[2+MultiCast2.HEADER] = intToByte(this.syn - ((MultiCast2.HEADER-1)*256));
+//        }
 
         /*
         //add the SYN number to the packet (sure that this works, but this isn't scalable)
