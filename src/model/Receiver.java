@@ -1,12 +1,11 @@
 package model;
 
-import java.net.DatagramPacket;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import view.GUI;
+
+import controller.MultiCast2;
 
 /**
  * Created by Birte on 7-4-2016.
@@ -28,11 +27,10 @@ public class Receiver {
     public void order(){
         List<Byte> result = new ArrayList<>();
         for (int i = 2; i < this.received.size()+2; i++) {
-            byte[] j = new byte[1];
-            j[0] = (byte) i;
+            byte[] j = MultiCast2.intToByte(i);
             for (Map.Entry<byte[], byte[]> e: this.received.entrySet()){
-                System.out.println("seq nummer" + e.getKey());
-                if (java.util.Arrays.equals(e.getKey(), j)){
+                System.out.println("seq nummer " + MultiCast2.byteToInt(e.getKey()));
+                if (MultiCast2.byteToInt(e.getKey()) == MultiCast2.byteToInt(j)){
                     byte[] packet = e.getValue();
                     for (int k = 0; k < packet.length; k++) {
                         result.add(packet[k]);
