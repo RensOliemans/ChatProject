@@ -15,7 +15,7 @@ public class Sender {
 
     //HashMap with Key: SYN and Value: Message, just message, no header
     private Map<byte[], byte[]> notReceived = new HashMap<byte[], byte[]>();
-    public int receiver;
+    private int receiver;
     public boolean finishReceived;
     public boolean firstReceived;
 

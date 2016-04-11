@@ -2,38 +2,79 @@ package model;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
+import com.sun.istack.internal.Nullable;
 import org.apache.commons.codec.binary.Base64;
 
 /**
  * Created by Rens on 5-4-2016.
+ * This is the main security class, which holds
  */
 public class Security {
-    //TODO: Find way encrypt the symmetric keys with public/private keys
+    //TODO: implement the following:
+    //The steps to encryption are to share the person's symmetric key via public/private keys:
+    //  1.  Send the receiver the symmetric key, encrypted with their public key
+    //  2.
 
-    private static String secretKeyString = "XMzDdG4D03CKm2IwIWQc7g==";
-    private static SecretKey secretKey;
+    //HashMap with K: computerNumber and V: SecretKey.
+    private SecretKey ownSymmetricKey;
+    private KeyPair RSAKeyPair;
+    private static final String xform = "RSA/ECB/PKCS1Padding";
 
-    public static SecretKey generateKey() {
+    public Security() {
+        System.out.println("Generating public and private keys...");
+        long startTime = System.currentTimeMillis();
+        generateRSAKeyPair();
+        System.out.println("Successfully created 512 byte RSA keys in : " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
+
+    }
+
+
+    public PublicKey getPublicKey() {
+        return RSAKeyPair.getPublic();
+    }
+
+    public byte[] getEncryptedAESKey(PublicKey publicKey) {
+        return EncryptOwnSecretKey(publicKey);
+    }
+
+
+
+    private KeyPair generateRSAKeyPair() {
+        KeyPair kp = null;
+        //Generate a key
+        try {
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+            kpg.initialize(4096); //keysize: 4096 bits, 512 bytes
+            kp = kpg.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return kp;
+    }
+
+    public SecretKey generateAESKey(int computerNumber) {
         KeyGenerator keyGen = null;
         try {
+
             keyGen = KeyGenerator.getInstance("AES");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        SecretKey key = keyGen.generateKey();
-        return key;
+        return keyGen.generateKey();
     }
 
-    private static String symmetricEncrypt(String text, SecretKey secretKey) {
+    //symmetric encryption with symmetricKey in SecretKey format
+    private String encryptSymm(String text, SecretKey secretKey) {
         byte[] raw;
         String encryptedString;
         SecretKeySpec secretKeySpec;
         byte[] encryptText = text.getBytes();
-        Cipher cipher;
+        Cipher cipher = null;
         try {
             secretKeySpec = new SecretKeySpec(secretKey.getEncoded(), "AES");
             cipher = Cipher.getInstance("AES");
@@ -46,15 +87,15 @@ public class Security {
         return encryptedString;
     }
 
-    private static String symmetricDecrypt(String text, SecretKey secretKey) {
-        Cipher cipher;
+    //symmetric decryption with symmetricKey in SecretKey format
+    private String decryptSymm(String text, SecretKey secretKey) {
+        Cipher cipher = null;
         String encryptedString;
         byte[] encryptText = null;
-//        byte[] raw;
         SecretKeySpec skeySpec;
         try {
-//            raw = Base64.decodeBase64(secretKey);
             skeySpec = new SecretKeySpec(secretKey.getEncoded(), "AES");
+//            encryptText = Base64.encodeBase64(text.getBytes());
             encryptText = Base64.decodeBase64(text);
             cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec);
@@ -67,75 +108,71 @@ public class Security {
     }
 
 
-    public String encrypt(String text) {
-        return symmetricEncrypt(text, this.secretKey);
-    }
-    public String decrypt(String text, String secretKey) {
-        return symmetricDecrypt(text, secretKey);
-    }
+    private byte[] EncryptOwnSecretKey(PublicKey publicKey) {
+        Cipher cipher = null;
+        byte[] key = null;
 
-
-    private static String symmetricEncrypt(String text, String secretKey) {
-        byte[] raw;
-        String encryptedString;
-        SecretKeySpec skeySpec;
-        byte[] encryptText = text.getBytes();
-        Cipher cipher;
         try {
-            raw = Base64.decodeBase64(secretKey);
-            skeySpec = new SecretKeySpec(raw, "AES");
-            cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-            encryptedString = Base64.encodeBase64String(cipher.doFinal(encryptText));
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            return "Error";
-        }
-        return encryptedString;
-    }
-
-    private static String symmetricDecrypt(String text, String secretKey) {
-        Cipher cipher;
-        String encryptedString;
-        byte[] encryptText = null;
-        byte[] raw;
-        SecretKeySpec skeySpec;
-        try {
-            raw = Base64.decodeBase64(secretKey);
-            skeySpec = new SecretKeySpec(raw, "AES");
-            encryptText = Base64.decodeBase64(text);
-            cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-            encryptedString = new String(cipher.doFinal(encryptText));
+            cipher = Cipher.getInstance(xform);
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            key = cipher.doFinal(ownSymmetricKey.getEncoded());
         } catch (Exception e) {
+            System.out.println("exception encoding key: " + e.getMessage());
             e.printStackTrace();
-            return "Error";
         }
-        return encryptedString;
+        return key;
     }
+
+    private SecretKey decryptAESKey(byte[] data) {
+        SecretKey key = null;
+        PrivateKey privateKey = null;
+        Cipher cipher = null;
+        try {
+            privateKey = RSAKeyPair.getPrivate();
+
+            cipher = Cipher.getInstance(xform);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+            key = new SecretKeySpec(cipher.doFinal(data), "AES");
+        } catch (Exception e) {
+            System.out.println("Error decrypting the aes key: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+        return key;
+    }
+
+
+    private String encryptRSA(String text, PublicKey publicKey) {
+        //Uses a public key (so you can send an encrypted AES key with someone else's keys)
+        try {
+            Cipher cipher = Cipher.getInstance(xform);
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            return new String(cipher.doFinal(text.getBytes()));
+        } catch (Exception e) {
+            System.out.println("Exception encoding key: " + e.getMessage());
+            e.printStackTrace();
+            return "Error in RSA encryption";
+        }
+    }
+
+    private String decryptRSA(String text) {
+        //Uses its own private key
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance(xform);
+            cipher.init(Cipher.DECRYPT_MODE, RSAKeyPair.getPrivate());
+            return new String(cipher.doFinal(text.getBytes()));
+        } catch (Exception e) {
+            System.out.println("Exception decoding key: " + e.getMessage());
+            e.printStackTrace();
+            return "Error in RSA decryption";
+        }
+    }
+
+
 
     public static void main(String[] args) {
-        secretKey = generateKey();
-        System.out.print("Generated secret key: ");
-        System.out.println(new String(secretKey.getEncoded()));
-
-        System.out.print("Enter the text to be encrypted: ");
-        String value = new Scanner(System.in).nextLine();
-
-        System.out.print("Encrypted text: ");
-//        String encryptedText = symmetricEncrypt(value, secretKey);
-        String encryptedText = symmetricEncrypt(value, new String(secretKey.getEncoded()));
-        System.out.println(encryptedText);
-
-        System.out.print("Decrypted text: ");
-//        String decryptedText = symmetricDecrypt(value, secretKey);
-        String decryptedText = symmetricDecrypt(value, new String(secretKey.getEncoded()));
-        System.out.println(decryptedText);
-
-
+        Security security = new Security();
     }
-
-
-
 }
