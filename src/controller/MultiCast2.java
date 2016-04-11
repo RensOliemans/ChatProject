@@ -68,11 +68,17 @@ public class MultiCast2 implements Runnable{
         return computerNumber;
     }
 
+    public static byte[] intToByte(int number) {
+        return ByteBuffer.allocate(4).putInt(number).array();
+    }
 
-    /*
-     * Constructor. Is packageLocal, as only Starter and Ping call this.
-     * Sets up the Internet address with the HOST, sets up the MultiCastSocket with the PORT and initializes a GUI.
-     */
+    public static int byteToInt(byte[] array) {
+        return (array[0]<<24)&0xff000000|
+                (array[1]<<16)&0x00ff0000|
+                (array[2]<< 8)&0x0000ff00|
+                (array[3]<< 0)&0x000000ff;
+    }
+
     public MultiCast2() {
         try {
             this.group = InetAddress.getByName(HOST);
@@ -113,13 +119,8 @@ public class MultiCast2 implements Runnable{
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
             byte[] data = recv.getData();
-            //You get a packet. This is of the following format:
-            //data[0] = indication byte
-            //data[1] = source of the sender
-            //data[2] = destination of the sender - you (compare with computernumber)
-            //data[3-x] = data/ack number/ack indication bit (with a start/fin message
-            //At the end of the data and the whole packet, rens byte.
-            byte[] syn;
+            byte[] seq;
+            int seqint;
             data = removeRensByte(data);
             int i = data.length;
             for (Map.Entry<Byte, Sender> e: senders.entrySet()){
@@ -141,127 +142,47 @@ public class MultiCast2 implements Runnable{
                     //Only receiver gets these
                     case 0:
                         System.out.println("TEXT");
-                        syn = new byte[HEADER];
-                        for (int j = 0; j < HEADER; j++) {
-                            syn[j] = data[j+3];
-                        }
-                        sendAck(data[1], syn);
-                        byte[] message = new byte[data.length - 3 - HEADER];
-                        System.arraycopy(data, 3 + HEADER, message, 0, message.length);
-                        receiver.received.put(syn, message);
-//                        gui.print(new String(message), data[1]);
+                        seq = new byte[HEADER*4];
+                        System.arraycopy(data, 3, seq, 0, HEADER*4);
+                        sendAck(data[1], seq);
+                        byte[] message = new byte[data.length - 3 - seq.length];
+                        System.arraycopy(data, 3 + seq.length, message, 0, message.length);
+                        receiver.received.put(seq, message);
                         break;
-
-                    //RoutingPacket
-                    case 1:
-                        Routing routing = new Routing(computerNumber);
-                        routing.setSourceAddress(data[1]);
-                        routing.setLinkCost(data[3]);
-                        byte[] bArray = new byte[8];
-                        for (int k=0; k<8; k++){
-                            bArray[k] = data[k+4];
-                        }
-                        routing.setForwardingTable(routing.byteArrayToIngerArray(bArray));
-                        break;
-
-                    //pingPacket
-                    case 2:
-                        if (seconds3 == 0){
-                            LocalTime time3 = LocalTime.now();
-                            seconds3 = time3.getSecond();
-                            presence.add(data[1]);
-                        }
-                        if (seconds3 != 0){
-                            LocalTime time4 = LocalTime.now();
-                            seconds4 = time4.getSecond();
-                        }
-                        if (seconds4 - seconds3 >= 4.5){
-                            seconds3 = 0;
-                            seconds4 = 0;
-                            presence.clear();
-                        }
-
-
-                        if (receivedPing == 0){
-                            if (seconds2 - seconds >= 4.5) {
-                                LocalTime time = LocalTime.now();
-                                seconds = time.getSecond();
-                                seconds2 = seconds;
-                            }
-                            if (seconds2 - seconds <= 1){
-                                receivedPing++;
-                            }
-                        } else {
-                            LocalTime time2 = LocalTime.now();
-                            seconds2 = time2.getSecond();
-                            receivedPing++;
-                        }
-                        if (seconds2 - seconds > 1 && receivedPing != 0){
-                            int[] emptyForwardingTable = new int[8];
-                            sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
-                            System.out.println("receivedPing= " + receivedPing);
-                            receivedPing = 0;
-
-                        }
-                        break;
-
                     // startpacket
                     //Only receiver gets these
                     case 3:
                         System.out.println("START");
-                        byte[] nul = new byte[HEADER];
-                        for (int j = 0; j<HEADER; j++){
-                            nul[j] = 0;
-                        }
+                        byte[] nul = intToByte(0);
                         sendAck(data[1], nul);
                         receiver = new Receiver(data[1]);
                         receivers.put(data[1], receiver);
                         break;
-
                     //ackpacket
                     //Only sender gets these
                     case 4:
                         System.out.println("ACK");
-                        syn = new byte[HEADER];
-                        System.out.println(HEADER);
-                        for (int j = 0; j < HEADER; j++) {
-                            syn[j] = data[j+3];
-                        }
-                        if (HEADER == 1){
-                            synint = syn[0];
-                        }
-                        else {
-                            synint = ByteBuffer.wrap(syn).getInt();
-                        }
-                        System.out.println(synint);
-                        if (synint == 0) {
+                        seq = new byte[HEADER*4];
+
+                        System.arraycopy(data, 3, seq, 0, HEADER*4);
+                        seqint = byteToInt(seq);
+                        if (seqint == 0) {
                             System.out.println("Start ack received");
                             sender.setFirstReceivedTrue();
-                        } else if (synint == 1) {
+                        } else if (seqint == 1) {
+                            System.out.println("Finish ack received");
                             sender.setFinishReceivedTrue();
                         } else {
-                            System.out.println("before remove " + sender.getNotReceived());
-                            sender.removeNotReceived(syn);
-                            System.out.println("after remove " + sender.getNotReceived());
+                            sender.removeNotReceived(seq);
                         }
                         break;
-                    //finishpacket
-                    //Only receiver gets these
+                        //finishpacket
+                        //Only receiver gets these
                     case 5:
-                        byte[] een = new byte[HEADER];
-                        for (int j = 0; j<HEADER; j++){
-                            if (j < HEADER -1){
-                                een[j] = 0;
-                            }
-                            else if (j < HEADER){
-                                een[j] = 1;
-                            }
-                        }
-                        sendAck(data[1], een);
+                        seq = intToByte(1);
+                        sendAck(data[1], seq);
+                        System.out.println("Hij gaat nu in order");
                         receiver.order();
-                        System.out.println("hoi");
-                        System.out.println(receiver==null);
-                        System.out.println(receiver.received);
                         System.out.println(new String (String.valueOf(receiver.goodOrder)));
                         break;
                 }
@@ -373,16 +294,16 @@ public class MultiCast2 implements Runnable{
      */
     private List<byte[]> splitMessages(byte[] msg) {
         List<byte[]> result = new ArrayList<byte[]>();
-        int messageLength = msg.length;
-        while (messageLength > DATASIZE){
+        int messagelength = msg.length;
+        while (messagelength > DATASIZE){
             byte[] packet = new byte[DATASIZE];
-            System.arraycopy(msg, msg.length-messageLength, packet, 0, messageLength);
+            System.arraycopy(msg, msg.length-messagelength, packet, 0, DATASIZE);
             result.add(packet);
-            messageLength = messageLength - DATASIZE;
+            messagelength = messagelength - DATASIZE;
         }
-        if (messageLength > 0){
-            byte[] packet = new byte[messageLength];
-            System.arraycopy(msg, msg.length-messageLength, packet, 0, messageLength);
+        if (messagelength > 0){
+            byte[] packet = new byte[messagelength];
+            System.arraycopy(msg, msg.length-messagelength, packet, 0, messagelength);
             result.add(packet);
         }
         return result;
@@ -394,19 +315,26 @@ public class MultiCast2 implements Runnable{
     private void sendMessage(byte[] msg, int destination) {
         try {
             //Send the entire message, split and with send data from TCP
-            int syn = 2; //SYN starts with 1, because SYN 0 is reserved for the ACK of the START message, and
+            int seqint = 2;
+            byte[] seq = intToByte(seqint);
+            //SYN starts with 1, because SYN 0 is reserved for the ACK of the START message, and
             //SYN 1 is reserved for the ACK of the FIN message
             List<byte[]> splitmessages = splitMessages(msg);
             for (byte[] packet : splitmessages) {
-                TextPacket toSend = new TextPacket(computerNumber, destination, syn, new String(msg));
-                System.out.println(syn);
+                TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(packet));
+                System.out.println(seq[0] + "" + seq[1] + seq[2] + seq[3]);
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
                 this.s.send(messagePacket);
-                byte[] synmap = new byte[HEADER];
-                synmap[0] = (byte) syn;
-                sender.putNotReceived(synmap, packet);
-                System.out.println(synmap[0] + " " + packet.toString());
-                syn++;
+                boolean alAanwezig = false;
+                for (Map.Entry<byte[], byte[]> e: sender.getNotReceived().entrySet()){
+                    if (java.util.Arrays.equals(e.getKey(), seq)){
+                        alAanwezig = true;
+                    }
+                }
+                if (!alAanwezig){
+                    sender.putNotReceived(seq, packet);
+                }
+                seqint++;
             }
         } catch (IOException e) {
             e.printStackTrace();
