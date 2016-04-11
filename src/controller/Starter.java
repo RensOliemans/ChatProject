@@ -20,12 +20,19 @@ public class Starter {
         multiCast2.setComputerNumber(computerNumber);
         Ping ping = new Ping(computerNumber);
 
-        gui = new GUI(/*computerNumber, multiCast2*/);
+//        gui = new GUI(computerNumber, multiCast2);
         Thread receiveThread = new Thread(multiCast2);
         receiveThread.start();
 
         Thread pingThread = new Thread(ping);
         pingThread.start();
+
+        while (true) {
+            System.out.println("Enter destination");
+            int destination = new Scanner(System.in).nextInt();
+            System.out.println("Enter message");
+            multiCast2.send(new Scanner(System.in).nextLine(), destination);
+        }
 
     }
 }
