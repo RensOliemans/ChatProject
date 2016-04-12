@@ -1,11 +1,14 @@
 package view;
 
-import controller.MultiCast2;
-
-import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.Scanner;
 import java.awt.*;
-import java.awt.event.*;
+import javax.swing.*;
 import java.util.*;
+import controller.*;
 import java.util.List;
 
 /**
@@ -216,6 +219,14 @@ public class GUI extends JFrame {
 		return liststr;
 	}
 
+	private List StringToList(String string) {
+		List<Integer> list = new ArrayList<Integer>();
+		for (int i = 0; i < string.length(); i = i+2) {
+			list.add(new Integer(string.charAt(i)));
+		}
+		return list;
+	}
+
 	private class ChatChooseListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
@@ -301,6 +312,10 @@ public class GUI extends JFrame {
 			MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			newChatPane.setPreferredSize(new Dimension(180,300));
 			ChatButton chatButton = new ChatButton(Integer.toString(message.charAt(16)));
+			chatmap.put(chatButton,newChatPane);
+			participantsmap.put(newChatPane, StringToList(message.substring(18)));
+			chatnumbermap.put(newChatPane, new Integer(message.charAt(16)));
+			availableChatsPanel.add(chatButton);
 		}
 		else if (message.startsWith("chat")) {
 			for (Map.Entry<MessageScroll, Integer> e: chatnumbermap.entrySet()) {
