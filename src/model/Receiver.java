@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.List;
 
 import controller.MultiCast2;
+import view.GUI;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -22,6 +23,7 @@ import javax.imageio.stream.ImageInputStream;
 public class Receiver {
 
     public Boolean allReceived = false;
+    private GUI gui;
     public Map<byte[], byte[]> received = new HashMap<byte[], byte[]>();
     public int sender;
     public List<Byte> goodOrder = null;
@@ -56,7 +58,9 @@ public class Receiver {
             BufferedImage image = ImageIO.read(in);
             ImageIO.write(image, "jpg", new File("output.jpg"));
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in showImage(..), Receiver class. " +
+                    "Error while reading/writing to a file. " +
+                    "\nError message: " + e.getMessage());
         }
     }
 }
