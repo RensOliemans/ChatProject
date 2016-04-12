@@ -1,6 +1,8 @@
 package controller;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -8,13 +10,19 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalTime;
 import java.util.*;
 
 import model.Sender;
 
 import model.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import view.GUI;
 
 import javax.crypto.SecretKey;
@@ -42,7 +50,6 @@ public class MultiCast2 implements Runnable{
     private Receiver receiver;
     private GUI gui;
     private Security security;
-    private Map<Integer, SecretKey> symmetricKeys = new HashMap<>(); //HashMap with K: computerNumber and V: our symmetric key
     private Map<Integer, PublicKey> publicKeys = new HashMap<>(); //HashMap with K: computerNumber and V: their public keys
     private Map<Byte, Receiver> receivers = new HashMap<>();
     //Byte is the destination, sender is you
@@ -56,7 +63,7 @@ public class MultiCast2 implements Runnable{
     private long seconds1;
     private long seconds2;
     public List presence = new ArrayList<>();
-    private Routing routing = new Routing(computerNumber);
+    private Routing routing = new Routing();
 
 
     /*
@@ -88,6 +95,7 @@ public class MultiCast2 implements Runnable{
         try {
             this.group = InetAddress.getByName(HOST);
             this.s = new MulticastSocket(PORT);
+            generateKeys();
 //            gui = new GUI(computerNumber, this);
             join();
         } catch (UnknownHostException e) {
@@ -126,7 +134,7 @@ public class MultiCast2 implements Runnable{
             byte[] data = recv.getData();
             byte[] seq;
             int seqint;
-            data = removeRensByte(data);
+//            data = removeRensByte(data);
             int i = data.length;
             for (Map.Entry<Byte, Sender> e: senders.entrySet()){
                 if (e.getKey() == data[1]){
@@ -138,6 +146,9 @@ public class MultiCast2 implements Runnable{
                     receiver = e.getValue();
                 }
             }
+            //data[1] == source
+            //data[2] == destination
+            //data[3] == nexthop
             if (computerNumber != data[1] && computerNumber == data[2] && computerNumber == data[3]) {
                 data = removeRensByte(data);
                 switch (data[0]) {
@@ -156,7 +167,6 @@ public class MultiCast2 implements Runnable{
                     //RoutingPacket
                     case 1:
                         if (data[2] == computerNumber){
-                            Routing routing = new Routing(computerNumber);
                             routing.setSourceAddress(data[1]);
                             routing.setLinkCost(data[3]);
                             byte[] bArray = new byte[8];
@@ -242,8 +252,38 @@ public class MultiCast2 implements Runnable{
                         System.out.println("Received " + new String(byteArray, "UTF-8") + " from " + data[1]);
                         System.out.println();
                         break;
-                    //case 6:
-                        //
+                    case 6:
+                        //This is the packet for the request of one's public key.
+                        // Only the receiver gets these
+                        byte[] senderKeyBytes = new byte[data.length - 4 /*because header length is 4*/];
+                        System.arraycopy(data, 4, senderKeyBytes, 0, senderKeyBytes.length);
+                        PublicKey senderKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(senderKeyBytes));
+                        this.publicKeys.put((int) data[1], senderKey);
+                        sendPublicKeyAck(data[1]);
+                        break;
+                    case 7:
+                        //This is the ack packet of the public key message, and also has a public key.
+                        // Only the sender gets these
+                        byte[] receiverKeyBytes = new byte[data.length - 4];
+                        System.arraycopy(data, 4, receiverKeyBytes, 0, receiverKeyBytes.length);
+                        PublicKey receiverKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(receiverKeyBytes));
+                        this.publicKeys.put((int) data[1], receiverKey);
+                        //Both parties know the public keys of the other side.
+                        //Sender now generates and sends the AES key, encrypted with the public key of the receiver
+                        security.generateAESKey(data[1]);
+                        sendAESKey(data[1]);
+                        break;
+                    case 8:
+                        //This is the encrypted AES key.
+                        // Only the receiver gets this.
+                        byte[] encryptedAESKeyBytes = new byte[data.length - 4];
+                        System.arraycopy(data, 4, encryptedAESKeyBytes, 0, encryptedAESKeyBytes.length);
+                        SecretKey key = security.decryptAESKey(encryptedAESKeyBytes);
+                        security.addSymmetricKey(data[1], key);
+                        sendAck(data[1], intToByte(2));
+                        break;
+
+
                 }
             }
             else if (computerNumber != data[1] && computerNumber == data[3]){
@@ -253,6 +293,10 @@ public class MultiCast2 implements Runnable{
                 this.s.send(datagramdata);
             }
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeySpecException e) {
             e.printStackTrace();
         }
     }
@@ -356,6 +400,44 @@ public class MultiCast2 implements Runnable{
             e.printStackTrace();
         }
     }
+
+    private void sendPublicKey(int destination) {
+        KeyPacket keyPacket = new KeyPacket(computerNumber, destination, getNextHop(destination), security.getPublicKey(), false);
+        DatagramPacket packet = new DatagramPacket(keyPacket.getKeyPacket(), keyPacket.getKeyPacket().length, group, PORT);
+        try {
+            this.s.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendPublicKeyAck(int destination) {
+        KeyPacket keyPacket = new KeyPacket(computerNumber, destination, getNextHop(destination), security.getPublicKey(), true);
+        DatagramPacket packet = new DatagramPacket(keyPacket.getKeyPacket(), keyPacket.getKeyPacket().length, group, PORT);
+        try {
+            this.s.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void sendAESKey(int destination) {
+        SecretKey AESKey = security.getSymmetricKey(destination);
+        if (AESKey != null) {
+            //Encrypt the AES key with the public key of the receiver
+            byte[] encryptedAESKey = security.getEncryptedAESKey(this.publicKeys.get(destination), AESKey);
+            AESPacket aesPacket = new AESPacket(computerNumber, destination, getNextHop(destination), encryptedAESKey);
+            DatagramPacket packet = new DatagramPacket(aesPacket.getAESPacket(), aesPacket.getAESPacket().length, group, PORT);
+            try {
+                this.s.send(packet);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
 
     private void sendImage(String imageName, int destination) {
         try {
@@ -487,10 +569,6 @@ public class MultiCast2 implements Runnable{
     }
 
     public void requestPublicKeys(int destination) {
-
-    }
-
-    private void hoi() {
 
     }
 

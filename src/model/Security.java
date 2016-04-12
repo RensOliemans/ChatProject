@@ -5,9 +5,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
-import com.sun.istack.internal.Nullable;
 import org.apache.commons.codec.binary.Base64;
 
 /**
@@ -21,11 +19,12 @@ public class Security {
     //  2.
 
     //HashMap with K: computerNumber and V: SecretKey.
-    private SecretKey ownSymmetricKey;
+    private Map<Integer, SecretKey> symmetricKeys;
     private KeyPair RSAKeyPair;
     private static final String xform = "RSA/ECB/PKCS1Padding";
 
     public Security() {
+        this.symmetricKeys = new HashMap<Integer, SecretKey>();
         System.out.println("Generating public and private keys...");
         long startTime = System.currentTimeMillis();
         generateRSAKeyPair();
@@ -37,13 +36,28 @@ public class Security {
         return RSAKeyPair.getPublic();
     }
 
-    public byte[] getEncryptedAESKey(PublicKey publicKey) {
-        return EncryptOwnSecretKey(publicKey);
+    public byte[] getEncryptedAESKey(PublicKey publicKey, SecretKey AESKey) {
+        return EncryptSecretKey(publicKey, AESKey);
+    }
+
+    public SecretKey getSymmetricKey(int computerNumber) {
+        if (symmetricKeys.containsKey(computerNumber)) {
+            return symmetricKeys.get(computerNumber);
+        }
+        return null;
+    }
+
+    public void addSymmetricKey(int computerNumber, SecretKey secretKey) {
+        if (!this.symmetricKeys.containsKey(computerNumber)) {
+            this.symmetricKeys.put(computerNumber, secretKey);
+        } else {
+            System.out.println("symmetric key already exists for this person, see Security.addSymmetricKey(..)");
+        }
     }
 
 
 
-    private KeyPair generateRSAKeyPair() {
+    private void generateRSAKeyPair() {
         KeyPair kp = null;
         //Generate a key
         try {
@@ -53,10 +67,10 @@ public class Security {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        return kp;
+        this.RSAKeyPair = kp;
     }
 
-    public SecretKey generateAESKey(int computerNumber) {
+    public void generateAESKey(int computerNumber) {
         KeyGenerator keyGen = null;
         try {
 
@@ -64,7 +78,7 @@ public class Security {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        return keyGen.generateKey();
+        this.symmetricKeys.put(computerNumber, keyGen.generateKey());
     }
 
     //symmetric encryption with symmetricKey in SecretKey format
@@ -107,14 +121,14 @@ public class Security {
     }
 
 
-    private byte[] EncryptOwnSecretKey(PublicKey publicKey) {
+    private byte[] EncryptSecretKey(PublicKey publicKey, SecretKey symmetricKey) {
         Cipher cipher = null;
         byte[] key = null;
 
         try {
             cipher = Cipher.getInstance(xform);
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            key = cipher.doFinal(ownSymmetricKey.getEncoded());
+            key = cipher.doFinal(symmetricKey.getEncoded());
         } catch (Exception e) {
             System.out.println("exception encoding key: " + e.getMessage());
             e.printStackTrace();
@@ -122,7 +136,8 @@ public class Security {
         return key;
     }
 
-    private SecretKey decryptAESKey(byte[] data) {
+    public SecretKey decryptAESKey(byte[] data) {
+        //This method decrypts an encrypted AES key with its own private key
         SecretKey key = null;
         PrivateKey privateKey = null;
         Cipher cipher = null;

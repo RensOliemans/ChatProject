@@ -12,7 +12,6 @@ public class Routing /*implements Runnable*/{
     private int linkcost;
     private int sourceAdress;
     private int[] forwardingTable = new int[8];
-    private MultiCast2 multiCast = new MultiCast2();
     private static GUI gui = new GUI();
 //    private static MultiCast2 multiCast2 = new MultiCast2();
     private static Ping ping;
@@ -32,9 +31,7 @@ public class Routing /*implements Runnable*/{
 //        }
 //    }
 
-    public Routing(int computerNumber) {
-        multiCast = new MultiCast2();
-        multiCast.setComputerNumber(computerNumber);
+    public Routing() {
     }
 
 
