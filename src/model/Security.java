@@ -1,77 +1,101 @@
 package model;
 
-//import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
-//import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
+import com.sun.istack.internal.Nullable;
 import org.apache.commons.codec.binary.Base64;
 
 /**
  * Created by Rens on 5-4-2016.
+ * This is the main security class, which holds
  */
 public class Security {
+    //TODO: implement the following:
+    //The steps to encryption are to share the person's symmetric key via public/private keys:
+    //  1.  Send the receiver the symmetric key, encrypted with their public key
+    //  2.
 
-    //What you want to do is encrypt every message.
-    //TODO: create way to handle incoming messages
+    //HashMap with K: computerNumber and V: SecretKey.
+    private SecretKey ownSymmetricKey;
+    private KeyPair RSAKeyPair;
+    private static final String xform = "RSA/ECB/PKCS1Padding";
 
-    //TODO: create way to share session keys
+    public Security() {
+        System.out.println("Generating public and private keys...");
+        long startTime = System.currentTimeMillis();
+        generateRSAKeyPair();
+        System.out.println("Successfully created 512 byte RSA keys in : " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
 
-    //TODO: create way to sign digitally
-
-    private String key;
-    private Key aesKey;
-    private Cipher cipher;
-
-    public void setup(String key) {
-        try {
-            //Create key and cipher
-            this.key = key;
-            this.aesKey = new SecretKeySpec(key.getBytes(), "AES");
-            this.cipher = Cipher.getInstance("AES");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        }
     }
 
-    public String symmetricEncrypt(String text, String secretKey) {
+
+    public PublicKey getPublicKey() {
+        return RSAKeyPair.getPublic();
+    }
+
+    public byte[] getEncryptedAESKey(PublicKey publicKey) {
+        return EncryptOwnSecretKey(publicKey);
+    }
+
+
+
+    private KeyPair generateRSAKeyPair() {
+        KeyPair kp = null;
+        //Generate a key
+        try {
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+            kpg.initialize(4096); //keysize: 4096 bits, 512 bytes
+            kp = kpg.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return kp;
+    }
+
+    public SecretKey generateAESKey(int computerNumber) {
+        KeyGenerator keyGen = null;
+        try {
+
+            keyGen = KeyGenerator.getInstance("AES");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return keyGen.generateKey();
+    }
+
+    //symmetric encryption with symmetricKey in SecretKey format
+    private String encryptSymm(String text, SecretKey secretKey) {
         byte[] raw;
         String encryptedString;
-        SecretKeySpec skeySpec;
+        SecretKeySpec secretKeySpec;
         byte[] encryptText = text.getBytes();
-        Cipher cipher;
+        Cipher cipher = null;
         try {
-            raw = Base64.decodeBase64(secretKey);
-            skeySpec = new SecretKeySpec(raw, "AES");
+            secretKeySpec = new SecretKeySpec(secretKey.getEncoded(), "AES");
             cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
             encryptedString = Base64.encodeBase64String(cipher.doFinal(encryptText));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return "Error";
         }
         return encryptedString;
     }
 
-    public static String symmetricDecrypt(String text, String secretKey) {
-        Cipher cipher;
+    //symmetric decryption with symmetricKey in SecretKey format
+    private String decryptSymm(String text, SecretKey secretKey) {
+        Cipher cipher = null;
         String encryptedString;
         byte[] encryptText = null;
-        byte[] raw;
         SecretKeySpec skeySpec;
         try {
-            raw = Base64.decodeBase64(secretKey);
-            skeySpec = new SecretKeySpec(raw, "AES");
+            skeySpec = new SecretKeySpec(secretKey.getEncoded(), "AES");
+//            encryptText = Base64.encodeBase64(text.getBytes());
             encryptText = Base64.decodeBase64(text);
             cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec);
@@ -84,39 +108,71 @@ public class Security {
     }
 
 
+    private byte[] EncryptOwnSecretKey(PublicKey publicKey) {
+        Cipher cipher = null;
+        byte[] key = null;
 
-
-
-
-    public String encrypt(String message) {
         try {
-            //Encrypt the message
-            this.cipher.init(Cipher.ENCRYPT_MODE, this.aesKey);
-            byte[] encrypted = cipher.doFinal(message.getBytes());
-            return new String(encrypted);
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
+            cipher = Cipher.getInstance(xform);
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            key = cipher.doFinal(ownSymmetricKey.getEncoded());
+        } catch (Exception e) {
+            System.out.println("exception encoding key: " + e.getMessage());
             e.printStackTrace();
         }
-        return "Couldn't encrypt the message: " + message;
+        return key;
     }
 
-    public String decrypt(String message) {
+    private SecretKey decryptAESKey(byte[] data) {
+        SecretKey key = null;
+        PrivateKey privateKey = null;
+        Cipher cipher = null;
         try {
-            this.cipher.init(Cipher.DECRYPT_MODE, this.aesKey);
-            String decrypted = new String(cipher.doFinal(message.getBytes()));
-            return decrypted;
-        } catch (InvalidKeyException e) {
+            privateKey = RSAKeyPair.getPrivate();
+
+            cipher = Cipher.getInstance(xform);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+            key = new SecretKeySpec(cipher.doFinal(data), "AES");
+        } catch (Exception e) {
+            System.out.println("Error decrypting the aes key: " + e.getMessage());
             e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
+            return null;
         }
-        return "Couldn't decrypt the message: " + message;
+        return key;
     }
 
+
+    private String encryptRSA(String text, PublicKey publicKey) {
+        //Uses a public key (so you can send an encrypted AES key with someone else's keys)
+        try {
+            Cipher cipher = Cipher.getInstance(xform);
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            return new String(cipher.doFinal(text.getBytes()));
+        } catch (Exception e) {
+            System.out.println("Exception encoding key: " + e.getMessage());
+            e.printStackTrace();
+            return "Error in RSA encryption";
+        }
+    }
+
+    private String decryptRSA(String text) {
+        //Uses its own private key
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance(xform);
+            cipher.init(Cipher.DECRYPT_MODE, RSAKeyPair.getPrivate());
+            return new String(cipher.doFinal(text.getBytes()));
+        } catch (Exception e) {
+            System.out.println("Exception decoding key: " + e.getMessage());
+            e.printStackTrace();
+            return "Error in RSA decryption";
+        }
+    }
+
+
+
+    public static void main(String[] args) {
+        Security security = new Security();
+    }
 }
