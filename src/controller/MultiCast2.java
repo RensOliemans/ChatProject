@@ -1,13 +1,15 @@
 package controller;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
+import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.time.LocalTime;
 import java.util.*;
@@ -18,10 +20,7 @@ import model.*;
 import view.GUI;
 
 import javax.crypto.SecretKey;
-import javax.xml.crypto.Data;
-import javax.xml.soap.Text;
-
-import static com.oracle.jrockit.jfr.ContentType.Bytes;
+import javax.imageio.ImageIO;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -48,14 +47,16 @@ public class MultiCast2 implements Runnable{
     //Byte is the destination, sender is you
     private Map<Byte, Sender> senders = new HashMap<>();
     private int computerNumber;
-    private static final int DATASIZE=128;
+    private static final int DATASIZE=1024;
     public static final int HEADER = 1;
     private int synint;
 
     private int receivedPing = 0;
-    private long seconds1;
+    private long seconds;
     private long seconds2;
-    public List presence = new ArrayList<>();
+    private  long seconds3 = 0;
+    private  long seconds4 = 0;
+    public List presence;
 
     /*
      * Getter for computerNumber
@@ -132,6 +133,9 @@ public class MultiCast2 implements Runnable{
                 }
             }
             if (computerNumber != data[1]) {
+                for (byte b : data) {
+//                    System.out.print(b);
+                }
                 switch (data[0]) {
                     // textpacket
                     //Only receiver gets these
@@ -144,7 +148,6 @@ public class MultiCast2 implements Runnable{
                         System.arraycopy(data, 3 + seq.length, message, 0, message.length);
                         receiver.received.put(seq, message);
                         break;
-
                     //RoutingPacket
                     case 1:
                         Routing routing = new Routing(computerNumber);
@@ -159,33 +162,43 @@ public class MultiCast2 implements Runnable{
 
                     //pingPacket
                     case 2:
-                        if (!presence.contains(data[1]) && data[1] != 0){
+                        if (seconds3 == 0){
+                            LocalTime time3 = LocalTime.now();
+                            seconds3 = time3.getSecond();
                             presence.add(data[1]);
                         }
-                        if (receivedPing == 0){
-                            seconds1 = System.currentTimeMillis();
-                            receivedPing ++;
-                        } else {
-                            seconds2 = System.currentTimeMillis();
-                            receivedPing ++;
+                        if (seconds3 != 0){
+                            LocalTime time4 = LocalTime.now();
+                            seconds4 = time4.getSecond();
                         }
-                        if ((seconds2 - seconds1 > 3000) && (receivedPing != 0)){
-                            int[] emptyForwardingTable = new int[8];
-                            sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
-                            System.out.println("received ping pakkets= " + receivedPing);
-                        }
-                        if ((seconds2 - seconds1 > 4500) && (receivedPing != 0)){
-                            seconds1 = 0;
-                            seconds2 = 0;
-                            receivedPing = 0;
-                            System.out.println("presence lijst is nu als volgt: ");
-                            for (int x=0; x<presence.size(); x++){
-                                System.out.println(presence.get(x));
-                            }
+                        if (seconds4 - seconds3 >= 4.5){
+                            seconds3 = 0;
+                            seconds4 = 0;
                             presence.clear();
                         }
 
 
+                        if (receivedPing == 0){
+                            if (seconds2 - seconds >= 4.5) {
+                                LocalTime time = LocalTime.now();
+                                seconds = time.getSecond();
+                                seconds2 = seconds;
+                            }
+                            if (seconds2 - seconds <= 1){
+                                receivedPing++;
+                            }
+                        } else {
+                            LocalTime time2 = LocalTime.now();
+                            seconds2 = time2.getSecond();
+                            receivedPing++;
+                        }
+                        if (seconds2 - seconds > 1 && receivedPing != 0){
+                            int[] emptyForwardingTable = new int[8];
+                            sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
+                            System.out.println("receivedPing= " + receivedPing);
+                            receivedPing = 0;
+
+                        }
                         break;
 
                     // startpacket
@@ -202,9 +215,10 @@ public class MultiCast2 implements Runnable{
                     case 4:
                         System.out.println("ACK");
                         seq = new byte[HEADER*4];
-
+                        System.out.println("data length: " + data.length);
                         System.arraycopy(data, 3, seq, 0, HEADER*4);
                         seqint = byteToInt(seq);
+                        System.out.println("seqint is: " + seqint);
                         if (seqint == 0) {
                             System.out.println("Start ack received");
                             sender.setFirstReceivedTrue();
@@ -215,15 +229,22 @@ public class MultiCast2 implements Runnable{
                             sender.removeNotReceived(seq);
                         }
                         break;
-                        //finishpacket
-                        //Only receiver gets these
+                    //finishpacket
+                    //Only receiver gets these
                     case 5:
                         seq = intToByte(1);
                         sendAck(data[1], seq);
                         System.out.println("Hij gaat nu in order");
                         receiver.order();
+                        Byte[] dataArray = receiver.goodOrder.toArray(new Byte[receiver.goodOrder.size()]);
+                        byte[] byteArray = new byte[dataArray.length];
+                        for (int j = 0; j < dataArray.length; j++) {
+                            byteArray[j] = dataArray[j];
+                        }
                         System.out.println(new String (String.valueOf(receiver.goodOrder)));
                         break;
+                    case 6:
+                        //
                 }
             }
         } catch (IOException e) {
@@ -261,7 +282,7 @@ public class MultiCast2 implements Runnable{
      */
     private void sendAck(int destination, byte[] ackNumber) {
         AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber);
-        System.out.println(computerNumber + ", " + destination + ", " + ackNumber[0]);
+        System.out.println("comp + dest + ack[3] : " + computerNumber + ", " + destination + ", " + ackNumber[3]);
         byte[] packet = ackPacket.getAckPacket();
         DatagramPacket ack = new DatagramPacket(packet, packet.length, group, PORT);
         try {
@@ -274,10 +295,9 @@ public class MultiCast2 implements Runnable{
     /*
      * Sends a ping to everyone on the network.
      */
-    public void sendPing(int computerNumber, String name) {
-        System.out.println("computernumber given with pingpackets= " + computerNumber);
+    public void sendPing() {
         for (int i = 0; i < 255; i++){
-            PingPacket burstPacket = new PingPacket(computerNumber, name);
+            PingPacket burstPacket = new PingPacket(computerNumber, "Een naam hier plaatsen");
             DatagramPacket burst = new DatagramPacket(burstPacket.getPingPacket(), burstPacket.getPingPacket().length, group, PORT);
             try {
                 this.s.send(burst);
@@ -317,10 +337,27 @@ public class MultiCast2 implements Runnable{
     }
 
     private void sendRoutingPacket(int destinationAddress, int linkcost, int[] data_table){
-        RoutingPacket routingPacket = new RoutingPacket(computerNumber, destinationAddress, 256-linkcost, data_table);
+        RoutingPacket routingPacket = new RoutingPacket(computerNumber, destinationAddress, 255-linkcost, data_table);
         DatagramPacket routing = new DatagramPacket(routingPacket.getRoutingPacket(), routingPacket.getRoutingPacket().length, group, PORT);
         try {
             this.s.send(routing);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendImage(String imageName, int destination) {
+        try {
+            //open image
+            File imgPath = new File(imageName);
+            BufferedImage bufferedImage = ImageIO.read(imgPath);
+
+            //get DataBufferBytes from raster
+            WritableRaster raster = bufferedImage.getRaster();
+            DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+
+            //send the image
+            sendMessage(data.getData(), destination);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -349,6 +386,11 @@ public class MultiCast2 implements Runnable{
         return result;
     }
 
+    private void sendKeyRequest(int destination) {
+        byte[] message = new byte[/*length*/1];
+
+    }
+
     /*
      * This message sends a message (
      */
@@ -356,19 +398,21 @@ public class MultiCast2 implements Runnable{
         try {
             //Send the entire message, split and with send data from TCP
             int seqint = 2;
-            byte[] seq = intToByte(seqint);
-            //SYN starts with 1, because SYN 0 is reserved for the ACK of the START message, and
-            //SYN 1 is reserved for the ACK of the FIN message
+            //SEQ starts with 2, because SEQ 0 is reserved for the ACK of the START message, and
+            //SEQ 1 is reserved for the ACK of the FIN message
             List<byte[]> splitmessages = splitMessages(msg);
             for (byte[] packet : splitmessages) {
+                byte[] seq = intToByte(seqint);
                 TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(packet));
-                System.out.println("sequence number is= " + seq[0] + "" + seq[1] + "" + seq[2] + "" + seq[3]);
+                System.out.println("seq[0] + seq[1] + seq[2] + seq[3]: " + seq[0] + seq[1] + seq[2] + seq[3]);
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
                 this.s.send(messagePacket);
                 boolean alAanwezig = false;
-                for (Map.Entry<byte[], byte[]> e: sender.getNotReceived().entrySet()){
-                    if (java.util.Arrays.equals(e.getKey(), seq)){
-                        alAanwezig = true;
+                synchronized (sender) {
+                    for (Map.Entry<byte[], byte[]> e : sender.getNotReceived().entrySet()) {
+                        if (java.util.Arrays.equals(e.getKey(), seq)) {
+                            alAanwezig = true;
+                        }
                     }
                 }
                 if (!alAanwezig){
@@ -387,8 +431,8 @@ public class MultiCast2 implements Runnable{
         }
 
         //If packets have been lost (not acked after 100ms), resend them until everything has been acked
-        while (sender.getNotReceived().size()>0){
-            System.out.println("notreceived is nog niet leeg");
+        while (sender.getNotReceived().size() > 0){
+            System.out.println("nog niet leeg");
             Map<byte[], byte[]> notreceived = sender.getNotReceived();
             for (Map.Entry<byte[], byte[]> e : notreceived.entrySet()){
                 sendMessage(e.getValue(), destination);
@@ -417,7 +461,8 @@ public class MultiCast2 implements Runnable{
 
         //If the receiver received their 'First' message and replied with an ack, send the message
         System.out.println("Het firstreceived zetten is goed gegaan");
-        sendMessage(msg.getBytes(), destination);
+//        sendMessage(msg.getBytes(), destination);
+        sendImage(msg, destination);
 
         //After the message has been sent, send the 'Finish' message and wait for ack
         while (!sender.finishReceived){
@@ -458,12 +503,5 @@ public class MultiCast2 implements Runnable{
 
     public byte[] intToByteArray(int number) {
         return ByteBuffer.allocate(4).putInt(number).array();
-    }
-
-    public int byteArrayToInt(byte[] array) {
-        return (array[0]<<24)&0xff000000|
-                (array[1]<<16)&0x00ff0000|
-                (array[2]<< 8)&0x0000ff00|
-                (array[3]<< 0)&0x000000ff;
     }
 }

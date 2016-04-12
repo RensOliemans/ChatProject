@@ -32,26 +32,24 @@ public class Sender {
         this.firstReceived = false;
     }
 
-    public void putNotReceived(byte[] key, byte[] value) {
+    public synchronized void putNotReceived(byte[] key, byte[] value) {
         this.notReceived.put(key, value);
     }
 
-    public void removeNotReceived(byte[] key) {
-        this.f++;
-        System.out.println(f);
-//        senderLock.lock();
-//        byte[] toRemove = null;
-        notReceived.remove(key);
-        System.out.println(notReceived.containsKey(key));
-//        for (Map.Entry<byte[], byte[]> entry : notReceived.entrySet()) {
-//            toRemove = entry.getKey();
-//            Object value = entry.getValue();
-//            if (MultiCast2.byteToInt(toRemove) == MultiCast2.byteToInt(key)) {
-//                break;
-//            }
-//        }
-//        notReceived.remove(toRemove);
-//        senderLock.unlock();
+    public synchronized void removeNotReceived(byte[] key) {
+        senderLock.lock();
+        byte[] toRemove = null;
+//        notReceived.remove(key);
+//        System.out.println(notReceived.containsKey(key));
+        for (Map.Entry<byte[], byte[]> entry : notReceived.entrySet()) {
+            toRemove = entry.getKey();
+            Object value = entry.getValue();
+            if (MultiCast2.byteToInt(toRemove) == MultiCast2.byteToInt(key)) {
+                break;
+            }
+        }
+        notReceived.remove(toRemove);
+        senderLock.unlock();
     }
 
     public Map<byte[], byte[]> getNotReceived() {
