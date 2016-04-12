@@ -60,7 +60,7 @@ public class MultiCast2 implements Runnable{
     private long seconds1;
     private long seconds2;
     public List presence = new ArrayList<>();
-    private Routing routing = new Routing(computerNumber);
+    private Routing routing = new Routing();
 
 
     /*
@@ -73,6 +73,7 @@ public class MultiCast2 implements Runnable{
         int nextHop = forwardingtable[destination+7];
         return nextHop;
     }
+
     public int getComputerNumber() {
         return computerNumber;
     }
@@ -159,7 +160,7 @@ public class MultiCast2 implements Runnable{
                     //RoutingPacket
                     case 1:
                         if (data[2] == computerNumber){
-                            Routing routing = new Routing(computerNumber);
+                            Routing routing = new Routing();
                             routing.setSourceAddress(data[1]);
                             routing.setLinkCost(data[3]);
                             byte[] bArray = new byte[8];

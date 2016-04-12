@@ -12,31 +12,8 @@ public class Routing /*implements Runnable*/{
     private int linkcost;
     private int sourceAdress;
     private int[] forwardingTable = new int[8];
-    private MultiCast2 multiCast = new MultiCast2();
     private static GUI gui = new GUI();
-//    private static MultiCast2 multiCast2 = new MultiCast2();
     private static Ping ping;
-
-//    public static void main(String[] args) {
-//        MultiCast2 multiCast2 = new MultiCast2();
-//        multiCast2.join();
-//        System.out.println("Enter computer number");
-//        int computerNumber = new Scanner(System.in).nextInt();
-//        Routing routing = new Routing(computerNumber);
-//        Thread jekanechthelemaalniks = new Thread(routing);
-//        jekanechthelemaalniks.start();
-//        Thread receiveThread = new Thread(multiCast2);
-//        receiveThread.start();
-//        multiCast2.setComputerNumber(computerNumber);
-//        while (true){
-//        }
-//    }
-
-    public Routing(int computerNumber) {
-        multiCast = new MultiCast2();
-        multiCast.setComputerNumber(computerNumber);
-    }
-
 
     public void setLinkCost(int receivedInt){
         this.linkcost = receivedInt;
