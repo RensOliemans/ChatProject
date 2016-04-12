@@ -39,9 +39,4 @@ public class PingPacket {
         return b;
     }
 
-    public byte[] StringToByte(String string){
-        byte[] b = string.getBytes();
-        return b;
-    }
-
 }
