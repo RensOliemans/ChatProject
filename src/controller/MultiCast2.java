@@ -1,5 +1,9 @@
 package controller;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.DatagramPacket;
@@ -56,12 +60,19 @@ public class MultiCast2 implements Runnable{
     private long seconds1;
     private long seconds2;
     public List presence = new ArrayList<>();
+    private Routing routing = new Routing(computerNumber);
+
 
     /*
      * Getter for computerNumber
      *
      * @return the computerNumber of the person belonging to MultiCast
      */
+    public int getNextHop(int destination){
+        int[] forwardingtable = routing.getForwardingTable();
+        int nextHop = forwardingtable[destination+7];
+        return nextHop;
+    }
     public int getComputerNumber() {
         return computerNumber;
     }
@@ -119,7 +130,6 @@ public class MultiCast2 implements Runnable{
             byte[] data = recv.getData();
             byte[] seq;
             int seqint;
-            data = removeRensByte(data);
             int i = data.length;
             for (Map.Entry<Byte, Sender> e: senders.entrySet()){
                 if (e.getKey() == data[1]){
@@ -131,17 +141,18 @@ public class MultiCast2 implements Runnable{
                     receiver = e.getValue();
                 }
             }
-            if (computerNumber != data[1]) {
+            if (computerNumber != data[1] && computerNumber == data[2] && computerNumber == data[3]) {
+                data = removeRensByte(data);
                 switch (data[0]) {
                     // textpacket
                     //Only receiver gets these
                     case 0:
                         System.out.println("TEXT");
                         seq = new byte[HEADER*4];
-                        System.arraycopy(data, 3, seq, 0, HEADER*4);
+                        System.arraycopy(data, 4, seq, 0, HEADER*4);
                         sendAck(data[1], seq);
-                        byte[] message = new byte[data.length - 3 - seq.length];
-                        System.arraycopy(data, 3 + seq.length, message, 0, message.length);
+                        byte[] message = new byte[data.length - 4 - seq.length];
+                        System.arraycopy(data, 4 + seq.length, message, 0, message.length);
                         receiver.received.put(seq, message);
                         break;
 
@@ -203,7 +214,7 @@ public class MultiCast2 implements Runnable{
                         System.out.println("ACK");
                         seq = new byte[HEADER*4];
 
-                        System.arraycopy(data, 3, seq, 0, HEADER*4);
+                        System.arraycopy(data, 4, seq, 0, HEADER*4);
                         seqint = byteToInt(seq);
                         if (seqint == 0) {
                             System.out.println("Start ack received");
@@ -230,9 +241,15 @@ public class MultiCast2 implements Runnable{
                         receiver.showImage(byteArray);
                         System.out.println(String.valueOf(receiver.goodOrder));
                         break;
-                    case 6:
+                    //case 6:
                         //
                 }
+            }
+            else if (computerNumber != data[1] && computerNumber == data[3]){
+                int tussenHop = getNextHop(data[2]);
+                data[3] = (byte) tussenHop;
+                DatagramPacket datagramdata = new DatagramPacket(data, data.length, group, PORT);
+                this.s.send(datagramdata);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -268,7 +285,7 @@ public class MultiCast2 implements Runnable{
      * @param byte[] acknumber, the acknumber to send in the ACK message
      */
     private void sendAck(int destination, byte[] ackNumber) {
-        AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber);
+        AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber, getNextHop(destination));
         System.out.println("comp + dest + ack[3] : " + computerNumber + ", " + destination + ", " + ackNumber[3]);
         byte[] packet = ackPacket.getAckPacket();
         DatagramPacket ack = new DatagramPacket(packet, packet.length, group, PORT);
@@ -282,12 +299,18 @@ public class MultiCast2 implements Runnable{
     /*
      * Sends a ping to everyone on the network.
      */
-    public void sendPing(int computerNumber, String name) {
+    public void sendPing() {
         for (int i = 0; i < 255; i++){
-            PingPacket burstPacket = new PingPacket(computerNumber, name);
-            DatagramPacket burst = new DatagramPacket(burstPacket.getPingPacket(), burstPacket.getPingPacket().length, group, PORT);
+            PingPacket burstPacket1 = new PingPacket(computerNumber, (computerNumber%4)+1, getNextHop((computerNumber%4)+1));
+            PingPacket burstPacket2 = new PingPacket(computerNumber, (computerNumber%4)+2, getNextHop((computerNumber%4)+2));
+            PingPacket burstPacket3 = new PingPacket(computerNumber, (computerNumber%4)+3, getNextHop((computerNumber%4)+3));
+            DatagramPacket burst1 = new DatagramPacket(burstPacket1.getPingPacket(), burstPacket1.getPingPacket().length, group, PORT);
+            DatagramPacket burst2 = new DatagramPacket(burstPacket2.getPingPacket(), burstPacket2.getPingPacket().length, group, PORT);
+            DatagramPacket burst3 = new DatagramPacket(burstPacket3.getPingPacket(), burstPacket3.getPingPacket().length, group, PORT);
             try {
-                this.s.send(burst);
+                this.s.send(burst1);
+                this.s.send(burst2);
+                this.s.send(burst3);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -300,7 +323,7 @@ public class MultiCast2 implements Runnable{
      * @param int destination, the computernumber of the player to send the message to
      */
     private void sendFirst(int destination) {
-        StartPacket firstPacket = new StartPacket(computerNumber, destination);
+        StartPacket firstPacket = new StartPacket(computerNumber, destination, getNextHop(destination));
         DatagramPacket first = new DatagramPacket(firstPacket.getStartPacket(), firstPacket.getStartPacket().length, group, PORT);
         try {
             this.s.send(first);
@@ -314,7 +337,7 @@ public class MultiCast2 implements Runnable{
      * @param int destination, the computernumber of the player to send the message to
      */
     private void sendFinish(int destination) {
-        FinishPacket finishPacket = new FinishPacket(computerNumber, destination);
+        FinishPacket finishPacket = new FinishPacket(computerNumber, destination, getNextHop(destination));
         DatagramPacket finish = new DatagramPacket(finishPacket.getFinishPacket(), finishPacket.getFinishPacket().length, group, PORT);
         try {
             this.s.send(finish);
@@ -385,7 +408,7 @@ public class MultiCast2 implements Runnable{
             List<byte[]> splitmessages = splitMessages(msg);
             for (byte[] packet : splitmessages) {
                 byte[] seq = intToByte(seqint);
-                TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(packet));
+                TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(packet), getNextHop(destination));
                 System.out.println("seq[0] + seq[1] + seq[2] + seq[3]: " + seq[0] + seq[1] + seq[2] + seq[3]);
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
                 this.s.send(messagePacket);

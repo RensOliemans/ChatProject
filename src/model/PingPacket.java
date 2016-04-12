@@ -5,33 +5,31 @@ package model;
  */
 public class PingPacket {
 
+    private int destination;
+    private int nextHop;
     private int sourceAddress;
-    private String name;
     private final int PINGPACKET = 2;
 
-    public PingPacket(int sourceAddress, String name){
+    public PingPacket(int sourceAddress, int destination, int nextHop){
         this.sourceAddress = sourceAddress;
-        this.name = name;
+        this.destination = destination;
+        this.nextHop = nextHop;
     }
 
     public byte[] getPingPacket(){
-        byte[] pingpacket = new byte[(3 + name.length())];
+        byte[] pingpacket = new byte[5];
 
         //add the indication byte that indicates what type of packet this is
         pingpacket[0] = intToByte(PINGPACKET);
 
         //add the source to the packet
         pingpacket[1] = intToByte(this.sourceAddress);
-
-        //add the username to the packet
-        for (int i = 2; i < (name.length() + 2); i++){
-            byte[] array = StringToByte(name);
-            pingpacket[i] = array[i-2];
-        }
+        pingpacket[2] = intToByte(this.destination);
+        pingpacket[3] = intToByte(this.nextHop);
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        pingpacket[name.length()+2] = intToByte(1);
+        pingpacket[4] = intToByte(1);
 
         return pingpacket;
     }

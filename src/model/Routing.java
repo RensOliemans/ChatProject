@@ -50,7 +50,6 @@ public class Routing /*implements Runnable*/{
     }
 
     public void setForwardingTable(int[] receivedTable){
-
         for (int j = 1; j < 5; j++){
             if (forwardingTable[j-1] == j){
                 if (receivedTable[j+3] < forwardingTable[j+3]){
