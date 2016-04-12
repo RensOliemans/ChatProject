@@ -231,7 +231,7 @@ public class MultiCast2 implements Runnable{
                             sender.setFinishReceivedTrue();
                         } else if (seqint == 2) {
                             System.out.println("Key ack received");
-
+                            sender.setKeysRecievedTrue();
                         } else {
                             sender.removeNotReceived(seq);
                         }
