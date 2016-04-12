@@ -12,6 +12,7 @@ public class Routing /*implements Runnable*/{
     private int linkcost;
     private int sourceAdress;
     private int[] forwardingTable = new int[8];
+
     private static GUI gui = new GUI();
     private static Ping ping;
     private int[] forwardingTable = new int[12];
