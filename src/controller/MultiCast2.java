@@ -5,15 +5,12 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
-import java.time.LocalTime;
 import java.util.*;
 
 import model.Sender;
@@ -23,10 +20,6 @@ import view.GUI;
 
 import javax.crypto.SecretKey;
 import javax.imageio.ImageIO;
-import javax.xml.crypto.Data;
-import javax.xml.soap.Text;
-
-import static com.oracle.jrockit.jfr.ContentType.Bytes;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -35,12 +28,8 @@ import static com.oracle.jrockit.jfr.ContentType.Bytes;
  */
 public class MultiCast2 implements Runnable{
 
-    //Dit is een voorbeeld van een join methode
-
     private static final String HOST = "228.0.0.0";
     private static final int PORT = 1234;
-    //    String host;
-    //    int port;
     private InetAddress group;
     private MulticastSocket s;
     private Sender sender;
@@ -50,15 +39,11 @@ public class MultiCast2 implements Runnable{
     private Map<Integer, SecretKey> symmetricKeys = new HashMap<>(); //HashMap with K: computerNumber and V: our symmetric key
     private Map<Integer, PublicKey> publicKeys = new HashMap<>(); //HashMap with K: computerNumber and V: their public keys
     private Map<Byte, Receiver> receivers = new HashMap<>();
-    //Byte is the destination, sender is you
     private Map<Byte, Sender> senders = new HashMap<>();
     private int computerNumber;
     private static final int DATASIZE=128;
     public static final int HEADER = 1;
     private int synint;
-
-    Routing routing;
-
     private int receivedPing1 = 0;
     private int receivedPing2 = 0;
     private int receivedPing3 = 0;
@@ -72,6 +57,7 @@ public class MultiCast2 implements Runnable{
     private long seconds7;
     private long seconds8;
     public List presence = new ArrayList<>();
+    private Routing routing = new Routing(computerNumber);
 
 
     /*
@@ -87,7 +73,6 @@ public class MultiCast2 implements Runnable{
 
     public int getComputerNumber() {
         return computerNumber;
-        routing = new Routing(computerNumber);
     }
 
     public static byte[] intToByte(int number) {
@@ -177,6 +162,7 @@ public class MultiCast2 implements Runnable{
                     //RoutingPacket
                     case 1:
                         if (data[2] == computerNumber){
+                            Routing routing = new Routing(computerNumber);
                             routing.setSourceAddress(data[1]);
                             routing.setLinkCost(data[3]);
                             byte[] bArray = new byte[12];
