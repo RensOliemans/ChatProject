@@ -25,6 +25,14 @@ public class MultiCast extends Thread {
     private MulticastSocket multicastSocket;
     private TCP tcp;
     private GUIold GUIold;
+    public List presence = new ArrayList<Integer>();
+
+	public MultiCast() {
+		presence.add(new Integer(1));
+		presence.add(new Integer(2));
+		presence.add(new Integer(3));
+		presence.add(new Integer(4));
+	}
 
     public void setup() {
         try {
