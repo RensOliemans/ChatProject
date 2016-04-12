@@ -1,17 +1,20 @@
 package model;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import controller.MultiCast2;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 /**
  * Created by Birte on 7-4-2016.
@@ -49,11 +52,9 @@ public class Receiver {
 
     public void showImage(byte[] imageData) {
         try {
-            System.out.println("yes");
-            System.out.println(imageData.length);
-            BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageData));
-
-            ImageIO.write(image, "jpg", new File("image.jpg"));
+            InputStream in = new ByteArrayInputStream(imageData);
+            BufferedImage image = ImageIO.read(in);
+            ImageIO.write(image, "jpg", new File("output.jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }
