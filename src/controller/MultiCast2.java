@@ -72,7 +72,6 @@ public class MultiCast2 implements Runnable{
     private long seconds7;
     private long seconds8;
     public List presence = new ArrayList<>();
-    private Routing routing = new Routing();
 
 
     /*
@@ -88,6 +87,7 @@ public class MultiCast2 implements Runnable{
 
     public int getComputerNumber() {
         return computerNumber;
+        routing = new Routing(computerNumber);
     }
 
     public static byte[] intToByte(int number) {
@@ -177,7 +177,6 @@ public class MultiCast2 implements Runnable{
                     //RoutingPacket
                     case 1:
                         if (data[2] == computerNumber){
-                            Routing routing = new Routing();
                             routing.setSourceAddress(data[1]);
                             routing.setLinkCost(data[3]);
                             byte[] bArray = new byte[12];
