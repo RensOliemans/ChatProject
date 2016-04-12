@@ -22,6 +22,7 @@ public class Sender {
     public Lock senderLock = new ReentrantLock();
     public boolean finishReceived;
     public boolean firstReceived;
+    public boolean keysReceived;
     public List<byte[]> received;
 
     public Sender(int receiver) {
@@ -65,6 +66,10 @@ public class Sender {
 
     public void setFinishReceivedTrue(){
         this.finishReceived = true;
+    }
+
+    public void setKeysRecievedTrue() {
+        this.keysReceived = true;
     }
 
     //    public void handleMessage(byte[] data) {

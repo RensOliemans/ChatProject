@@ -29,7 +29,7 @@ public class KeyPacket {
         byte[] keyPacket = new byte[publicKey.getEncoded().length + (4 + HEADER*4) + 1];
 
         //Add the indication byte to show that this is a key packet
-        keyPacket[0] = (byte) (isAck ? KEYPACKET : KEYACKPACKET);
+        keyPacket[0] = (byte) (!isAck ? KEYPACKET : KEYACKPACKET);
 
         //Add the source, destination and nextHop to the packet
         keyPacket[1] = (byte) source;

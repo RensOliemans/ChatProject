@@ -229,6 +229,9 @@ public class MultiCast2 implements Runnable{
                         } else if (seqint == 1) {
                             System.out.println("Finish ack received");
                             sender.setFinishReceivedTrue();
+                        } else if (seqint == 2) {
+                            System.out.println("Key ack received");
+
                         } else {
                             sender.removeNotReceived(seq);
                         }
@@ -282,8 +285,6 @@ public class MultiCast2 implements Runnable{
                         security.addSymmetricKey(data[1], key);
                         sendAck(data[1], intToByte(2));
                         break;
-
-
                 }
             }
             else if (computerNumber != data[1] && computerNumber == data[3]){
@@ -542,6 +543,10 @@ public class MultiCast2 implements Runnable{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+
+        while (!sender.keysReceived) {
+            sendPublicKey(destination);
         }
 
         //If the receiver received their 'First' message and replied with an ack, send the message
