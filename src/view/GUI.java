@@ -24,7 +24,7 @@ public class GUI extends JFrame {
 	private Dimension framesize = new Dimension(500,400);
 	private List<Integer> group22 = new ArrayList<Integer>();
 	private Map<ChatButton, MessageScroll> chatmap = new HashMap<ChatButton, MessageScroll>();
-	private Map<JTextArea, List<Integer>> participantsmap = new HashMap<JTextArea, List<Integer>>();
+	private Map<MessageScroll, List<Integer>> participantsmap = new HashMap<MessageScroll, List<Integer>>();
 	private int chatnumber;
 
 	public GUI(int pcnumber, MultiCast multiCast) {
@@ -165,7 +165,7 @@ public class GUI extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			JPanel newChatOptions = new JPanel();
-			ItemListener newChatOptionsListener = new NewChatOptionsListener();
+			NewChatOptionsListener newChatOptionsListener = new NewChatOptionsListener();
 			for (Integer i: group22) {
 				if (i==1) {
 					JCheckBox rensbox = new JCheckBox("Rens");
@@ -198,7 +198,11 @@ public class GUI extends JFrame {
 			ChatButton chatButton = new ChatButton(Integer.toString(chatnumber));
 			chatnumber += 4;
 			chatmap.put(chatButton,newChatPane);
+			participantsmap.put(newChatPane, newChatOptionsListener.participantlist);
 			availableChatsPanel.add(chatButton);
+			for (Integer i: newChatOptionsListener.participantlist) {
+				multiCast.send("joinrequest:chat",i);
+			}
 		}
 	}
 
@@ -230,8 +234,21 @@ public class GUI extends JFrame {
 
 	private class NewChatOptionsListener implements ItemListener {
 
-		public void itemStateChanged(ItemEvent e) {
+		public List<Integer> participantlist = new ArrayList<Integer>();
 
+		public void itemStateChanged(ItemEvent e) {
+			if (((JCheckBox)e.getSource()).getText().equals("Rens")) {
+				participantlist.add(new Integer(1));
+			}
+			if (((JCheckBox)e.getSource()).getText().equals("Birte")) {
+				participantlist.add(new Integer(2));
+			}
+			if (((JCheckBox)e.getSource()).getText().equals("Coen")) {
+				participantlist.add(new Integer(3));
+			}
+			if (((JCheckBox)e.getSource()).getText().equals("Eric")) {
+				participantlist.add(new Integer(4));
+			}
 		}
 	}
 
@@ -248,6 +265,10 @@ public class GUI extends JFrame {
 				updateOnlinePeople();
 			}
 		}
+	}
+
+	public void printMessage(String message) {
+
 	}
 
 	public static void main(String[] args) {
