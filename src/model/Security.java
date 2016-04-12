@@ -30,7 +30,6 @@ public class Security {
         long startTime = System.currentTimeMillis();
         generateRSAKeyPair();
         System.out.println("Successfully created 512 byte RSA keys in : " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
-
     }
 
 
