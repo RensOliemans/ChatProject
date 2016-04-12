@@ -202,10 +202,18 @@ public class GUI extends JFrame {
 			chatnumbermap.put(newChatPane, chatnumber);
 			availableChatsPanel.add(chatButton);
 			for (Integer i: newChatOptionsListener.participantlist) {
-				multiCast.send("joinrequest:chat" + chatnumber, i);
+				multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i);
 			}
 			chatnumber += 4;
 		}
+	}
+
+	private String ListToString(List<Integer> list) {
+		String liststr = "";
+		for (Integer i: list) {
+			liststr.concat(Integer.toString(i) + ",");
+		}
+		return liststr;
 	}
 
 	private class ChatChooseListener implements ActionListener {
@@ -286,7 +294,13 @@ public class GUI extends JFrame {
 		}
 		if (message.startsWith("joinrequest:chat")) {
 			JOptionPane.showMessageDialog(GUI.this, name + " added you to chat" + message.charAt(16));
-
+			JTextArea newChatArea = new JTextArea();
+			newChatArea.setEditable(false);
+			newChatArea.setLayout(new BoxLayout(newChatArea, BoxLayout.Y_AXIS));
+			newChatArea.setLineWrap(true);
+			MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			newChatPane.setPreferredSize(new Dimension(180,300));
+			ChatButton chatButton = new ChatButton(Integer.toString(message.charAt(16)));
 		}
 		else if (message.startsWith("chat")) {
 			for (Map.Entry<MessageScroll, Integer> e: chatnumbermap.entrySet()) {
