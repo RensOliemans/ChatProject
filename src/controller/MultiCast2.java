@@ -5,11 +5,13 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.time.LocalTime;
 import java.util.*;
@@ -47,16 +49,14 @@ public class MultiCast2 implements Runnable{
     //Byte is the destination, sender is you
     private Map<Byte, Sender> senders = new HashMap<>();
     private int computerNumber;
-    private static final int DATASIZE=1024;
+    private static final int DATASIZE=128;
     public static final int HEADER = 1;
     private int synint;
 
     private int receivedPing = 0;
-    private long seconds;
+    private long seconds1;
     private long seconds2;
-    private  long seconds3 = 0;
-    private  long seconds4 = 0;
-    public List presence;
+    public List presence = new ArrayList<>();
 
     /*
      * Getter for computerNumber
@@ -133,9 +133,6 @@ public class MultiCast2 implements Runnable{
                 }
             }
             if (computerNumber != data[1]) {
-                for (byte b : data) {
-//                    System.out.print(b);
-                }
                 switch (data[0]) {
                     // textpacket
                     //Only receiver gets these
@@ -148,57 +145,29 @@ public class MultiCast2 implements Runnable{
                         System.arraycopy(data, 3 + seq.length, message, 0, message.length);
                         receiver.received.put(seq, message);
                         break;
+
                     //RoutingPacket
                     case 1:
-                        Routing routing = new Routing(computerNumber);
-                        routing.setSourceAddress(data[1]);
-                        routing.setLinkCost(data[3]);
-                        byte[] bArray = new byte[8];
-                        for (int k=0; k<8; k++){
-                            bArray[k] = data[k+4];
+                        if (data[2] == computerNumber){
+                            Routing routing = new Routing(computerNumber);
+                            routing.setSourceAddress(data[1]);
+                            routing.setLinkCost(data[3]);
+                            byte[] bArray = new byte[8];
+                            for (int k=0; k<8; k++){
+                                bArray[k] = data[k+4];
+                            }
+                            routing.setForwardingTable(routing.byteArrayToIngerArray(bArray));
                         }
-                        routing.setForwardingTable(routing.byteArrayToIngerArray(bArray));
                         break;
 
                     //pingPacket
                     case 2:
-                        if (seconds3 == 0){
-                            LocalTime time3 = LocalTime.now();
-                            seconds3 = time3.getSecond();
-                            presence.add(data[1]);
-                        }
-                        if (seconds3 != 0){
-                            LocalTime time4 = LocalTime.now();
-                            seconds4 = time4.getSecond();
-                        }
-                        if (seconds4 - seconds3 >= 4.5){
-                            seconds3 = 0;
-                            seconds4 = 0;
-                            presence.clear();
-                        }
-
-
-                        if (receivedPing == 0){
-                            if (seconds2 - seconds >= 4.5) {
-                                LocalTime time = LocalTime.now();
-                                seconds = time.getSecond();
-                                seconds2 = seconds;
-                            }
-                            if (seconds2 - seconds <= 1){
-                                receivedPing++;
-                            }
-                        } else {
-                            LocalTime time2 = LocalTime.now();
-                            seconds2 = time2.getSecond();
-                            receivedPing++;
-                        }
-                        if (seconds2 - seconds > 1 && receivedPing != 0){
+                        Ping pingcounter = new Ping(data[1]);
+                        if (pingcounter.calculateReceivedPings(data[1]) != 0){
                             int[] emptyForwardingTable = new int[8];
                             sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
-                            System.out.println("receivedPing= " + receivedPing);
-                            receivedPing = 0;
-
                         }
+
                         break;
 
                     // startpacket
@@ -215,10 +184,9 @@ public class MultiCast2 implements Runnable{
                     case 4:
                         System.out.println("ACK");
                         seq = new byte[HEADER*4];
-                        System.out.println("data length: " + data.length);
+
                         System.arraycopy(data, 3, seq, 0, HEADER*4);
                         seqint = byteToInt(seq);
-                        System.out.println("seqint is: " + seqint);
                         if (seqint == 0) {
                             System.out.println("Start ack received");
                             sender.setFirstReceivedTrue();
@@ -229,8 +197,8 @@ public class MultiCast2 implements Runnable{
                             sender.removeNotReceived(seq);
                         }
                         break;
-                    //finishpacket
-                    //Only receiver gets these
+                        //finishpacket
+                        //Only receiver gets these
                     case 5:
                         seq = intToByte(1);
                         sendAck(data[1], seq);
@@ -384,11 +352,6 @@ public class MultiCast2 implements Runnable{
             result.add(packet);
         }
         return result;
-    }
-
-    private void sendKeyRequest(int destination) {
-        byte[] message = new byte[/*length*/1];
-
     }
 
     /*
