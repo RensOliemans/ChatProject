@@ -1,9 +1,5 @@
 package controller;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
-import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.DatagramPacket;
@@ -23,6 +19,9 @@ import view.GUI;
 
 import javax.crypto.SecretKey;
 import javax.imageio.ImageIO;
+import javax.xml.crypto.Data;
+import javax.xml.soap.Text;
+
 
 /**
  * Created by Rens on 5-4-2016.
@@ -162,12 +161,31 @@ public class MultiCast2 implements Runnable{
 
                     //pingPacket
                     case 2:
-//                        Ping pingcounter = new Ping(data[1]);
-//                        if (pingcounter.calculateReceivedPings(data[1]) != 0){
-//                            int[] emptyForwardingTable = new int[8];
-//                            sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
-//                        }
-
+                        if (!presence.contains(data[1]) && data[1] != 0){
+                            presence.add(data[1]);
+                        }
+                        if (receivedPing == 0){
+                            seconds1 = System.currentTimeMillis();
+                            receivedPing ++;
+                        } else {
+                            seconds2 = System.currentTimeMillis();
+                            receivedPing ++;
+                        }
+                        if ((seconds2 - seconds1 > 3000) && (receivedPing != 0)){
+                            int[] emptyForwardingTable = new int[8];
+                            sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
+                            System.out.println("received ping pakkets= " + receivedPing);
+                        }
+                        if ((seconds2 - seconds1 > 4500) && (receivedPing != 0)){
+                            seconds1 = 0;
+                            seconds2 = 0;
+                            receivedPing = 0;
+                            System.out.println("presence lijst is nu als volgt: ");
+                            for (int x=0; x<presence.size(); x++){
+                                System.out.println(presence.get(x));
+                            }
+                            presence.clear();
+                        }
                         break;
 
                     // startpacket
@@ -306,7 +324,7 @@ public class MultiCast2 implements Runnable{
     }
 
     private void sendRoutingPacket(int destinationAddress, int linkcost, int[] data_table){
-        RoutingPacket routingPacket = new RoutingPacket(computerNumber, destinationAddress, 255-linkcost, data_table);
+        RoutingPacket routingPacket = new RoutingPacket(computerNumber, destinationAddress, 256-linkcost, data_table);
         DatagramPacket routing = new DatagramPacket(routingPacket.getRoutingPacket(), routingPacket.getRoutingPacket().length, group, PORT);
         try {
             this.s.send(routing);
@@ -425,8 +443,7 @@ public class MultiCast2 implements Runnable{
 
         //If the receiver received their 'First' message and replied with an ack, send the message
         System.out.println("Het firstreceived zetten is goed gegaan");
-//        sendMessage(msg.getBytes(), destination);
-        sendImage(msg, destination);
+        sendMessage(msg.getBytes(), destination);
 
         //After the message has been sent, send the 'Finish' message and wait for ack
         while (!sender.finishReceived){
@@ -467,5 +484,12 @@ public class MultiCast2 implements Runnable{
 
     public byte[] intToByteArray(int number) {
         return ByteBuffer.allocate(4).putInt(number).array();
+    }
+
+    public int byteArrayToInt(byte[] array) {
+        return (array[0]<<24)&0xff000000|
+                (array[1]<<16)&0x00ff0000|
+                (array[2]<< 8)&0x0000ff00|
+                (array[3]<< 0)&0x000000ff;
     }
 }
