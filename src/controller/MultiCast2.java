@@ -67,7 +67,14 @@ public class MultiCast2 implements Runnable{
      */
     public int getNextHop(int destination){
         int[] forwardingtable = routing.getForwardingTable();
-        int nextHop = forwardingtable[destination+7];
+        int nextHop;
+      //  System.out.println(destination + " " + forwardingtable.length);
+        if (forwardingtable[destination + 7] == computerNumber){
+            nextHop = destination;
+        }
+        else {
+            nextHop = forwardingtable[destination + 7];
+        }
         return nextHop;
     }
 
@@ -169,15 +176,15 @@ public class MultiCast2 implements Runnable{
                             for (int k=0; k<12; k++){
                                 bArray[k] = data[k+4];
                             }
-                            System.out.println("received routing table: ");
+ //                           System.out.println("received routing table: ");
                             int[] receivedtable = routing.byteArrayToIngerArray(bArray);
                             for (int j=0; j<12; j++){
-                                System.out.println(receivedtable[j]);
+//                                System.out.println(receivedtable[j]);
                             }
-                            System.out.println("old routing table: ");
+ //                           System.out.println("old routing table: ");
                             int[] oldtable = routing.getForwardingTable();
                             for (int j=0; j<12; j++){
-                                System.out.println(oldtable[j]);
+   //                             System.out.println(oldtable[j]);
                             }
                             routing.setForwardingTable(routing.byteArrayToIngerArray(bArray));
                         }
@@ -198,15 +205,15 @@ public class MultiCast2 implements Runnable{
                             }
                             if ((seconds2 - seconds1 > 3000) && (receivedPing1 != 0)){
                                 sendRoutingPacket(data[1], receivedPing1, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPing1);
+//                                System.out.println("received ping pakkets= " + receivedPing1);
                             }
                             if ((seconds2 - seconds1 > 4500) && (receivedPing1 != 0)){
                                 seconds1 = 0;
                                 seconds2 = 0;
                                 receivedPing1 = 0;
-                                System.out.println("presence lijst is nu als volgt: ");
+//                                System.out.println("presence lijst is nu als volgt: ");
                                 for (int x=0; x<presence.size(); x++){
-                                    System.out.println(presence.get(x));
+//                                    System.out.println(presence.get(x));
                                 }
                                 presence.clear();
                             }
@@ -225,15 +232,15 @@ public class MultiCast2 implements Runnable{
                             if ((seconds4 - seconds3 > 3000) && (receivedPing2 != 0)){
                                 int[] emptyForwardingTable = new int[12];
                                 sendRoutingPacket(data[1], receivedPing2, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPing2);
+//                                System.out.println("received ping pakkets= " + receivedPing2);
                             }
                             if ((seconds4 - seconds3 > 4500) && (receivedPing2 != 0)){
                                 seconds3 = 0;
                                 seconds4 = 0;
                                 receivedPing2 = 0;
-                                System.out.println("presence lijst is nu als volgt: ");
+//                                System.out.println("presence lijst is nu als volgt: ");
                                 for (int x=0; x<presence.size(); x++){
-                                    System.out.println(presence.get(x));
+//                                    System.out.println(presence.get(x));
                                 }
                                 presence.clear();
                             }
@@ -252,15 +259,15 @@ public class MultiCast2 implements Runnable{
                             }
                             if ((seconds6 - seconds5 > 3000) && (receivedPing3 != 0)){
                                 sendRoutingPacket(data[1], receivedPing3, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPing3);
+//                                System.out.println("received ping pakkets= " + receivedPing3);
                             }
                             if ((seconds6 - seconds5 > 4500) && (receivedPing3 != 0)){
                                 seconds5 = 0;
                                 seconds6 = 0;
                                 receivedPing3 = 0;
-                                System.out.println("presence lijst is nu als volgt: ");
+//                                System.out.println("presence lijst is nu als volgt: ");
                                 for (int x=0; x<presence.size(); x++){
-                                    System.out.println(presence.get(x));
+//                                    System.out.println(presence.get(x));
                                 }
                                 presence.clear();
                             }
@@ -279,15 +286,15 @@ public class MultiCast2 implements Runnable{
                             }
                             if ((seconds8 - seconds7 > 3000) && (receivedPing4 != 0)){
                                 sendRoutingPacket(data[1], receivedPing4, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPing4);
+//                                System.out.println("received ping pakkets= " + receivedPing4);
                             }
                             if ((seconds8 - seconds7 > 4500) && (receivedPing4 != 0)){
                                 seconds7 = 0;
                                 seconds8 = 0;
                                 receivedPing4 = 0;
-                                System.out.println("presence lijst is nu als volgt: ");
+//                                System.out.println("presence lijst is nu als volgt: ");
                                 for (int x=0; x<presence.size(); x++){
-                                    System.out.println(presence.get(x));
+//                                    System.out.println(presence.get(x));
                                 }
                                 presence.clear();
                             }
@@ -307,7 +314,7 @@ public class MultiCast2 implements Runnable{
                     //ackpacket
                     //Only sender gets these
                     case 4:
-                        System.out.println("ACK");
+                       System.out.println("ACK");
                         seq = new byte[HEADER*4];
 
                         System.arraycopy(data, 4, seq, 0, HEADER*4);
@@ -396,11 +403,11 @@ public class MultiCast2 implements Runnable{
      * Sends a ping to everyone on the network.
      */
     public void sendPing(int computerNumber) {
-        System.out.println("computernumber given with pingpackets= " + computerNumber);
+       // System.out.println("computernumber given with pingpackets= " + computerNumber);
         for (int i = 0; i < 255; i++){
             PingPacket burstPacket1 = new PingPacket(computerNumber, (computerNumber%4)+1, getNextHop((computerNumber%4)+1));
-            PingPacket burstPacket2 = new PingPacket(computerNumber, (computerNumber%4)+2, getNextHop((computerNumber%4)+2));
-            PingPacket burstPacket3 = new PingPacket(computerNumber, (computerNumber%4)+3, getNextHop((computerNumber%4)+3));
+            PingPacket burstPacket2 = new PingPacket(computerNumber, (computerNumber+1)%4+1, getNextHop((computerNumber%3)+1));
+            PingPacket burstPacket3 = new PingPacket(computerNumber, (computerNumber+2)%4+1, getNextHop((computerNumber%2)+1));
             DatagramPacket burst1 = new DatagramPacket(burstPacket1.getPingPacket(), burstPacket1.getPingPacket().length, group, PORT);
             DatagramPacket burst2 = new DatagramPacket(burstPacket2.getPingPacket(), burstPacket2.getPingPacket().length, group, PORT);
             DatagramPacket burst3 = new DatagramPacket(burstPacket3.getPingPacket(), burstPacket3.getPingPacket().length, group, PORT);

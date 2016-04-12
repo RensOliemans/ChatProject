@@ -11,8 +11,6 @@ public class Routing /*implements Runnable*/{
 
     private int linkcost;
     private int sourceAdress;
-    private int[] forwardingTable = new int[8];
-
     private static GUI gui = new GUI();
     private static Ping ping;
     private int[] forwardingTable = new int[12];
@@ -27,7 +25,7 @@ public class Routing /*implements Runnable*/{
         this.linkcost = receivedInt;
         forwardingTable[this.sourceAdress-1] = this.sourceAdress;
         forwardingTable[this.sourceAdress+3] = this.linkcost;
-        System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
+ //       System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
     }
 
     public void setSourceAddress(int sourceAdress){
