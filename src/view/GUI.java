@@ -1,6 +1,6 @@
 package view;
 
-import controller.MultiCast;
+import controller.MultiCast2;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,14 +20,14 @@ public class GUI extends JFrame {
 	private ChatRoom chatRoom;
 	private JScrollPane availableChatsScrollPane;
 	private int pcnumber;
-	private MultiCast multiCast;
+	private MultiCast2 multiCast;
 	private Dimension framesize = new Dimension(500,400);
 	private List<Integer> group22 = new ArrayList<Integer>();
 	private Map<ChatButton, MessageScroll> chatmap = new HashMap<ChatButton, MessageScroll>();
 	private Map<MessageScroll, List<Integer>> participantsmap = new HashMap<MessageScroll, List<Integer>>();
 	private int chatnumber;
 
-	public GUI(int pcnumber, MultiCast multiCast) {
+	public GUI(int pcnumber, MultiCast2 multiCast) {
 		super("ChatUI");
 		this.pcnumber = pcnumber;
 		this.chatnumber = pcnumber;
@@ -272,7 +272,7 @@ public class GUI extends JFrame {
 	}
 
 	public static void main(String[] args) {
-		new GUI(4, new MultiCast());
+		new GUI(4, new MultiCast2());
 	}
 
 }

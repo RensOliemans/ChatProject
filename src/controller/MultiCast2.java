@@ -57,7 +57,7 @@ public class MultiCast2 implements Runnable{
     private long seconds7;
     private long seconds8;
     public List presence = new ArrayList<>();
-    private Routing routing = new Routing(computerNumber);
+    private Routing routing;
 
 
     /*

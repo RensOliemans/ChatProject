@@ -1,9 +1,5 @@
 package model;
 
-import controller.MultiCast2;
-import controller.Ping;
-import view.GUI;
-
 /**
  * Created by Rens on 5-4-2016.
  */
@@ -11,10 +7,6 @@ public class Routing /*implements Runnable*/{
 
     private int linkcost;
     private int sourceAdress;
-    private int[] forwardingTable = new int[8];
-
-    private static GUI gui = new GUI();
-    private static Ping ping;
     private int[] forwardingTable = new int[12];
     private int computerNumber;
 
