@@ -69,7 +69,7 @@ public class MultiCast2 implements Runnable{
         int[] forwardingtable = routing.getForwardingTable();
         int nextHop;
       //  System.out.println(destination + " " + forwardingtable.length);
-        if (forwardingtable[destination + 7] == computerNumber){
+        if (forwardingtable[destination + 7] == computerNumber || forwardingtable[destination+7] == 0){
             nextHop = destination;
         }
         else {
@@ -314,9 +314,9 @@ public class MultiCast2 implements Runnable{
                     //ackpacket
                     //Only sender gets these
                     case 4:
-                       System.out.println("ACK");
+                        System.out.println("ACK");
                         seq = new byte[HEADER*4];
-
+                        System.out.println(data.length);
                         System.arraycopy(data, 4, seq, 0, HEADER*4);
                         seqint = byteToInt(seq);
                         if (seqint == 0) {
@@ -427,10 +427,12 @@ public class MultiCast2 implements Runnable{
      * @param int destination, the computernumber of the player to send the message to
      */
     private void sendFirst(int destination) {
+        System.out.println(getNextHop(destination));
         StartPacket firstPacket = new StartPacket(computerNumber, destination, getNextHop(destination));
         DatagramPacket first = new DatagramPacket(firstPacket.getStartPacket(), firstPacket.getStartPacket().length, group, PORT);
         try {
             this.s.send(first);
+            System.out.println("verstuurd: " + computerNumber + "" + destination + getNextHop(destination));
         } catch (IOException e) {
             e.printStackTrace();
         }

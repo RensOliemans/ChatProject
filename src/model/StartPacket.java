@@ -1,5 +1,9 @@
 package model;
 
+import controller.MultiCast2;
+
+import java.nio.channels.MulticastChannel;
+
 /**
  * Created by coen on 8-4-2016.
  */
@@ -30,7 +34,7 @@ public class StartPacket {
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        startpacket[4] = intToByte(1);
+        byte[] seq = MultiCast2.intToByte(1);
 
         return startpacket;
     }
