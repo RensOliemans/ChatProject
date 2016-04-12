@@ -161,12 +161,31 @@ public class MultiCast2 implements Runnable{
 
                     //pingPacket
                     case 2:
-                        Ping pingcounter = new Ping(data[1]);
-                        if (pingcounter.calculateReceivedPings(data[1]) != 0){
+                        if (!presence.contains(data[1]) && data[1] != 0){
+                            presence.add(data[1]);
+                        }
+                        if (receivedPing == 0){
+                            seconds1 = System.currentTimeMillis();
+                            receivedPing ++;
+                        } else {
+                            seconds2 = System.currentTimeMillis();
+                            receivedPing ++;
+                        }
+                        if ((seconds2 - seconds1 > 3000) && (receivedPing != 0)){
                             int[] emptyForwardingTable = new int[8];
                             sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
+                            System.out.println("received ping pakkets= " + receivedPing);
                         }
-
+                        if ((seconds2 - seconds1 > 4500) && (receivedPing != 0)){
+                            seconds1 = 0;
+                            seconds2 = 0;
+                            receivedPing = 0;
+                            System.out.println("presence lijst is nu als volgt: ");
+                            for (int x=0; x<presence.size(); x++){
+                                System.out.println(presence.get(x));
+                            }
+                            presence.clear();
+                        }
                         break;
 
                     // startpacket
@@ -297,7 +316,7 @@ public class MultiCast2 implements Runnable{
         }
     }
 
-    public void sendRoutingPacket(int destinationAddress, int linkcost, int[] data_table){
+    private void sendRoutingPacket(int destinationAddress, int linkcost, int[] data_table){
         RoutingPacket routingPacket = new RoutingPacket(computerNumber, destinationAddress, 256-linkcost, data_table);
         DatagramPacket routing = new DatagramPacket(routingPacket.getRoutingPacket(), routingPacket.getRoutingPacket().length, group, PORT);
         try {
