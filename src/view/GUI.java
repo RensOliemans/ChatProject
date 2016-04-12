@@ -1,6 +1,6 @@
 package view;
 
-import controller.MultiCast;
+import controller.MultiCast2;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,14 +20,15 @@ public class GUI extends JFrame {
 	private ChatRoom chatRoom;
 	private JScrollPane availableChatsScrollPane;
 	private int pcnumber;
-	private MultiCast multiCast;
+	private MultiCast2 multiCast;
 	private Dimension framesize = new Dimension(500,400);
 	private List<Integer> group22 = new ArrayList<Integer>();
 	private Map<ChatButton, MessageScroll> chatmap = new HashMap<ChatButton, MessageScroll>();
 	private Map<MessageScroll, List<Integer>> participantsmap = new HashMap<MessageScroll, List<Integer>>();
+	private Map<MessageScroll, Integer> chatnumbermap = new HashMap<MessageScroll, Integer>();
 	private int chatnumber;
 
-	public GUI(int pcnumber, MultiCast multiCast) {
+	public GUI(int pcnumber, MultiCast2 multiCast) {
 		super("ChatUI");
 		this.pcnumber = pcnumber;
 		this.chatnumber = pcnumber;
@@ -196,13 +197,14 @@ public class GUI extends JFrame {
 			MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			newChatPane.setPreferredSize(new Dimension(180,300));
 			ChatButton chatButton = new ChatButton(Integer.toString(chatnumber));
-			chatnumber += 4;
 			chatmap.put(chatButton,newChatPane);
 			participantsmap.put(newChatPane, newChatOptionsListener.participantlist);
+			chatnumbermap.put(newChatPane, chatnumber);
 			availableChatsPanel.add(chatButton);
 			for (Integer i: newChatOptionsListener.participantlist) {
-				multiCast.send("joinrequest:chat",i);
+				multiCast.send("joinrequest:chat" + chatnumber, i);
 			}
+			chatnumber += 4;
 		}
 	}
 
@@ -229,6 +231,9 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + ((JTextField)e.getSource()).getText() + "\n");
 			((JTextField)e.getSource()).setText("");
+			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
+				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":", i);
+			}
 		}
 	}
 
@@ -267,12 +272,36 @@ public class GUI extends JFrame {
 		}
 	}
 
-	public void printMessage(String message) {
+	public void printMessage(String message, int src) {
+		String name = "";
+		switch (src) {
+			case 1:
+				name = "Rens";
+			case 2:
+				name = "Birte";
+			case 3:
+				name = "Coen";
+			case 4:
+				name = "Eric";
+		}
+		if (message.startsWith("joinrequest:chat")) {
+			JOptionPane.showMessageDialog(GUI.this, name + " added you to chat" + message.charAt(16));
 
+		}
+		else if (message.startsWith("chat")) {
+			for (Map.Entry<MessageScroll, Integer> e: chatnumbermap.entrySet()) {
+				if (message.charAt(4) == e.getValue()) {
+					e.getKey().messages.setText(e.getKey().messages.getText() + "\n " + name + message.substring(5) + "\n");
+				}
+			}
+		}
+		else {
+			JOptionPane.showMessageDialog(GUI.this, name + " sent " + message + ", not via GUI");
+		}
 	}
 
 	public static void main(String[] args) {
-		new GUI(4, new MultiCast());
+		new GUI(4, new MultiCast2());
 	}
 
 }

@@ -39,7 +39,7 @@ public class GUIold extends JFrame {
 	private JCheckBox coenbox;
 	private JCheckBox birtebox;
 	private int groupnumber;
-	private MultiCast multiCast;
+	private MultiCast2 multiCast;
     private GridBagConstraints newchatgbc = new GridBagConstraints();
     private GridBagConstraints chatbuttonsgbc = new GridBagConstraints();
     private JScrollPane chatscrollpane;
@@ -47,7 +47,7 @@ public class GUIold extends JFrame {
     private JPanel eastside = new JPanel();
 
 
-	public GUIold(int pcnumber, MultiCast multiCast) {
+	public GUIold(int pcnumber, MultiCast2 multiCast) {
 
 		/*
 		Create frame.
@@ -418,7 +418,7 @@ public class GUIold extends JFrame {
 	}
 
 	public static void main(String[] args) {
-        new GUIold(4, new MultiCast());
+        new GUIold(4, new MultiCast2());
     }
 
 }
