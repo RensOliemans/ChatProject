@@ -8,6 +8,7 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalTime;
 import java.util.*;
@@ -51,6 +52,7 @@ public class MultiCast2 implements Runnable{
     private static final int DATASIZE=128;
     public static final int HEADER = 1;
     private int synint;
+    private Security security = new Security();
 
     private int receivedPing = 0;
     private long seconds;
@@ -83,6 +85,7 @@ public class MultiCast2 implements Runnable{
         try {
             this.group = InetAddress.getByName(HOST);
             this.s = new MulticastSocket(PORT);
+
 //            gui = new GUI(computerNumber, this);
             join();
         } catch (UnknownHostException e) {
@@ -381,6 +384,8 @@ public class MultiCast2 implements Runnable{
                 e.printStackTrace();
             }
         }
+
+
 
         //If the receiver received their 'First' message and replied with an ack, send the message
         System.out.println("Het firstreceived zetten is goed gegaan");
