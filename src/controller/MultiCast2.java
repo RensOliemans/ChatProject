@@ -48,7 +48,7 @@ public class MultiCast2 implements Runnable{
     //Byte is the destination, sender is you
     private Map<Byte, Sender> senders = new HashMap<>();
     private int computerNumber;
-    private static final int DATASIZE=1024;
+    private static final int DATASIZE=128;
     public static final int HEADER = 1;
     private int synint;
 
@@ -129,7 +129,7 @@ public class MultiCast2 implements Runnable{
      */
     private void receive() {
         try {
-            byte[] buf = new byte[1032];
+            byte[] buf = new byte[1000];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
             byte[] data = recv.getData();
@@ -323,23 +323,15 @@ public class MultiCast2 implements Runnable{
                             sender.removeNotReceived(seq);
                         }
                         break;
-                        //finishpacket
-                        //Only receiver gets these
+                    //finishpacket
+                    //Only receiver gets these
                     case 5:
                         seq = intToByte(1);
                         sendAck(data[1], seq);
                         System.out.println("Hij gaat nu in order");
                         receiver.order();
-                        Byte[] dataArray = receiver.goodOrder.toArray(new Byte[receiver.goodOrder.size()]);
-                        byte[] byteArray = new byte[dataArray.length];
-                        for (int j = 0; j < dataArray.length; j++) {
-                            byteArray[j] = dataArray[j];
-                        }
-                        receiver.showImage(byteArray);
-                        System.out.println(String.valueOf(receiver.goodOrder));
+                        System.out.println(new String (String.valueOf(receiver.goodOrder)));
                         break;
-                    case 6:
-                        //
                 }
             }
         } catch (IOException e) {
@@ -377,7 +369,7 @@ public class MultiCast2 implements Runnable{
      */
     private void sendAck(int destination, byte[] ackNumber) {
         AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber);
-        System.out.println("comp + dest + ack[3] : " + computerNumber + ", " + destination + ", " + ackNumber[3]);
+        System.out.println(computerNumber + ", " + destination + ", " + ackNumber[0]);
         byte[] packet = ackPacket.getAckPacket();
         DatagramPacket ack = new DatagramPacket(packet, packet.length, group, PORT);
         try {
@@ -442,23 +434,6 @@ public class MultiCast2 implements Runnable{
         }
     }
 
-    private void sendImage(String imageName, int destination) {
-        try {
-            //open image
-            File imgPath = new File(imageName);
-            BufferedImage bufferedImage = ImageIO.read(imgPath);
-
-            //get DataBufferBytes from raster
-            WritableRaster raster = bufferedImage.getRaster();
-            DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-
-            //send the image
-            sendMessage(data.getData(), destination);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     /*
      * This method splits a message so it fits in packets of size DATASIZE.
      *
@@ -489,21 +464,19 @@ public class MultiCast2 implements Runnable{
         try {
             //Send the entire message, split and with send data from TCP
             int seqint = 2;
-            //SEQ starts with 2, because SEQ 0 is reserved for the ACK of the START message, and
-            //SEQ 1 is reserved for the ACK of the FIN message
+            byte[] seq = intToByte(seqint);
+            //SYN starts with 1, because SYN 0 is reserved for the ACK of the START message, and
+            //SYN 1 is reserved for the ACK of the FIN message
             List<byte[]> splitmessages = splitMessages(msg);
             for (byte[] packet : splitmessages) {
-                byte[] seq = intToByte(seqint);
                 TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(packet));
-                System.out.println("seq[0] + seq[1] + seq[2] + seq[3]: " + seq[0] + seq[1] + seq[2] + seq[3]);
+                System.out.println("sequence number is= " + seq[0] + "" + seq[1] + "" + seq[2] + "" + seq[3]);
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
                 this.s.send(messagePacket);
                 boolean alAanwezig = false;
-                synchronized (sender) {
-                    for (Map.Entry<byte[], byte[]> e : sender.getNotReceived().entrySet()) {
-                        if (java.util.Arrays.equals(e.getKey(), seq)) {
-                            alAanwezig = true;
-                        }
+                for (Map.Entry<byte[], byte[]> e: sender.getNotReceived().entrySet()){
+                    if (java.util.Arrays.equals(e.getKey(), seq)){
+                        alAanwezig = true;
                     }
                 }
                 if (!alAanwezig){
@@ -522,8 +495,8 @@ public class MultiCast2 implements Runnable{
         }
 
         //If packets have been lost (not acked after 100ms), resend them until everything has been acked
-        while (sender.getNotReceived().size() > 0){
-            System.out.println("nog niet leeg");
+        while (sender.getNotReceived().size()>0){
+            System.out.println("notreceived is nog niet leeg");
             Map<byte[], byte[]> notreceived = sender.getNotReceived();
             for (Map.Entry<byte[], byte[]> e : notreceived.entrySet()){
                 sendMessage(e.getValue(), destination);
@@ -552,8 +525,7 @@ public class MultiCast2 implements Runnable{
 
         //If the receiver received their 'First' message and replied with an ack, send the message
         System.out.println("Het firstreceived zetten is goed gegaan");
-//        sendMessage(msg.getBytes(), destination);
-        sendImage(msg, destination);
+        sendMessage(msg.getBytes(), destination);
 
         //After the message has been sent, send the 'Finish' message and wait for ack
         while (!sender.finishReceived){
@@ -589,4 +561,9 @@ public class MultiCast2 implements Runnable{
     public byte[] intToByteArray(int number) {
         return ByteBuffer.allocate(4).putInt(number).array();
     }
-}
+
+    public int byteArrayToInt(byte[] array) {
+        return (array[0]<<24)&0xff000000|
+                (array[1]<<16)&0x00ff0000|
+                (array[2]<< 8)&0x0000ff00|
+                (array[3]<< 0)&0x000000ff;

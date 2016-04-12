@@ -1,20 +1,15 @@
 package controller;
 
+import controller.MultiCast2;
+import model.Routing;
 
 /**
  * Created by coen on 5-4-2016.
  */
 public class Forward {
 
-    int[] forwardingTable = routing.getForwardingTable();
+    public byte getNextHop(int computerNumber, byte destination) {
 
-    int sendTo;
-
-    sendTo = forwardingTable[destinationAdres+7];
-
-    if (forwardingTable[destinationAdres+3] == 255){
-        return "kan niet berijken";
+        return (byte) 0;
     }
-
-
 }

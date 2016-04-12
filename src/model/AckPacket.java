@@ -5,15 +5,17 @@ package model;
  */
 public class AckPacket {
 
+    private final int nextHop;
     private int source;
     private int destination;
     private byte[] ack;
     private final int ACKPACKET = 4;
 
-    public AckPacket(int source, int destination, byte[] ack){
+    public AckPacket(int source, int destination, byte[] ack, int nextHop){
         this.source = source;
         this.destination = destination;
         this.ack = ack;
+        this.nextHop = nextHop;
     }
 
     public byte[] getAckPacket(){
@@ -26,10 +28,11 @@ public class AckPacket {
         //add the source and destination to the packet
         ackpkt[1] = (byte) this.source;
         ackpkt[2] = (byte) this.destination;
+        ackpkt[3] = (byte) this.nextHop;
 
         //add the ack to the packet
         for (int i = 0; i < this.ack.length; i++) {
-            ackpkt[3+i] = this.ack[i];
+            ackpkt[4+i] = this.ack[i];
         }
 
         //add the "Rens-bit" as last bit to the packet
