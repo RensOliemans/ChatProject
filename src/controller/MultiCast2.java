@@ -102,13 +102,16 @@ public class MultiCast2 implements Runnable{
         try {
             this.group = InetAddress.getByName(HOST);
             this.s = new MulticastSocket(PORT);
-            generateKeys();
 //            gui = new GUI(computerNumber, this);
             join();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            gui.showError("UnkownHostException in constructor of MultiCast. " +
+                    "Check HOST (final field in MultiCast. " +
+                    "\nError message: " + e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in constructor of MultiCast. " +
+                    "Check PORT (final field in MultiCast. " +
+                    "\nError message: " + e.getMessage());
         }
     }
 
@@ -123,7 +126,9 @@ public class MultiCast2 implements Runnable{
         try {
             this.s.joinGroup(group);
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in join(). " +
+                    "Check your internet connection and if you are correctly connected to the ad-hoc network." +
+                    "\nError message: " + e.getMessage());
         }
     }
 
@@ -363,7 +368,7 @@ public class MultiCast2 implements Runnable{
                         System.arraycopy(data, 4, senderKeyBytes, 0, senderKeyBytes.length);
                         PublicKey senderKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(senderKeyBytes));
                         this.publicKeys.put((int) data[1], senderKey);
-                        sendPublicKeyAck(data[1]);
+                        sendPublicKey(data[1], true);
                         break;
                     case 7:
                         //This is the ack packet of the public key message, and also has a public key.
@@ -395,11 +400,20 @@ public class MultiCast2 implements Runnable{
                 this.s.send(datagramdata);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in receive(). " +
+                    "The sending or receiving of a DatagramPacket went wrong. " +
+                    "Check internet connection or if you are in the ad-hoc network (try leaving and entering network in admin mode). " +
+                    "\nError message: " + e.getMessage());
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            gui.showError("NoSuchAlgorithmException in receive(). " +
+                    "The security algorithm wasn't found. see cases:" +
+                    "data[0] == 7 || data[0] == 6. Ask Rens. " +
+                    "\nError message: " + e.getMessage());
         } catch (InvalidKeySpecException e) {
-            e.printStackTrace();
+            gui.showError("InvalidKeySpecException in receive(). " +
+                    "The receiving of the public key went wrong. See cases: " +
+                    "data[0] == 6 || data[0] == 7. Ask Rens. " +
+                    "\nError message: " + e.getMessage());
         }
     }
 
@@ -439,7 +453,10 @@ public class MultiCast2 implements Runnable{
         try {
             this.s.send(ack);
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in sendAck(..). " +
+                    "The sending of a DatagramPacket went wrong. " +
+                    "Check internet connection or if you are in the ad-hoc network (try leaving and entering network in admin mode). " +
+                    "\nError message: " + e.getMessage());
         }
     }
 
@@ -460,7 +477,10 @@ public class MultiCast2 implements Runnable{
                 this.s.send(burst2);
                 this.s.send(burst3);
             } catch (IOException e) {
-                e.printStackTrace();
+                gui.showError("IOException in sendPing(..). " +
+                        "The sending of a DatagramPacket went wrong. " +
+                        "Check internet connection or if you are in the ad-hoc network (try leaving and entering network in admin mode). " +
+                        "\nError message: " + e.getMessage());
             }
         }
     }
@@ -476,7 +496,10 @@ public class MultiCast2 implements Runnable{
         try {
             this.s.send(first);
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in sendFirst(..). " +
+                    "The sending of a DatagramPacket went wrong. " +
+                    "Check internet connection or if you are in the ad-hoc network (try leaving and entering network in admin mode). " +
+                    "\nError message: " + e.getMessage());
         }
     }
     /*
@@ -490,7 +513,10 @@ public class MultiCast2 implements Runnable{
         try {
             this.s.send(finish);
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in sendFinish(..). " +
+                    "The sending of a DatagramPacket went wrong. " +
+                    "Check internet connection or if you are in the ad-hoc network (try leaving and entering network in admin mode). " +
+                    "\nError message: " + e.getMessage());
         }
     }
 
@@ -500,27 +526,23 @@ public class MultiCast2 implements Runnable{
         try {
             this.s.send(routing);
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in sendRoutingPacket(..). " +
+                    "The sending of a DatagramPacket went wrong. " +
+                    "Check internet connection or if you are in the ad-hoc network (try leaving and entering network in admin mode). " +
+                    "\nError message: " + e.getMessage());
         }
     }
 
-    private void sendPublicKey(int destination) {
-        KeyPacket keyPacket = new KeyPacket(computerNumber, destination, getNextHop(destination), security.getPublicKey(), false);
+    private void sendPublicKey(int destination, boolean isAck) {
+        KeyPacket keyPacket = new KeyPacket(computerNumber, destination, getNextHop(destination), security.getPublicKey(), isAck);
         DatagramPacket packet = new DatagramPacket(keyPacket.getKeyPacket(), keyPacket.getKeyPacket().length, group, PORT);
         try {
             this.s.send(packet);
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void sendPublicKeyAck(int destination) {
-        KeyPacket keyPacket = new KeyPacket(computerNumber, destination, getNextHop(destination), security.getPublicKey(), true);
-        DatagramPacket packet = new DatagramPacket(keyPacket.getKeyPacket(), keyPacket.getKeyPacket().length, group, PORT);
-        try {
-            this.s.send(packet);
-        } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in sendPublicKey(..). " +
+                    "The sending of a DatagramPacket went wrong. " +
+                    "Check internet connection or if you are in the ad-hoc network (try leaving and entering network in admin mode). " +
+                    "\nError message: " + e.getMessage());
         }
     }
 
@@ -535,7 +557,10 @@ public class MultiCast2 implements Runnable{
             try {
                 this.s.send(packet);
             } catch (IOException e) {
-                e.printStackTrace();
+                gui.showError("IOException in sendAESKey(..). " +
+                        "The sending of a DatagramPacket went wrong. " +
+                        "Check internet connection or if you are in the ad-hoc network (try leaving and entering network in admin mode). " +
+                        "\nError message: " + e.getMessage());
             }
         }
 
@@ -555,7 +580,10 @@ public class MultiCast2 implements Runnable{
             //send the image
             sendMessage(data.getData(), destination);
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in sendImage(..). " +
+                    "Reading of image file went wrong. " +
+                    "Is it a .jpg file? Otherwise, ask Rens. " +
+                    "\nError message: " + e.getMessage());
         }
     }
 
@@ -612,13 +640,18 @@ public class MultiCast2 implements Runnable{
                 seqint++;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in sendMessage(..). " +
+                    "The sending of a DatagramPacket went wrong. " +
+                    "Check internet connection or if you are in the ad-hoc network (try leaving and entering network in admin mode). " +
+                    "\nError message: " + e.getMessage());
         }
 
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            gui.showError("InterruptedException in sendMessage(..). " +
+                    "Happened while waiting for ACKs (first time). " +
+                    "Shouldn't happen. Error message: " + e.getMessage());
         }
 
         //If packets have been lost (not acked after 100ms), resend them until everything has been acked
@@ -631,7 +664,9 @@ public class MultiCast2 implements Runnable{
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                gui.showError("InterruptedException in sendMessage(..). " +
+                        "Happened while waiting for ACKs (not first time). " +
+                        "Shouldn't happen. Error message: " + e.getMessage());
             }
         }
     }
@@ -646,12 +681,21 @@ public class MultiCast2 implements Runnable{
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                gui.showError("InterruptedException in send(..). " +
+                        "Happened while waiting for ACK of first received. " +
+                        "Shouldn't happen. Error message: " + e.getMessage());
             }
         }
 
         while (!sender.keysReceived) {
-            sendPublicKey(destination);
+            sendPublicKey(destination, false);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                gui.showError("InterruptedException in send(..). " +
+                        "Happened while waiting for ACK of keysReceived. " +
+                        "Shouldn't happen. Error message: " + e.getMessage());
+            }
         }
 
         //If the receiver received their 'First' message and replied with an ack, send the message
@@ -664,7 +708,9 @@ public class MultiCast2 implements Runnable{
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                gui.showError("InterruptedException in send(..). " +
+                        "Happened while waiting for finish ACK. " +
+                        "Shouldn't happen. Error message: " + e.getMessage());
             }
         }
         System.out.println ("finish is received");
@@ -674,7 +720,9 @@ public class MultiCast2 implements Runnable{
         try {
             this.s.leaveGroup(this.group);
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.showError("IOException in leave(). " +
+                    "Check if the ad-hoc network is set up correctly (both your side and 'server' side. " +
+                    "\nError message: " + e.getMessage());
         }
     }
 
