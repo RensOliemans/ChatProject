@@ -165,7 +165,7 @@ public class MultiCast2 implements Runnable{
             //data[1] == source
             //data[2] == destination
             //data[3] == nexthop
-            if (computerNumber != data[1] && computerNumber == data[2] && computerNumber == data[3]) {
+            if (computerNumber != data[1] && computerNumber == data[2]/* && computerNumber == data[3]*/) {
                 data = removeRensByte(data);
                 switch (data[0]) {
                     // textpacket
