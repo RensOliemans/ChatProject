@@ -53,8 +53,6 @@ public class Routing /*implements Runnable*/{
         return this.forwardingTable;
     }
 
-
-
     public int[] byteArrayToIngerArray(byte[] bArray){
         int[] iArray = new int[bArray.length];
         for (int g = 0; g<bArray.length; g++){
