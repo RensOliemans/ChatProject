@@ -6,6 +6,8 @@ package controller;
  */
 public class Forward {
 
+    //pseudo implementation:
+
 //    int[] forwardingTable = routing.getForwardingTable();
 //
 //    int sendTo;

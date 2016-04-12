@@ -57,8 +57,9 @@ public class Routing /*implements Runnable*/{
         //print the new forwardingTable
         System.out.println("the forwarding table is now as followed: ");
         for (int h = 0; h<12; h++){
-            System.out.println(forwardingTable[h]);
+            System.out.print(forwardingTable[h] + " ");
         }
+        System.out.println("");
 
     }
 

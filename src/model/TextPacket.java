@@ -16,18 +16,16 @@ public class TextPacket {
     private byte[] syn;
     private String msg;
     private final int TEXTPACKET = 0;
-    private int nextHop;
 
-    public TextPacket(int sourceAddress, int destinationAddress, byte[] syn, String msg, int nextHop) {
+    public TextPacket(int sourceAddress, int destinationAddress, byte[] syn, String msg) {
         this.sourceAddress = sourceAddress;
         this.destinationAddress = destinationAddress;
         this.syn = syn;
         this.msg = msg;
-        this.nextHop = nextHop;
     }
 
     public byte[] getTextPacket() {
-        byte[] txpkt = new byte[(msg.length() + (4+ HEADER*4))+1];
+        byte[] txpkt = new byte[(msg.length() + (3+ HEADER*4))+1];
 
         //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(TEXTPACKET);
@@ -35,10 +33,9 @@ public class TextPacket {
         //add the source and destination to the packet
         txpkt[1] = intToByte(this.sourceAddress);
         txpkt[2] = intToByte(this.destinationAddress);
-        txpkt[3] = intToByte(this.nextHop);
 
         for (int i = 0; i < this.syn.length; i++) {
-            txpkt[4+i] = this.syn[i];
+            txpkt[3+i] = this.syn[i];
         }
 
         txpkt[txpkt.length-1] = intToByte(1);
