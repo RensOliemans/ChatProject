@@ -49,7 +49,7 @@ public class MultiCast2 implements Runnable{
     //Byte is the destination, sender is you
     private Map<Byte, Sender> senders = new HashMap<>();
     private int computerNumber;
-    private static final int DATASIZE=128;
+    private static final int DATASIZE=1024;
     public static final int HEADER = 1;
     private int synint;
 
@@ -114,7 +114,7 @@ public class MultiCast2 implements Runnable{
      */
     private void receive() {
         try {
-            byte[] buf = new byte[1000];
+            byte[] buf = new byte[1032];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
             byte[] data = recv.getData();
@@ -209,7 +209,8 @@ public class MultiCast2 implements Runnable{
                         for (int j = 0; j < dataArray.length; j++) {
                             byteArray[j] = dataArray[j];
                         }
-                        System.out.println(new String (String.valueOf(receiver.goodOrder)));
+                        receiver.showImage(byteArray);
+                        System.out.println(String.valueOf(receiver.goodOrder));
                         break;
                     case 6:
                         //
@@ -263,9 +264,9 @@ public class MultiCast2 implements Runnable{
     /*
      * Sends a ping to everyone on the network.
      */
-    public void sendPing() {
+    public void sendPing(int computerNumber, String name) {
         for (int i = 0; i < 255; i++){
-            PingPacket burstPacket = new PingPacket(computerNumber, "Een naam hier plaatsen");
+            PingPacket burstPacket = new PingPacket(computerNumber, name);
             DatagramPacket burst = new DatagramPacket(burstPacket.getPingPacket(), burstPacket.getPingPacket().length, group, PORT);
             try {
                 this.s.send(burst);

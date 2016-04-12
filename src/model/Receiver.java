@@ -21,7 +21,7 @@ public class Receiver {
     public Boolean allReceived = false;
     public Map<byte[], byte[]> received = new HashMap<byte[], byte[]>();
     public int sender;
-    public List<E> goodOrder = null;
+    public List<Byte> goodOrder = null;
 
     public Receiver(int sender) {
         this.sender = sender;
@@ -31,11 +31,11 @@ public class Receiver {
     }
 
     public void order() {
-        List<Object> result = new ArrayList<>();
+        List<Byte> result = new ArrayList<>();
         for (int i = 2; i < this.received.size() + 2; i++) {
             byte[] j = MultiCast2.intToByte(i);
             for (Map.Entry<byte[], byte[]> e : this.received.entrySet()) {
-                System.out.println("seq nummer " + MultiCast2.byteToInt(e.getKey()));
+//                System.out.println("seq nummer " + MultiCast2.byteToInt(e.getKey()));
                 if (MultiCast2.byteToInt(e.getKey()) == MultiCast2.byteToInt(j)) {
                     byte[] packet = e.getValue();
                     for (int k = 0; k < packet.length; k++) {
@@ -49,7 +49,10 @@ public class Receiver {
 
     public void showImage(byte[] imageData) {
         try {
+            System.out.println("yes");
+            System.out.println(imageData.length);
             BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageData));
+
             ImageIO.write(image, "jpg", new File("image.jpg"));
         } catch (IOException e) {
             e.printStackTrace();
