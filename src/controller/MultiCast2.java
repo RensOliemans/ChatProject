@@ -162,11 +162,11 @@ public class MultiCast2 implements Runnable{
 
                     //pingPacket
                     case 2:
-                        Ping pingcounter = new Ping(data[1]);
-                        if (pingcounter.calculateReceivedPings(data[1]) != 0){
-                            int[] emptyForwardingTable = new int[8];
-                            sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
-                        }
+//                        Ping pingcounter = new Ping(data[1]);
+//                        if (pingcounter.calculateReceivedPings(data[1]) != 0){
+//                            int[] emptyForwardingTable = new int[8];
+//                            sendRoutingPacket(data[1], receivedPing, emptyForwardingTable);
+//                        }
 
                         break;
 
