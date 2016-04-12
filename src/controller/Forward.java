@@ -6,8 +6,15 @@ package controller;
  */
 public class Forward {
 
+    int[] forwardingTable = routing.getForwardingTable();
 
+    int sendTo;
 
+    sendTo = forwardingTable[destinationAdres+7];
+
+    if (forwardingTable[destinationAdres+3] == 255){
+        return "kan niet berijken";
+    }
 
 
 }

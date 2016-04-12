@@ -6,16 +6,14 @@ package model;
 public class PingPacket {
 
     private int sourceAddress;
-    private String name;
     private final int PINGPACKET = 2;
 
-    public PingPacket(int sourceAddress, String name){
+    public PingPacket(int sourceAddress){
         this.sourceAddress = sourceAddress;
-        this.name = name;
     }
 
     public byte[] getPingPacket(){
-        byte[] pingpacket = new byte[(3 + name.length())];
+        byte[] pingpacket = new byte[3];
 
         //add the indication byte that indicates what type of packet this is
         pingpacket[0] = intToByte(PINGPACKET);
@@ -23,26 +21,15 @@ public class PingPacket {
         //add the source to the packet
         pingpacket[1] = intToByte(this.sourceAddress);
 
-        //add the username to the packet
-        for (int i = 2; i < (name.length() + 2); i++){
-            byte[] array = StringToByte(name);
-            pingpacket[i] = array[i-2];
-        }
-
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        pingpacket[name.length()+2] = intToByte(1);
+        pingpacket[2] = intToByte(1);
 
         return pingpacket;
     }
 
     public byte intToByte(int val){
         byte b = (byte)val;
-        return b;
-    }
-
-    public byte[] StringToByte(String string){
-        byte[] b = string.getBytes();
         return b;
     }
 
