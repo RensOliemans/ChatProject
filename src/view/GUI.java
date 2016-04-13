@@ -250,10 +250,11 @@ public class GUI extends JFrame {
 		return liststr;
 	}
 
-	private List StringToList(String string) {
-		List<Integer> list = new ArrayList<Integer>();
+	private List<Integer> StringToList(String string) {
+        System.out.println(string);
+        List<Integer> list = new ArrayList<Integer>();
 		for (int i = 0; i < string.length(); i = i+2) {
-			list.add(new Integer(string.charAt(i)));
+			list.add(Character.getNumericValue(string.charAt(i)));
 		}
 		return list;
 	}
@@ -284,7 +285,7 @@ public class GUI extends JFrame {
 			String txt = ((JTextField)e.getSource()).getText();
 			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + txt + "\n");
 			((JTextField)e.getSource()).setText("");
-			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
+            for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
 				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt, i);
 			}
 		}
@@ -370,7 +371,11 @@ public class GUI extends JFrame {
 			chatmap.put(chatButton,newChatPane);
 			List<Integer> stringlist = StringToList(chatnumberandparticipants[1]);
 			stringlist.add(new Integer(src));
-			participantsmap.put(newChatPane, stringlist);
+            for (Integer i : stringlist) {
+                System.out.print(i + " ");
+            }
+            System.out.println();
+            participantsmap.put(newChatPane, stringlist);
 			chatnumbermap.put(newChatPane, new Integer((chatnumberandparticipants[0].substring(16))));
 			availableChatsPanel.add(chatButton);
 		}

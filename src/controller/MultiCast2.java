@@ -618,52 +618,54 @@ public class MultiCast2 implements Runnable{
     }
 
     public void send(String msg, int destination) {
-        sender = new Sender(destination);
-        senders.put(destination, sender);
+        if (destination != computerNumber) {
+            sender = new Sender(destination);
+            senders.put(destination, sender);
 
 //        First send the 'First' message
-        while (!sender.firstReceived) {
-            sendFirst(destination);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                gui.showError("InterruptedException in send(..). " +
-                        "Happened while waiting for ACK of first received. " +
-                        "Shouldn't happen. Error message: " + e.getMessage());
+            while (!sender.firstReceived) {
+                sendFirst(destination);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    gui.showError("InterruptedException in send(..). " +
+                            "Happened while waiting for ACK of first received. " +
+                            "Shouldn't happen. Error message: " + e.getMessage());
+                }
             }
-        }
 
-        while (!sender.keysReceived) {
-            sendPublicKey(destination, false);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                gui.showError("InterruptedException in send(..). " +
-                        "Happened while waiting for ACK of keysReceived. " +
-                        "Shouldn't happen. Error message: " + e.getMessage());
+            while (!sender.keysReceived) {
+                sendPublicKey(destination, false);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    gui.showError("InterruptedException in send(..). " +
+                            "Happened while waiting for ACK of keysReceived. " +
+                            "Shouldn't happen. Error message: " + e.getMessage());
+                }
             }
-        }
 
-        System.out.println("SUCCESS");
+            System.out.println("SUCCESS");
 
-        //If the receiver received their 'First' message and replied with an ack, send the message
-        System.out.println("Het firstreceived zetten is goed gegaan");
-        sendMessage(msg.getBytes(), destination);
+            //If the receiver received their 'First' message and replied with an ack, send the message
+            System.out.println("Het firstreceived zetten is goed gegaan");
+            sendMessage(msg.getBytes(), destination);
 //        sendImage(msg, destination);
 
-        //After the message has been sent, send the 'Finish' message and wait for ack
-        while (!sender.finishReceived){
-            sendFinish(destination);
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                gui.showError("InterruptedException in send(..). " +
-                        "Happened while waiting for finish ACK. " +
-                        "Shouldn't happen. Error message: " + e.getMessage());
+            //After the message has been sent, send the 'Finish' message and wait for ack
+            while (!sender.finishReceived) {
+                sendFinish(destination);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    gui.showError("InterruptedException in send(..). " +
+                            "Happened while waiting for finish ACK. " +
+                            "Shouldn't happen. Error message: " + e.getMessage());
+                }
             }
+            senders.remove(destination, sender);
+            System.out.println("finish is received");
         }
-        senders.remove(destination, sender);
-        System.out.println ("finish is received");
     }
 
     public void leave() {
