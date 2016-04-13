@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.util.Scanner;
 import java.awt.*;
 import javax.swing.*;
@@ -25,7 +26,7 @@ public class GUI extends JFrame {
 	private JScrollPane availableChatsScrollPane;
 	private int pcnumber;
 	private MultiCast2 multiCast;
-	private Dimension framesize = new Dimension(500,400);
+	private Dimension framesize = new Dimension(700,400);
 	private List<Integer> group22 = new ArrayList<Integer>();
 	private Map<ChatButton, MessageScroll> chatmap = new HashMap<ChatButton, MessageScroll>();
 	private Map<MessageScroll, List<Integer>> participantsmap = new HashMap<MessageScroll, List<Integer>>();
@@ -122,7 +123,7 @@ public class GUI extends JFrame {
 		public ChatRoom() {
 			super();
 			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Chatroom"));
-			setPreferredSize(new Dimension(200,380));
+			setPreferredSize(new Dimension(400,380));
 			setLayout(new BorderLayout());
 			messages = new JTextArea();
 			messages.setEditable(false);
@@ -131,10 +132,18 @@ public class GUI extends JFrame {
 			scrollmessages = new MessageScroll(messages, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			scrollmessages.setPreferredSize(new Dimension(180,300));
 			add(scrollmessages);
+			JPanel textfieldpanel = new JPanel();
 			textfield = new JTextField();
-			textfield.setPreferredSize(new Dimension(150, 20));
+			textfield.setPreferredSize(new Dimension(300, 20));
 			textfield.addActionListener(new SendingFieldListener());
-			add(textfield, BorderLayout.SOUTH);
+			textfieldpanel.add(textfield);
+			ImageIcon camera = new ImageIcon();
+			ImageIcon imageIcon = new ImageIcon("icon-camera-128.png");
+			JButton addImage = new JButton(imageIcon);
+			addImage.setPreferredSize(new Dimension(80,20));
+			addImage.addActionListener(new SendingImageListener());
+			textfieldpanel.add(addImage);
+			add(textfieldpanel, BorderLayout.SOUTH);
 		}
 	}
 
@@ -145,6 +154,7 @@ public class GUI extends JFrame {
 			setPreferredSize(new Dimension(160,30));
 			setMinimumSize(new Dimension(160,30));
 			setMaximumSize(new Dimension(160,30));
+			setBackground(Color.WHITE);
 			addActionListener(new ChatChooseListener());
 		}
 	}
@@ -233,13 +243,15 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			chatRoom.remove(chatRoom.scrollmessages);
 			chatRoom.scrollmessages = chatmap.get(e.getSource());
+			for (ChatButton c: chatmap.keySet()) {
+				if (c.equals(e.getSource())) {
+					c.setBackground(Color.LIGHT_GRAY);
+				}
+				else {
+					c.setBackground(Color.WHITE);
+				}
+ 			}
 			chatRoom.add(chatRoom.scrollmessages, BorderLayout.CENTER);
-			GUI.this.invalidate();
-			GUI.this.validate();
-			GUI.this.repaint();
-			chatRoom.scrollmessages.invalidate();
-			chatRoom.scrollmessages.validate();
-			chatRoom.scrollmessages.repaint();
 			chatRoom.invalidate();
 			chatRoom.validate();
 			chatRoom.repaint();
@@ -253,6 +265,21 @@ public class GUI extends JFrame {
 			((JTextField)e.getSource()).setText("");
 			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
 //				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":", i);
+			}
+		}
+	}
+
+	private class SendingImageListener implements ActionListener {
+
+		public void actionPerformed(ActionEvent e) {
+			JFileChooser fileChooser = new JFileChooser();
+			int returnValue = fileChooser.showOpenDialog(GUI.this);
+			if (returnValue == fileChooser.APPROVE_OPTION) {
+				File selectedFile = fileChooser.getSelectedFile();
+				chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: sent image" + selectedFile.getName() + "\n");
+				for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
+//					multiCast.sendImage(selectedFile.getName(), i);
+				}
 			}
 		}
 	}
