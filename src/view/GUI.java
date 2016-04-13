@@ -263,10 +263,11 @@ public class GUI extends JFrame {
 	private class SendingFieldListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
-			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + ((JTextField)e.getSource()).getText() + "\n");
+			String txt = ((JTextField)e.getSource()).getText();
+			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + txt + "\n");
 			((JTextField)e.getSource()).setText("");
 			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
-//				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":", i);
+				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt, i);
 			}
 		}
 	}
