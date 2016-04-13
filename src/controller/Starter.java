@@ -17,11 +17,12 @@ public class Starter {
         System.out.println("Enter computer number");
         int computerNumber = new Scanner(System.in).nextInt();
 
+
+        gui = new GUI(computerNumber, multiCast2);
         multiCast2.setComputerNumber(computerNumber);
         multiCast2.generateKeys();
         Ping ping = new Ping(computerNumber, multiCast2);
 
-//        gui = new GUI(computerNumber, multiCast2);
         Thread receiveThread = new Thread(multiCast2);
         receiveThread.start();
 

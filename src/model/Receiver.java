@@ -26,7 +26,8 @@ public class Receiver {
     private GUI gui;
     public Map<byte[], byte[]> received = new HashMap<byte[], byte[]>();
     public int sender;
-    public List<Byte> goodOrder = null;
+    public List<Byte> goodOrderList = null;
+    public byte[] goodOrder;
 
     public Receiver(int sender) {
         this.sender = sender;
@@ -49,7 +50,12 @@ public class Receiver {
                 }
             }
         }
-        goodOrder = result;
+        goodOrderList = result;
+        int i = 0;
+        for (Byte b: goodOrder){
+            goodOrder[i] = b;
+            i++;
+        }
     }
 
     public void showImage(byte[] imageData) {
@@ -61,6 +67,18 @@ public class Receiver {
             gui.showError("IOException in showImage(..), Receiver class. " +
                     "Error while reading/writing to a file. " +
                     "\nError message: " + e.getMessage());
+        }
+    }
+
+    public void putReceived(byte[] seq, byte[] decryptedData) {
+        boolean nietAanwezig = true;
+        for (Map.Entry<byte[], byte[]> e: received.entrySet()){
+            if (MultiCast2.byteToInt(e.getKey()) == MultiCast2.byteToInt(seq)){
+                nietAanwezig = false;
+            }
+        }
+        if (nietAanwezig){
+            received.put(seq, decryptedData);
         }
     }
 }

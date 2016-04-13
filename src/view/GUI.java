@@ -4,9 +4,15 @@ import controller.MultiCast2;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Eric on 6-4-2016.
@@ -21,7 +27,7 @@ public class GUI extends JFrame {
 	private JScrollPane availableChatsScrollPane;
 	private int pcnumber;
 	private MultiCast2 multiCast;
-	private Dimension framesize = new Dimension(500,400);
+	private Dimension framesize = new Dimension(700,400);
 	private List<Integer> group22 = new ArrayList<Integer>();
 	private Map<ChatButton, MessageScroll> chatmap = new HashMap<ChatButton, MessageScroll>();
 	private Map<MessageScroll, List<Integer>> participantsmap = new HashMap<MessageScroll, List<Integer>>();
@@ -58,12 +64,21 @@ public class GUI extends JFrame {
 		setResizable(false);
 	}
 
-	public void showError(String errormessage) {
+	public void showError(String errormessage	) {
 		JOptionPane.showMessageDialog(this, "Error: " + errormessage, "ERROR", JOptionPane.ERROR_MESSAGE);
 	}
 
 	public void updateOnlinePeople() {
+		for (int i = 0; i<4; i++){
+			if (group22.contains(i+1)){
+				long huidigetijd = System.currentTimeMillis();
+				if (huidigetijd - multiCast.lastTimePing[i] > 5000){
+					multiCast.presence.remove(new Integer(i+1));
+				}
+			}
+		}
 		group22 = multiCast.presence;
+		System.out.println("iets " + multiCast.presence.toString());
 		remove(peopleOnline);
 		peopleOnline = new JPanel();
 		peopleOnline.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Group22"));
@@ -96,7 +111,7 @@ public class GUI extends JFrame {
 			setPreferredSize(new Dimension(200,380));
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			availableChatsPanel = new JPanel();
-			availableChatsPanel.setPreferredSize(new Dimension(150,200));
+//			availableChatsPanel.setPreferredSize(new Dimension(150,200));
 			availableChatsPanel.setLayout(new BoxLayout(availableChatsPanel, BoxLayout.Y_AXIS));
 			availableChatsScrollPane = new JScrollPane(availableChatsPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			availableChatsScrollPane.setPreferredSize(new Dimension(180,300));
@@ -118,7 +133,7 @@ public class GUI extends JFrame {
 		public ChatRoom() {
 			super();
 			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Chatroom"));
-			setPreferredSize(new Dimension(200,380));
+			setPreferredSize(new Dimension(400,380));
 			setLayout(new BorderLayout());
 			messages = new JTextArea();
 			messages.setEditable(false);
@@ -127,10 +142,18 @@ public class GUI extends JFrame {
 			scrollmessages = new MessageScroll(messages, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			scrollmessages.setPreferredSize(new Dimension(180,300));
 			add(scrollmessages);
+			JPanel textfieldpanel = new JPanel();
 			textfield = new JTextField();
-			textfield.setPreferredSize(new Dimension(150, 20));
+			textfield.setPreferredSize(new Dimension(300, 20));
 			textfield.addActionListener(new SendingFieldListener());
-			add(textfield, BorderLayout.SOUTH);
+			textfieldpanel.add(textfield);
+			ImageIcon camera = new ImageIcon();
+			ImageIcon imageIcon = new ImageIcon("icon-camera-128.png");
+			JButton addImage = new JButton(imageIcon);
+			addImage.setPreferredSize(new Dimension(80,20));
+			addImage.addActionListener(new SendingImageListener());
+			textfieldpanel.add(addImage);
+			add(textfieldpanel, BorderLayout.SOUTH);
 		}
 	}
 
@@ -141,6 +164,7 @@ public class GUI extends JFrame {
 			setPreferredSize(new Dimension(160,30));
 			setMinimumSize(new Dimension(160,30));
 			setMaximumSize(new Dimension(160,30));
+			setBackground(Color.WHITE);
 			addActionListener(new ChatChooseListener());
 		}
 	}
@@ -202,10 +226,26 @@ public class GUI extends JFrame {
 			chatnumbermap.put(newChatPane, chatnumber);
 			availableChatsPanel.add(chatButton);
 			for (Integer i: newChatOptionsListener.participantlist) {
-				multiCast.send("joinrequest:chat" + chatnumber, i);
+				multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i);
 			}
 			chatnumber += 4;
 		}
+	}
+
+	private String ListToString(List<Integer> list) {
+		String liststr = "";
+		for (Integer i: list) {
+			liststr.concat(Integer.toString(i) + ",");
+		}
+		return liststr;
+	}
+
+	private List StringToList(String string) {
+		List<Integer> list = new ArrayList<Integer>();
+		for (int i = 0; i < string.length(); i = i+2) {
+			list.add(new Integer(string.charAt(i)));
+		}
+		return list;
 	}
 
 	private class ChatChooseListener implements ActionListener {
@@ -213,13 +253,15 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			chatRoom.remove(chatRoom.scrollmessages);
 			chatRoom.scrollmessages = chatmap.get(e.getSource());
+			for (ChatButton c: chatmap.keySet()) {
+				if (c.equals(e.getSource())) {
+					c.setBackground(Color.LIGHT_GRAY);
+				}
+				else {
+					c.setBackground(Color.WHITE);
+				}
+			}
 			chatRoom.add(chatRoom.scrollmessages, BorderLayout.CENTER);
-			GUI.this.invalidate();
-			GUI.this.validate();
-			GUI.this.repaint();
-			chatRoom.scrollmessages.invalidate();
-			chatRoom.scrollmessages.validate();
-			chatRoom.scrollmessages.repaint();
 			chatRoom.invalidate();
 			chatRoom.validate();
 			chatRoom.repaint();
@@ -229,10 +271,26 @@ public class GUI extends JFrame {
 	private class SendingFieldListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
-			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + ((JTextField)e.getSource()).getText() + "\n");
+			String text = ((JTextField)e.getSource()).getText();
+			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + text + "\n");
 			((JTextField)e.getSource()).setText("");
 			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
-				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":", i);
+				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + text, i.intValue());
+			}
+		}
+	}
+
+	private class SendingImageListener implements ActionListener {
+
+		public void actionPerformed(ActionEvent e) {
+			JFileChooser fileChooser = new JFileChooser();
+			int returnValue = fileChooser.showOpenDialog(GUI.this);
+			if (returnValue == fileChooser.APPROVE_OPTION) {
+				File selectedFile = fileChooser.getSelectedFile();
+				chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: sent image" + selectedFile.getName() + "\n");
+				for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
+//					multiCast.sendImage(selectedFile.getName(), i);
+				}
 			}
 		}
 	}
@@ -277,20 +335,37 @@ public class GUI extends JFrame {
 		switch (src) {
 			case 1:
 				name = "Rens";
+				break;
 			case 2:
 				name = "Birte";
+				break;
 			case 3:
 				name = "Coen";
+				break;
 			case 4:
 				name = "Eric";
+				break;
 		}
 		if (message.startsWith("joinrequest:chat")) {
-			JOptionPane.showMessageDialog(GUI.this, name + " added you to chat" + message.charAt(16));
-
+			String[] chatnumberandparticipants = message.split(";");
+			JOptionPane.showMessageDialog(GUI.this, name + " added you to chat" + chatnumberandparticipants[0].substring(16));
+			JTextArea newChatArea = new JTextArea();
+			newChatArea.setEditable(false);
+			newChatArea.setLayout(new BoxLayout(newChatArea, BoxLayout.Y_AXIS));
+			newChatArea.setLineWrap(true);
+			MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			newChatPane.setPreferredSize(new Dimension(180,300));
+			ChatButton chatButton = new ChatButton(chatnumberandparticipants[0].substring(16));
+			chatmap.put(chatButton,newChatPane);
+			List<Integer> stringlist = StringToList(chatnumberandparticipants[1]);
+			stringlist.add(new Integer(src));
+			participantsmap.put(newChatPane, stringlist);
+			chatnumbermap.put(newChatPane, new Integer((chatnumberandparticipants[0].substring(16))));
+			availableChatsPanel.add(chatButton);
 		}
 		else if (message.startsWith("chat")) {
 			for (Map.Entry<MessageScroll, Integer> e: chatnumbermap.entrySet()) {
-				if (message.charAt(4) == e.getValue()) {
+				if (Character.getNumericValue(message.charAt(4)) == e.getValue()) {
 					e.getKey().messages.setText(e.getKey().messages.getText() + "\n " + name + message.substring(5) + "\n");
 				}
 			}
@@ -299,9 +374,4 @@ public class GUI extends JFrame {
 			JOptionPane.showMessageDialog(GUI.this, name + " sent " + message + ", not via GUI");
 		}
 	}
-
-	public static void main(String[] args) {
-		new GUI(4, new MultiCast2());
-	}
-
 }
