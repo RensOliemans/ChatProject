@@ -154,6 +154,11 @@ public class MultiCast2 implements Runnable{
             byte[] data = recv.getData();
             byte[] seq;
             int seqint;
+            if (data[0] != 0 && data[0] != 1 && data[0] != 2) {
+                for (byte b : data) {
+                    System.out.print(b + " ");
+                }
+            }
             int i = data.length;
             for (Map.Entry<Integer, Sender> e: senders.entrySet()){
                 if ((int) e.getKey() == (int) data[1]){

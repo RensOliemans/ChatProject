@@ -225,9 +225,11 @@ public class GUI extends JFrame {
             participantsmap.put(newChatPane, newChatOptionsListener.participantlist);
             chatnumbermap.put(newChatPane, chatnumber);
             availableChatsPanel.add(chatButton);
+            System.out.println("size: " + newChatOptionsListener.participantlist.size());
             for (Integer i: newChatOptionsListener.participantlist) {
+                System.out.print(i);
+                System.out.println("dit wordt verzonden: " + "\"joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) + "\" naar " + i);
                 multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i);
-                System.out.println(ListToString(newChatOptionsListener.participantlist));
             }
             chatnumber += 4;
         }
@@ -236,7 +238,7 @@ public class GUI extends JFrame {
     private String ListToString(List<Integer> list) {
         String liststr = "";
         for (Integer i: list) {
-            liststr.concat(Integer.toString(i) + ",");
+            liststr = liststr.concat(Integer.toString(i) + ",");
         }
         return liststr;
     }
@@ -349,6 +351,7 @@ public class GUI extends JFrame {
                 break;
         }
         if (message.startsWith("joinrequest:chat")) {
+            System.out.println(message);
             String[] chatnumberandparticipants = message.split(";");
             JOptionPane.showMessageDialog(GUI.this, name + " added you to chat" + chatnumberandparticipants[0].substring(16));
             JTextArea newChatArea = new JTextArea();
