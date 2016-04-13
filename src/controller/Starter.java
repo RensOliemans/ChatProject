@@ -14,8 +14,8 @@ public class Starter {
 
     public static void main(String[] args) {
         //TODO: change this for the GUI
-        System.out.println("Enter computer number");
-        int computerNumber = new Scanner(System.in).nextInt();
+//        System.out.println("Enter computer number");
+        int computerNumber = 1;
 
         gui = new GUI(computerNumber, multiCast2);
 

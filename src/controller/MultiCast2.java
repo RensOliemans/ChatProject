@@ -65,7 +65,7 @@ public class MultiCast2 implements Runnable {
     Ping ping2 = new Ping(computerNumber, this);
     Ping ping3 = new Ping(computerNumber, this);
     Ping ping4 = new Ping(computerNumber, this);
-    public List presence = new ArrayList<>();
+    public List<Integer> presence = new ArrayList<>();
 
 
     /*
