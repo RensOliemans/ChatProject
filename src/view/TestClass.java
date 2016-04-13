@@ -17,6 +17,13 @@ public class TestClass {
 			e.printStackTrace();
 		}
 		gui.printMessage("joinrequest:chat3;1,2,4", 3);
+		try {
+			Thread.sleep(500);
+		}
+		catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		gui.printMessage("joinrequest:chat3;1,2,4", 3);
 	}
 
 }

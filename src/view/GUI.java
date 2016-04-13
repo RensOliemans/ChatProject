@@ -251,7 +251,7 @@ public class GUI extends JFrame {
 			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + ((JTextField)e.getSource()).getText() + "\n");
 			((JTextField)e.getSource()).setText("");
 			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
-				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":", i);
+//				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":", i);
 			}
 		}
 	}
@@ -311,7 +311,7 @@ public class GUI extends JFrame {
 			newChatArea.setLineWrap(true);
 			MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			newChatPane.setPreferredSize(new Dimension(180,300));
-			ChatButton chatButton = new ChatButton(Integer.toString(message.charAt(16)));
+			ChatButton chatButton = new ChatButton(String.valueOf(message.charAt(16)));
 			chatmap.put(chatButton,newChatPane);
 			participantsmap.put(newChatPane, StringToList(message.substring(18)));
 			chatnumbermap.put(newChatPane, new Integer(message.charAt(16)));
