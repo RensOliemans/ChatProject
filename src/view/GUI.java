@@ -227,6 +227,7 @@ public class GUI extends JFrame {
             availableChatsPanel.add(chatButton);
             for (Integer i: newChatOptionsListener.participantlist) {
                 multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i);
+                System.out.println(ListToString(newChatOptionsListener.participantlist));
             }
             chatnumber += 4;
         }
@@ -312,6 +313,7 @@ public class GUI extends JFrame {
             if (((JCheckBox)e.getSource()).getText().equals("Eric")) {
                 participantlist.add(new Integer(4));
             }
+            System.out.println(participantlist);
         }
     }
 

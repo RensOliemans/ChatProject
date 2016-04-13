@@ -10,7 +10,7 @@ import java.util.Scanner;
  */
 public class Starter {
     private static GUI gui;
-    private static MultiCast2 multiCast2 = new MultiCast2();
+    private static MultiCast2 multiCast2;
 
     public static void main(String[] args) {
 //        System.out.println("Enter computer number");
@@ -18,7 +18,8 @@ public class Starter {
 
 //        gui = new GUI(computerNumber, multiCast2);
 
-        multiCast2.setComputerNumber(computerNumber);
+        multiCast2 = new MultiCast2(1);
+
         multiCast2.generateKeys();
         Ping ping = new Ping(computerNumber, multiCast2);
 
