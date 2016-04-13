@@ -53,7 +53,7 @@ public class MultiCast2 implements Runnable{
     private Map<Byte, Receiver> receivers = new HashMap<>();
     private Map<Byte, Sender> senders = new HashMap<>();
     private int computerNumber;
-    private static final int DATASIZE=512;
+    private static final int DATASIZE=1024;
     public static final int HEADER = 1;
     private int synint;
     private int receivedPing1 = 0;
@@ -145,7 +145,7 @@ public class MultiCast2 implements Runnable{
      */
     private void receive() {
         try {
-            byte[] buf = new byte[1032];
+            byte[] buf = new byte[2000];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
             byte[] data = recv.getData();
@@ -573,11 +573,11 @@ public class MultiCast2 implements Runnable{
     }
 
 
-    private void sendImage(String imageName, int destination) {
+    public void sendImage(String imageName, int destination) {
         try {
             //open image
-            File imgPath = new File(imageName);
-            BufferedImage bufferedImage = ImageIO.read(imgPath);
+            File image = new File(imageName);
+            BufferedImage bufferedImage = ImageIO.read(image);
 
             //get DataBufferBytes from raster
             WritableRaster raster = bufferedImage.getRaster();
@@ -713,6 +713,7 @@ public class MultiCast2 implements Runnable{
         //If the receiver received their 'First' message and replied with an ack, send the message
         System.out.println("Het firstreceived zetten is goed gegaan");
         sendMessage(msg.getBytes(), destination);
+//        sendImage(msg, destination);
 
         //After the message has been sent, send the 'Finish' message and wait for ack
         while (!sender.finishReceived){
