@@ -153,6 +153,64 @@ public class MultiCast2 implements Runnable{
                     receiver = e.getValue();
                 }
             }
+            if (computerNumber != data[1] && ( data[0] == 1 || data[0] == 2)){
+                if (data[0] == 1){
+                    if (data[2] == computerNumber) {
+                        routing.setSourceAddress(data[1]);
+                        routing.setLinkCost(data[3]);
+                        byte[] bArray = new byte[12];
+                        for (int k = 0; k < 12; k++) {
+                            bArray[k] = data[k + 4];
+                        }
+                        System.out.println("received routing table: ");
+                        int[] receivedtable = routing.byteArrayToIngerArray(bArray);
+                        for (int j = 0; j < 12; j++) {
+                            System.out.print(receivedtable[j] + " ");
+                        }
+                        System.out.println("");
+                        System.out.println("old routing table: ");
+                        int[] oldtable = routing.getForwardingTable();
+                        for (int j = 0; j < 12; j++) {
+                            System.out.print(oldtable[j] + " ");
+                        }
+                        System.out.println("");
+                        routing.setForwardingTable(routing.byteArrayToIngerArray(bArray));
+                    }
+                }
+                if (data[0] == 2){
+                    if (data[1] == 1){
+                        receivedPings = ping1.calculateReceivedPings(data[1]);
+                        if (receivedPings != 0){
+                            sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
+                            System.out.println("received ping pakkets= " + receivedPings);
+                        }
+                    }
+                    if (data[1] == 2){
+                        receivedPings = ping2.calculateReceivedPings(data[1]);
+                        if (receivedPings != 0){
+                            sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
+                            System.out.println("received ping pakkets= " + receivedPings);
+                        }
+                    }
+                    if (data[1] == 3){
+                        receivedPings = ping3.calculateReceivedPings(data[1]);
+                        if (receivedPings != 0){
+                            sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
+                            System.out.println("received ping pakkets= " + receivedPings);
+                        }
+                    }
+                    if (data[1] == 4){
+                        receivedPings = ping4.calculateReceivedPings(data[1]);
+                        if (receivedPings != 0){
+                            sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
+                            System.out.println("received ping pakkets= " + receivedPings);
+                        }
+                    }
+                    if (data[1] != 1 || data[1] != 2 || data[1] != 3 || data[1] != 4){
+                        throw new IllegalArgumentException("wrong number bitch");
+                    }
+                }
+            }
             if (computerNumber != data[1] && computerNumber == data[2] && computerNumber == data[3]) {
                 data = removeRensByte(data);
                 switch (data[0]) {
@@ -168,65 +226,7 @@ public class MultiCast2 implements Runnable{
                         receiver.received.put(seq, message);
                         break;
 
-                    //RoutingPacket
-                    case 1:
-                        if (data[2] == computerNumber) {
-                            routing.setSourceAddress(data[1]);
-                            routing.setLinkCost(data[3]);
-                            byte[] bArray = new byte[12];
-                            for (int k = 0; k < 12; k++) {
-                                bArray[k] = data[k + 4];
-                            }
-                            System.out.println("received routing table: ");
-                            int[] receivedtable = routing.byteArrayToIngerArray(bArray);
-                            for (int j = 0; j < 12; j++) {
-                                System.out.print(receivedtable[j] + " ");
-                            }
-                            System.out.println("");
-                            System.out.println("old routing table: ");
-                            int[] oldtable = routing.getForwardingTable();
-                            for (int j = 0; j < 12; j++) {
-                                System.out.print(oldtable[j] + " ");
-                            }
-                            System.out.println("");
-                            routing.setForwardingTable(routing.byteArrayToIngerArray(bArray));
-                        }
-                        break;
-
-                    //pingPacket
-                    case 2:
-                        if (data[1] == 1){
-                            receivedPings = ping1.calculateReceivedPings(data[1]);
-                            if (receivedPings != 0){
-                                sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPings);
-                            }
-                        }
-                        if (data[1] == 2){
-                            receivedPings = ping2.calculateReceivedPings(data[1]);
-                            if (receivedPings != 0){
-                                sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPings);
-                            }
-                        }
-                        if (data[1] == 3){
-                            receivedPings = ping3.calculateReceivedPings(data[1]);
-                            if (receivedPings != 0){
-                                sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPings);
-                            }
-                        }
-                        if (data[1] == 4){
-                            receivedPings = ping4.calculateReceivedPings(data[1]);
-                            if (receivedPings != 0){
-                                sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPings);
-                            }
-                        }
-                        if (data[1] != 1 || data[1] != 2 || data[1] != 3 || data[1] != 4){
-                            throw new IllegalArgumentException("wrong number bitch");
-                        }
-                        break;
+                    //case 1 and 2 are not is this switch because they don't have a nextHop in their header
 
                     // startpacket
                     //Only receiver gets these
