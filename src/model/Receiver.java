@@ -1,12 +1,21 @@
 package model;
 
-import java.net.DatagramPacket;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+
+import controller.MultiCast2;
 import view.GUI;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 /**
  * Created by Birte on 7-4-2016.
@@ -14,9 +23,11 @@ import view.GUI;
 public class Receiver {
 
     public Boolean allReceived = false;
+    private GUI gui;
     public Map<byte[], byte[]> received = new HashMap<byte[], byte[]>();
     public int sender;
-    public List<Byte> goodOrder = null;
+    public List<Byte> goodOrderList = null;
+    public byte[] goodOrder;
 
     public Receiver(int sender) {
         this.sender = sender;
@@ -25,14 +36,13 @@ public class Receiver {
         this.goodOrder = null;
     }
 
-    public void order(){
+    public void order() {
         List<Byte> result = new ArrayList<>();
-        for (int i = 2; i < this.received.size()+2; i++) {
-            byte[] j = new byte[1];
-            j[0] = (byte) i;
-            for (Map.Entry<byte[], byte[]> e: this.received.entrySet()){
-                System.out.println("seq nummer" + e.getKey());
-                if (java.util.Arrays.equals(e.getKey(), j)){
+        for (int i = 3; i < this.received.size() + 3; i++) {
+            byte[] j = MultiCast2.intToByte(i);
+            for (Map.Entry<byte[], byte[]> e : this.received.entrySet()) {
+//                System.out.println("seq nummer " + MultiCast2.byteToInt(e.getKey()));
+                if (Arrays.equals(e.getKey(), j)) {
                     byte[] packet = e.getValue();
                     for (int k = 0; k < packet.length; k++) {
                         result.add(packet[k]);
@@ -40,6 +50,40 @@ public class Receiver {
                 }
             }
         }
-        goodOrder = result;
+        goodOrderList = result;
+        Byte[] dataArray = goodOrderList.toArray(new Byte[goodOrderList.size()]);
+        this.goodOrder = new byte[dataArray.length];
+        for (int j = 0; j < dataArray.length; j++){
+            this.goodOrder[j] = dataArray[j];
+        }
+        int i = 0;
+        for (Byte b: goodOrder){
+            goodOrder[i] = b;
+            i++;
+        }
+    }
+
+    public void showImage(byte[] imageData) {
+        try {
+            InputStream in = new ByteArrayInputStream(imageData);
+            BufferedImage image = ImageIO.read(in);
+            ImageIO.write(image, "jpg", new File("output.jpg"));
+        } catch (IOException e) {
+            gui.showError("IOException in showImage(..), Receiver class. " +
+                    "Error while reading/writing to a file. " +
+                    "\nError message: " + e.getMessage());
+        }
+    }
+
+    public void putReceived(byte[] seq, byte[] decryptedData) {
+        boolean nietAanwezig = true;
+        for (Map.Entry<byte[], byte[]> e: received.entrySet()){
+            if (MultiCast2.byteToInt(e.getKey()) == MultiCast2.byteToInt(seq)){
+                nietAanwezig = false;
+            }
+        }
+        if (nietAanwezig){
+            received.put(seq, decryptedData);
+        }
     }
 }
