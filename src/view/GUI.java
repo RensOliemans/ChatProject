@@ -138,7 +138,7 @@ public class GUI extends JFrame {
 			textfield.addActionListener(new SendingFieldListener());
 			textfieldpanel.add(textfield);
 			ImageIcon camera = new ImageIcon();
-			ImageIcon imageIcon = new ImageIcon("icon-camera-128.png");
+			ImageIcon imageIcon = new ImageIcon("icon-camera-128small.png");
 			JButton addImage = new JButton(imageIcon);
 			addImage.setPreferredSize(new Dimension(80,20));
 			addImage.addActionListener(new SendingImageListener());
