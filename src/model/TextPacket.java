@@ -13,39 +13,46 @@ public class TextPacket {
 
     private int sourceAddress;
     private int destinationAddress;
+    private int nextHop;
     private byte[] syn;
     private String msg;
     private final int TEXTPACKET = 0;
 
-    public TextPacket(int sourceAddress, int destinationAddress, byte[] syn, String msg) {
+    public TextPacket(int sourceAddress, int destinationAddress, byte[] syn, String msg, int nextHop) {
         this.sourceAddress = sourceAddress;
         this.destinationAddress = destinationAddress;
         this.syn = syn;
         this.msg = msg;
+        this.nextHop = nextHop;
     }
 
     public byte[] getTextPacket() {
-        byte[] txpkt = new byte[(msg.length() + (3+ HEADER*4))+1];
+        byte[] txpkt = new byte[(msg.length() + (4+this.syn.length))+1];
 
         //add the incation byte that indicates what type of packet this is
-        txpkt[0] = intToByte(TEXTPACKET);
+        txpkt[0] = (byte) TEXTPACKET;
 
         //add the source and destination to the packet
-        txpkt[1] = intToByte(this.sourceAddress);
-        txpkt[2] = intToByte(this.destinationAddress);
+        txpkt[1] = (byte) this.sourceAddress;
+        txpkt[2] = (byte) this.destinationAddress;
 
+        //add the nextHop to the packet
+        txpkt[3] = (byte) this.nextHop;
+
+        //add the SYN to the packet
         for (int i = 0; i < this.syn.length; i++) {
-            txpkt[3+i] = this.syn[i];
+            txpkt[4+i] = this.syn[i];
         }
 
-        txpkt[txpkt.length-1] = intToByte(1);
+        //add the message to the packet
+        for (int i = (4+this.syn.length); i < (msg.length() + (4+this.syn.length)); i++){
+            byte[] array = StringToByte(msg);
+            txpkt[i] = array[i-(4+this.syn.length)];
+        }
+
+        txpkt[txpkt.length-1] = (byte) 1;
 
         return txpkt;
-    }
-
-    public byte intToByte(int val){
-        byte b = (byte)val;
-        return b;
     }
 
     public byte[] StringToByte(String string){

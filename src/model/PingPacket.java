@@ -13,24 +13,20 @@ public class PingPacket {
     }
 
     public byte[] getPingPacket(){
-        byte[] pingpacket = new byte[3];
+        byte[] pingPacket = new byte[3];
 
         //add the indication byte that indicates what type of packet this is
-        pingpacket[0] = intToByte(PINGPACKET);
+        pingPacket[0] = (byte) PINGPACKET;
 
         //add the source to the packet
-        pingpacket[1] = intToByte(this.sourceAddress);
+        pingPacket[1] = (byte) this.sourceAddress;
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        pingpacket[2] = intToByte(1);
+        pingPacket[2] = (byte) 1;
 
-        return pingpacket;
+        return pingPacket;
     }
 
-    public byte intToByte(int val){
-        byte b = (byte)val;
-        return b;
-    }
 
 }

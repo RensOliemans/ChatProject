@@ -330,17 +330,11 @@ public class MultiCast2 implements Runnable{
      */
     public void sendPing(int computerNumber) {
         System.out.println("computernumber given with pingpackets= " + computerNumber);
-        for (int i = 0; i < 255; i++){
-            PingPacket burstPacket1 = new PingPacket(computerNumber, (computerNumber%4)+1, getNextHop((computerNumber%4)+1));
-            PingPacket burstPacket2 = new PingPacket(computerNumber, (computerNumber+1)%4+1, getNextHop((computerNumber%3)+1));
-            PingPacket burstPacket3 = new PingPacket(computerNumber, (computerNumber+2)%4+1, getNextHop((computerNumber%2)+1));
-            DatagramPacket burst1 = new DatagramPacket(burstPacket1.getPingPacket(), burstPacket1.getPingPacket().length, group, PORT);
-            DatagramPacket burst2 = new DatagramPacket(burstPacket2.getPingPacket(), burstPacket2.getPingPacket().length, group, PORT);
-            DatagramPacket burst3 = new DatagramPacket(burstPacket3.getPingPacket(), burstPacket3.getPingPacket().length, group, PORT);
+        for (int i = 0; i < 255; i++) {
+            PingPacket burstPacket = new PingPacket(computerNumber);
+            DatagramPacket burst = new DatagramPacket(burstPacket.getPingPacket(), burstPacket.getPingPacket().length, group, PORT);
             try {
-                this.s.send(burst1);
-                this.s.send(burst2);
-                this.s.send(burst3);
+                this.s.send(burst);
             } catch (IOException e) {
                 e.printStackTrace();
             }
