@@ -55,7 +55,7 @@ public class Security {
         if (!this.symmetricKeys.containsKey(computerNumber)) {
             this.symmetricKeys.put(computerNumber, secretKey);
         } else {
-            System.out.println("symmetric key already exists for this person, see Security.addSymmetricKey(..)");
+            this.symmetricKeys.replace(computerNumber, secretKey);
         }
     }
 

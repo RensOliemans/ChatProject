@@ -53,7 +53,7 @@ public class MultiCast2 implements Runnable{
     private Map<Byte, Receiver> receivers = new HashMap<>();
     private Map<Byte, Sender> senders = new HashMap<>();
     private int computerNumber;
-    private static final int DATASIZE=128;
+    private static final int DATASIZE=512;
     public static final int HEADER = 1;
     private int synint;
     private int receivedPing1 = 0;
