@@ -31,7 +31,7 @@ public class FinishPacket {
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
         finpacket[4] = intToByte(1);
-        System.out.println("finpacket " + finpacket[0] + finpacket[1] + finpacket[2] + finpacket[3]);
+//        System.out.println("finpacket " + finpacket[0] + finpacket[1] + finpacket[2] + finpacket[3]);
 
         return finpacket;
     }

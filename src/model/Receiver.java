@@ -37,11 +37,11 @@ public class Receiver {
 
     public void order() {
         List<Byte> result = new ArrayList<>();
-        for (int i = 2; i < this.received.size() + 2; i++) {
+        for (int i = 3; i < this.received.size() + 3; i++) {
             byte[] j = MultiCast2.intToByte(i);
             for (Map.Entry<byte[], byte[]> e : this.received.entrySet()) {
 //                System.out.println("seq nummer " + MultiCast2.byteToInt(e.getKey()));
-                if (MultiCast2.byteToInt(e.getKey()) == MultiCast2.byteToInt(j)) {
+                if (Arrays.equals(e.getKey(), j)) {
                     byte[] packet = e.getValue();
                     for (int k = 0; k < packet.length; k++) {
                         result.add(packet[k]);

@@ -41,6 +41,10 @@ public class TextPacket {
             txpkt[4+i] = this.syn[i];
         }
 
+        for (int i = 0; i < this.msg.length(); i++) {
+            txpkt[4+i+this.syn.length] = this.msg.getBytes()[i];
+        }
+
         txpkt[txpkt.length-1] = intToByte(1);
 
         return txpkt;

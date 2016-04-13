@@ -53,7 +53,7 @@ public class MultiCast2 implements Runnable{
     private Map<Byte, Receiver> receivers = new HashMap<>();
     private Map<Byte, Sender> senders = new HashMap<>();
     private int computerNumber;
-    private static final int DATASIZE=1024;
+    private static final int DATASIZE=128;
     public static final int HEADER = 1;
     private int synint;
     private int receivedPing1 = 0;
@@ -171,13 +171,19 @@ public class MultiCast2 implements Runnable{
                     // textpacket
                     //Only receiver gets these
                     case 0:
+                        //Since it's a text packet, the data (except for the header) is encrypted
                         System.out.println("TEXT");
                         seq = new byte[HEADER*4];
                         System.arraycopy(data, 4, seq, 0, HEADER*4);
                         sendAck(data[1], seq);
-                        byte[] message = new byte[data.length - 4 - seq.length];
-                        System.arraycopy(data, 4 + seq.length, message, 0, message.length);
-                        receiver.received.put(seq, message);
+                        byte[] encryptedData = new byte[data.length - 4 - seq.length];
+                        System.arraycopy(data, 4 + seq.length, encryptedData, 0, encryptedData.length);
+                        System.out.println(new String(encryptedData));
+                        String encryptedDataString = new String(encryptedData);
+                        String decryptedDataString = this.security.decryptSymm(encryptedDataString, this.security.getSymmetricKey(data[1]));
+                        byte[] decryptedData = decryptedDataString.getBytes();
+//                        byte[] decryptedData = this.security.decryptSymm(new String(encryptedData), this.security.getSymmetricKey(data[1])).getBytes();
+                        receiver.received.put(seq, decryptedData);
                         break;
 
                     //RoutingPacket
@@ -244,7 +250,6 @@ public class MultiCast2 implements Runnable{
                                 receivedPing2 ++;
                             }
                             if ((seconds4 - seconds3 > 3000) && (receivedPing2 != 0)){
-                                int[] emptyForwardingTable = new int[12];
                                 sendRoutingPacket(data[1], receivedPing2, routing.getForwardingTable());
                                 System.out.println("received ping pakkets= " + receivedPing2);
                             }
@@ -330,7 +335,6 @@ public class MultiCast2 implements Runnable{
                     case 4:
                         System.out.println("ACK");
                         seq = new byte[HEADER*4];
-
                         System.arraycopy(data, 4, seq, 0, HEADER*4);
                         seqint = byteToInt(seq);
                         if (seqint == 0) {
@@ -358,8 +362,8 @@ public class MultiCast2 implements Runnable{
                         for (int j = 0; j < dataArray.length; j++) {
                             byteArray[j] = dataArray[j];
                         }
-                        receiver.showImage(byteArray);
-                        System.out.println(String.valueOf(receiver.goodOrder));
+//                        receiver.showImage(byteArray);
+                        System.out.println(new String(byteArray));
                         break;
                     case 6:
                         //This is the packet for the request of one's public key.
@@ -387,6 +391,8 @@ public class MultiCast2 implements Runnable{
                         // Only the receiver gets this.
                         byte[] encryptedAESKeyBytes = new byte[data.length - 4];
                         System.arraycopy(data, 4, encryptedAESKeyBytes, 0, encryptedAESKeyBytes.length);
+//                        System.out.println(security == null);
+//                        System.out.println(encryptedAESKeyBytes.length);
                         SecretKey key = security.decryptAESKey(encryptedAESKeyBytes);
                         security.addSymmetricKey(data[1], key);
                         sendAck(data[1], intToByte(2));
@@ -447,7 +453,7 @@ public class MultiCast2 implements Runnable{
      */
     private void sendAck(int destination, byte[] ackNumber) {
         AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber, getNextHop(destination));
-        System.out.println("comp + dest + ack[3] : " + computerNumber + ", " + destination + ", " + ackNumber[3]);
+//        System.out.println("comp + dest + ack[3] : " + computerNumber + ", " + destination + ", " + ackNumber[3]);
         byte[] packet = ackPacket.getAckPacket();
         DatagramPacket ack = new DatagramPacket(packet, packet.length, group, PORT);
         try {
@@ -616,15 +622,19 @@ public class MultiCast2 implements Runnable{
     private void sendMessage(byte[] msg, int destination) {
         try {
             //Send the entire message, split and with send data from TCP
-            int seqint = 2;
+            int seqint = 3;
             //SEQ starts with 2, because SEQ 0 is reserved for the ACK of the START message, and
             //SEQ 1 is reserved for the ACK of the FIN message
             List<byte[]> splitmessages = splitMessages(msg);
             for (byte[] packet : splitmessages) {
                 byte[] seq = intToByte(seqint);
-                TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(packet), getNextHop(destination));
-                System.out.println("seq[0] + seq[1] + seq[2] + seq[3]: " + seq[0] + seq[1] + seq[2] + seq[3]);
+                byte[] encryptedData = this.security.encryptSymm(new String(packet), this.security.getSymmetricKey(destination)).getBytes();
+                TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(encryptedData), getNextHop(destination));
+                System.out.println(new String(toSend.getTextPacket()));
+//                System.out.println("seq[0] + seq[1] + seq[2] + seq[3]: " + seq[0] + seq[1] + seq[2] + seq[3]);
+//                DatagramPacket messagePacket = new DatagramPacket(encryptedData, encryptedData.length, group, PORT);
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
+
                 this.s.send(messagePacket);
                 boolean alAanwezig = false;
                 synchronized (sender) {
@@ -697,6 +707,8 @@ public class MultiCast2 implements Runnable{
                         "Shouldn't happen. Error message: " + e.getMessage());
             }
         }
+
+        System.out.println("SUCCESS");
 
         //If the receiver received their 'First' message and replied with an ack, send the message
         System.out.println("Het firstreceived zetten is goed gegaan");

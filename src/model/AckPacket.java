@@ -20,7 +20,7 @@ public class AckPacket {
 
     public byte[] getAckPacket(){
 
-        byte[] ackpkt = new byte[4+this.ack.length];
+        byte[] ackpkt = new byte[4+this.ack.length+1];
 
         //add the indication byte that indicates what type of packet this is
         ackpkt[0] = (byte) ACKPACKET;

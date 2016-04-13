@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.StringUtils;
 import view.GUI;
 
 /**
@@ -26,6 +27,7 @@ public class Security {
     private static final String xform = "RSA/ECB/PKCS1Padding";
 
     public Security() {
+        gui = new GUI();
         this.symmetricKeys = new HashMap<Integer, SecretKey>();
         System.out.println("Generating public and private keys...");
         long startTime = System.currentTimeMillis();
@@ -64,7 +66,7 @@ public class Security {
         //Generate a key
         try {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-            kpg.initialize(4096); //keysize: 4096 bits, 512 bytes
+            kpg.initialize(512); //keysize: 512 bits, 64 bytes
             kp = kpg.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
             gui.showError("NoSuchAlgoritmException in generateRSAKeyPair(). " +
@@ -88,17 +90,22 @@ public class Security {
     }
 
     //symmetric encryption with symmetricKey in SecretKey format
-    private String encryptSymm(String text, SecretKey secretKey) {
+    public String encryptSymm(String text, SecretKey secretKey) {
         byte[] raw;
         String encryptedString;
         SecretKeySpec secretKeySpec;
-        byte[] encryptText = text.getBytes();
+//        byte[] encryptText = text.getBytes();
         Cipher cipher = null;
         try {
+
             secretKeySpec = new SecretKeySpec(secretKey.getEncoded(), "AES");
             cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
-            encryptedString = Base64.encodeBase64String(cipher.doFinal(encryptText));
+            byte[] encrypted = cipher.doFinal(text.getBytes());
+            encryptedString = Base64.encodeBase64String(encrypted);
+            return encryptedString;
+//            encryptedString = Base64.encodeBase64String(cipher.doFinal(encryptText));
+
         } catch (NoSuchAlgorithmException e) {
             gui.showError("NoSuchAlgoritmException in encryptSymm(..). " +
                     "Ask Rens. " +
@@ -125,21 +132,21 @@ public class Security {
                     "\nError message: " + e.getMessage());
             return "Error";
         }
-        return encryptedString;
+//        return encryptedString;
     }
 
     //symmetric decryption with symmetricKey in SecretKey format
-    private String decryptSymm(String text, SecretKey secretKey) {
+    public String decryptSymm(String text, SecretKey secretKey) {
         Cipher cipher = null;
         String encryptedString;
         byte[] encryptText = null;
         SecretKeySpec skeySpec;
         try {
             skeySpec = new SecretKeySpec(secretKey.getEncoded(), "AES");
-//            encryptText = Base64.encodeBase64(text.getBytes());
             encryptText = Base64.decodeBase64(text);
             cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec);
+//            encryptedString = new String(Base64.encodeBase64(cipher.doFinal(encryptText)))  ;
             encryptedString = new String(cipher.doFinal(encryptText));
         } catch (NoSuchAlgorithmException e) {
             gui.showError("NoSuchAlgoritmException in decryptSymm(..). " +
@@ -162,6 +169,7 @@ public class Security {
                     "\nError message: " + e.getMessage());
             return "Error";
         } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
             gui.showError("IllegalBlockSizeException in decryptSymm(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
@@ -234,6 +242,7 @@ public class Security {
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
             gui.showError("IllegalBlockSizeException in decryptAESKey(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
@@ -307,5 +316,14 @@ public class Security {
 
     public static void main(String[] args) {
         Security security = new Security();
+        security.generateAESKey(1);
+        String text = "heloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohehelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloolooheloohelooheloohelooheloohelooheloohelooheloo";
+//        text = "hello";
+        System.out.println(text);
+        String encrypted = security.encryptSymm(text, security.getSymmetricKey(1));
+        System.out.println(encrypted);
+        String decrypted = security.decryptSymm(encrypted, security.getSymmetricKey(1));
+        System.out.println(decrypted);
+
     }
 }

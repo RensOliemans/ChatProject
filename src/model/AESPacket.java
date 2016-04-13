@@ -21,7 +21,7 @@ public class AESPacket {
     }
 
     public byte[] getAESPacket() {
-        byte[] AESPacket = new byte[EncryptedAESKey.length + (4 + HEADER * 4) + 1];
+        byte[] AESPacket = new byte[EncryptedAESKey.length + 4 + 1];
 
         //Add the indication byte to show that it is an AESpacket
         AESPacket[0] = (byte) AESKEYPACKET;
