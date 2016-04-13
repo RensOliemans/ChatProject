@@ -125,7 +125,7 @@ public class MultiCast2 implements Runnable{
     }
 
     public void generateKeys() {
-        security = new Security();
+        security = new Security(this.gui);
     }
 
     /*

@@ -26,8 +26,8 @@ public class Security {
     private KeyPair RSAKeyPair;
     private static final String xform = "RSA/ECB/PKCS1Padding";
 
-    public Security() {
-        gui = new GUI();
+    public Security(GUI gui) {
+        this.gui = gui;
         this.symmetricKeys = new HashMap<Integer, SecretKey>();
         System.out.println("Generating public and private keys...");
         long startTime = System.currentTimeMillis();
@@ -310,20 +310,5 @@ public class Security {
                     "\nError message: " + e.getMessage());
         }
         return "Error";
-    }
-
-
-
-    public static void main(String[] args) {
-        Security security = new Security();
-        security.generateAESKey(1);
-        String text = "heloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohehelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloolooheloohelooheloohelooheloohelooheloohelooheloo";
-//        text = "hello";
-        System.out.println(text);
-        String encrypted = security.encryptSymm(text, security.getSymmetricKey(1));
-        System.out.println(encrypted);
-        String decrypted = security.decryptSymm(encrypted, security.getSymmetricKey(1));
-        System.out.println(decrypted);
-
     }
 }
