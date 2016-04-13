@@ -202,22 +202,25 @@ public class GUI extends JFrame {
 					newChatOptions.add(ericbox);
 				}
 			}
-			int choice = JOptionPane.showConfirmDialog(GUI.this, newChatOptions, "choose participants", JOptionPane.OK_OPTION);
-			JTextArea newChatArea = new JTextArea();
-			newChatArea.setEditable(false);
-			newChatArea.setLayout(new BoxLayout(newChatArea, BoxLayout.Y_AXIS));
-			newChatArea.setLineWrap(true);
-			MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			newChatPane.setPreferredSize(new Dimension(180,300));
-			ChatButton chatButton = new ChatButton(Integer.toString(chatnumber));
-			chatmap.put(chatButton,newChatPane);
-			participantsmap.put(newChatPane, newChatOptionsListener.participantlist);
-			chatnumbermap.put(newChatPane, chatnumber);
-			availableChatsPanel.add(chatButton);
-			for (Integer i: newChatOptionsListener.participantlist) {
-				multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i.intValue());
+			int choice = JOptionPane.showConfirmDialog(GUI.this, newChatOptions, "choose participants", JOptionPane.OK_CANCEL_OPTION);
+			if (choice == JOptionPane.OK_OPTION) {
+				JTextArea newChatArea = new JTextArea();
+				newChatArea.setEditable(false);
+				newChatArea.setLayout(new BoxLayout(newChatArea, BoxLayout.Y_AXIS));
+				newChatArea.setLineWrap(true);
+				MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				newChatPane.setPreferredSize(new Dimension(180,300));
+				ChatButton chatButton = new ChatButton(Integer.toString(chatnumber));
+				chatmap.put(chatButton,newChatPane);
+				participantsmap.put(newChatPane, newChatOptionsListener.participantlist);
+				chatnumbermap.put(newChatPane, chatnumber);
+				availableChatsPanel.add(chatButton);
+				for (Integer i: newChatOptionsListener.participantlist) {
+					multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i.intValue());
+				}
+				chatnumber += 4;
 			}
-			chatnumber += 4;
+
 		}
 	}
 
