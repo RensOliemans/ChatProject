@@ -136,10 +136,17 @@ public class MultiCast2 implements Runnable{
      */
     private void receive() {
         try {
-            byte[] buf = new byte[1032];
+            System.out.println("going in receive()");
+            byte[] buf = new byte[1050];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
+            System.out.println("received something");
             byte[] data = recv.getData();
+            System.out.println("Data: ");
+            for (byte b : data) {
+                System.out.print(b + " ");
+            }
+            System.out.println(data[0]);
             byte[] seq;
             int seqint;
             int i = data.length;
@@ -153,7 +160,7 @@ public class MultiCast2 implements Runnable{
                     receiver = e.getValue();
                 }
             }
-            if (computerNumber != data[1] && ( data[0] == 1 || data[0] == 2)){
+            if (computerNumber != data[1] && (data[0] == 1 || data[0] == 2)){
                 if (data[0] == 1){
                     if (data[2] == computerNumber) {
                         routing.setSourceAddress(data[1]);
@@ -206,9 +213,6 @@ public class MultiCast2 implements Runnable{
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
                     }
-                    if (data[1] != 1 || data[1] != 2 || data[1] != 3 || data[1] != 4){
-                        throw new IllegalArgumentException("wrong number bitch");
-                    }
                 }
             }
             if (computerNumber != data[1] && computerNumber == data[2] && computerNumber == data[3]) {
@@ -233,6 +237,7 @@ public class MultiCast2 implements Runnable{
                     case 3:
                         System.out.println("START");
                         byte[] nul = intToByte(0);
+                        System.out.println(nul.length);
                         sendAck(data[1], nul);
                         receiver = new Receiver(data[1]);
                         receivers.put(data[1], receiver);
@@ -333,11 +338,11 @@ public class MultiCast2 implements Runnable{
         for (int i = 0; i < 255; i++) {
             PingPacket burstPacket = new PingPacket(computerNumber);
             DatagramPacket burst = new DatagramPacket(burstPacket.getPingPacket(), burstPacket.getPingPacket().length, group, PORT);
-            try {
-                this.s.send(burst);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                this.s.send(burst);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 
@@ -352,7 +357,7 @@ public class MultiCast2 implements Runnable{
         DatagramPacket first = new DatagramPacket(firstPacket.getStartPacket(), firstPacket.getStartPacket().length, group, PORT);
         try {
             this.s.send(first);
-            System.out.println("verstuurd: " + computerNumber + "" + destination + getNextHop(destination));
+ //           System.out.println("verstuurd: " + computerNumber + "" + destination + getNextHop(destination));
         } catch (IOException e) {
             e.printStackTrace();
         }
