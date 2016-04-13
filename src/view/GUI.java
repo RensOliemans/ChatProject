@@ -234,7 +234,7 @@ public class GUI extends JFrame {
 				chatnumbermap.put(newChatPane, chatnumber);
 				availableChatsPanel.add(chatButton);
 				for (Integer i: newChatOptionsListener.participantlist) {
-//					multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i.intValue());
+					multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i.intValue());
 				}
 				chatnumber += 4;
 			}
@@ -245,7 +245,7 @@ public class GUI extends JFrame {
 	private String ListToString(List<Integer> list) {
 		String liststr = "";
 		for (Integer i: list) {
-			liststr.concat(Integer.toString(i) + ",");
+			liststr = liststr.concat(Integer.toString(i) + ",");
 		}
 		return liststr;
 	}
