@@ -75,6 +75,14 @@ public class GUI extends JFrame {
 	This method is called by a different thread to update the list of people that are online.
 	 */
 	public void updateOnlinePeople() {
+		for (int i = 0; i<4; i++){
+			if (group22.contains(i+1)){
+				long huidigetijd = System.currentTimeMillis();
+				if (huidigetijd - multiCast.lastTimePing[i] > 5000){
+					multiCast.presence.remove(new Integer(i+1));
+				}
+			}
+		}
 		group22 = multiCast.presence;
 		remove(peopleOnline);
 		peopleOnline = new JPanel();
