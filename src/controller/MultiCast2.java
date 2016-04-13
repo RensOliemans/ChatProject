@@ -67,18 +67,6 @@ public class MultiCast2 implements Runnable{
      *
      * @return the computerNumber of the person belonging to MultiCast
      */
-    public int getNextHop(int destination){
-        int[] forwardingtable = routing.getForwardingTable();
-        int nextHop;
-      //  System.out.println(destination + " " + forwardingtable.length);
-        if (forwardingtable[destination + 7] == computerNumber || forwardingtable[destination+7] == 0){
-            nextHop = destination;
-        }
-        else {
-            nextHop = forwardingtable[destination + 7];
-        }
-        return nextHop;
-    }
 
     public int getComputerNumber() {
         return computerNumber;
@@ -128,6 +116,19 @@ public class MultiCast2 implements Runnable{
         routing = new Routing(computerNumber);
     }
 
+    public int getNextHop(int destination){
+        int[] forwardingtable = routing.getForwardingTable();
+        int nextHop;
+        //  System.out.println(destination + " " + forwardingtable.length);
+        if (forwardingtable[destination + 7] == computerNumber || forwardingtable[destination+7] == 0){
+            nextHop = destination;
+        }
+        else {
+            nextHop = forwardingtable[destination + 7];
+        }
+        return nextHop;
+    }
+
     /*
      * This receives the message. It first calls MultiCastSocket.receive and fills a DatagramPacket.
      * After the packet has been received, it receives the excess buffer data (0's at the end) and handles the message
@@ -142,7 +143,6 @@ public class MultiCast2 implements Runnable{
             byte[] data = recv.getData();
             byte[] seq;
             int seqint;
-            int i = data.length;
             for (Map.Entry<Byte, Sender> e: senders.entrySet()){
                 if (e.getKey() == data[1]){
                     sender = e.getValue();
@@ -153,7 +153,11 @@ public class MultiCast2 implements Runnable{
                     receiver = e.getValue();
                 }
             }
+            if (data[1] != computerNumber){
+                System.out.println("received data with data[0]= " + data[0]);
+            }
             if (computerNumber != data[1] && ( data[0] == 1 || data[0] == 2)){
+                System.out.println("Routing of Ping packet ontvangen");
                 if (data[0] == 1){
                     if (data[2] == computerNumber) {
                         routing.setSourceAddress(data[1]);
@@ -178,6 +182,7 @@ public class MultiCast2 implements Runnable{
                     }
                 }
                 if (data[0] == 2){
+                    System.out.println("pingPacket received met data[1]= " + data[1]);
                     if (data[1] == 1){
                         receivedPings = ping1.calculateReceivedPings(data[1]);
                         if (receivedPings != 0){
@@ -205,9 +210,6 @@ public class MultiCast2 implements Runnable{
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
-                    }
-                    if (data[1] != 1 || data[1] != 2 || data[1] != 3 || data[1] != 4){
-                        throw new IllegalArgumentException("wrong number bitch");
                     }
                 }
             }
@@ -275,6 +277,7 @@ public class MultiCast2 implements Runnable{
                 }
             }
             else if (computerNumber != data[1] && computerNumber == data[3]){
+                System.out.println("packet ontvangen niet voor mij");
                 int tussenHop = getNextHop(data[2]);
                 data[3] = (byte) tussenHop;
                 DatagramPacket datagramdata = new DatagramPacket(data, data.length, group, PORT);
