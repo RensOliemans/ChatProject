@@ -79,8 +79,17 @@ public class MultiCast2 implements Runnable{
      */
     public int getNextHop(int destination){
         int[] forwardingtable = routing.getForwardingTable();
-        int nextHop = forwardingtable[destination+7];
+        int nextHop;
+        if (forwardingtable[destination + 7] == computerNumber || forwardingtable[destination+7] == 0) {
+            nextHop = destination;
+        } else {
+            nextHop = forwardingtable[destination + 7];
+        }
         return nextHop;
+
+
+
+
     }
 
     public int getComputerNumber() {
