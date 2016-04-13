@@ -56,20 +56,16 @@ public class MultiCast2 implements Runnable{
     private static final int DATASIZE=1024;
     public static final int HEADER = 1;
     private int synint;
-    private int receivedPing1 = 0;
-    private int receivedPing2 = 0;
-    private int receivedPing3 = 0;
-    private int receivedPing4 = 0;
-    private long seconds1;
-    private long seconds2;
-    private long seconds3;
-    private long seconds4;
-    private long seconds5;
-    private long seconds6;
-    private long seconds7;
-    private long seconds8;
+
+    Routing routing;
+
+    private int receivedPings;
+
+    Ping ping1 = new Ping(computerNumber, this);
+    Ping ping2 = new Ping(computerNumber, this);
+    Ping ping3 = new Ping(computerNumber, this);
+    Ping ping4 = new Ping(computerNumber, this);
     public List presence = new ArrayList<>();
-    private Routing routing = new Routing(computerNumber);
 
 
     /*
@@ -174,160 +170,74 @@ public class MultiCast2 implements Runnable{
             //data[1] == source
             //data[2] == destination
             //data[3] == nexthop
-            if (computerNumber != data[1] && computerNumber == data[2]/* && computerNumber == data[3]*/) {
+            if (computerNumber != data[1] && (data[0] == 1 || data[0] == 2)){
+                if (data[0] == 1){
+                    if (data[2] == computerNumber) {
+                        routing.setSourceAddress(data[1]);
+                        routing.setLinkCost(data[3]);
+                        byte[] bArray = new byte[12];
+                        for (int k = 0; k < 12; k++) {
+                            bArray[k] = data[k + 4];
+                        }
+                        System.out.println("received routing table: ");
+                        int[] receivedtable = routing.byteArrayToIngerArray(bArray);
+                        for (int j = 0; j < 12; j++) {
+                            System.out.print(receivedtable[j] + " ");
+                        }
+                        System.out.println("");
+                        System.out.println("old routing table: ");
+                        int[] oldtable = routing.getForwardingTable();
+                        for (int j = 0; j < 12; j++) {
+                            System.out.print(oldtable[j] + " ");
+                        }
+                        System.out.println("");
+                        routing.setForwardingTable(routing.byteArrayToIngerArray(bArray));
+                    }
+                }
+                if (data[0] == 2){
+                    if (data[1] == 1){
+                        receivedPings = ping1.calculateReceivedPings(data[1]);
+                        if (receivedPings != 0){
+                            sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
+                            System.out.println("received ping pakkets= " + receivedPings);
+                        }
+                    }
+                    if (data[1] == 2){
+                        receivedPings = ping2.calculateReceivedPings(data[1]);
+                        if (receivedPings != 0){
+                            sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
+                            System.out.println("received ping pakkets= " + receivedPings);
+                        }
+                    }
+                    if (data[1] == 3){
+                        receivedPings = ping3.calculateReceivedPings(data[1]);
+                        if (receivedPings != 0){
+                            sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
+                            System.out.println("received ping pakkets= " + receivedPings);
+                        }
+                    }
+                    if (data[1] == 4){
+                        receivedPings = ping4.calculateReceivedPings(data[1]);
+                        if (receivedPings != 0){
+                            sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
+                            System.out.println("received ping pakkets= " + receivedPings);
+                        }
+                    }
+                }
+            }
+            if (computerNumber != data[1] && computerNumber == data[2] && computerNumber == data[3]) {
                 data = removeRensByte(data);
                 switch (data[0]) {
-                    // textpacket
+                    //textPacket
                     //Only receiver gets these
                     case 0:
-                        //Since it's a text packet, the data (except for the header) is encrypted
                         System.out.println("TEXT");
-                        seq = new byte[HEADER*4];
-                        System.arraycopy(data, 4, seq, 0, HEADER*4);
+                        seq = new byte[HEADER * 4];
+                        System.arraycopy(data, 4, seq, 0, HEADER * 4);
                         sendAck(data[1], seq);
-                        byte[] encryptedData = new byte[data.length - 4 - seq.length];
-                        System.arraycopy(data, 4 + seq.length, encryptedData, 0, encryptedData.length);
-                        System.out.println(new String(encryptedData));
-                        String encryptedDataString = new String(encryptedData);
-                        String decryptedDataString = this.security.decryptSymm(encryptedDataString, this.security.getSymmetricKey(data[1]));
-                        byte[] decryptedData = decryptedDataString.getBytes();
-//                        byte[] decryptedData = this.security.decryptSymm(new String(encryptedData), this.security.getSymmetricKey(data[1])).getBytes();
-                        receiver.received.put(seq, decryptedData);
-                        break;
-
-                    //RoutingPacket
-                    case 1:
-                        if (data[2] == computerNumber){
-                            Routing routing = new Routing(computerNumber);
-                            routing.setSourceAddress(data[1]);
-                            routing.setLinkCost(data[3]);
-                            byte[] bArray = new byte[12];
-                            for (int k=0; k<12; k++){
-                                bArray[k] = data[k+4];
-                            }
-                            System.out.println("received routing table: ");
-                            int[] receivedtable = routing.byteArrayToIngerArray(bArray);
-                            for (int j=0; j<12; j++){
-                                System.out.println(receivedtable[j]);
-                            }
-                            System.out.println("old routing table: ");
-                            int[] oldtable = routing.getForwardingTable();
-                            for (int j=0; j<12; j++){
-                                System.out.println(oldtable[j]);
-                            }
-                            routing.setForwardingTable(routing.byteArrayToIngerArray(bArray));
-                        }
-                        break;
-
-                    //pingPacket
-                    case 2:
-                        if (data[1] == 1){
-                            if (!presence.contains(data[1]) && data[1] != 0){
-                                presence.add(data[1]);
-                            }
-                            if (receivedPing1 == 0){
-                                seconds1 = System.currentTimeMillis();
-                                receivedPing1 ++;
-                            } else {
-                                seconds2 = System.currentTimeMillis();
-                                receivedPing1 ++;
-                            }
-                            if ((seconds2 - seconds1 > 3000) && (receivedPing1 != 0)){
-                                sendRoutingPacket(data[1], receivedPing1, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPing1);
-                            }
-                            if ((seconds2 - seconds1 > 4500) && (receivedPing1 != 0)){
-                                seconds1 = 0;
-                                seconds2 = 0;
-                                receivedPing1 = 0;
-                                System.out.println("presence lijst is nu als volgt: ");
-                                for (int x=0; x<presence.size(); x++){
-                                    System.out.println(presence.get(x));
-                                }
-                                presence.clear();
-                            }
-                        }
-                        if (data[1] == 2){
-                            if (!presence.contains(data[1]) && data[1] != 0){
-                                presence.add(data[1]);
-                            }
-                            if (receivedPing2 == 0){
-                                seconds3 = System.currentTimeMillis();
-                                receivedPing2 ++;
-                            } else {
-                                seconds4 = System.currentTimeMillis();
-                                receivedPing2 ++;
-                            }
-                            if ((seconds4 - seconds3 > 3000) && (receivedPing2 != 0)){
-                                sendRoutingPacket(data[1], receivedPing2, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPing2);
-                            }
-                            if ((seconds4 - seconds3 > 4500) && (receivedPing2 != 0)){
-                                seconds3 = 0;
-                                seconds4 = 0;
-                                receivedPing2 = 0;
-                                System.out.println("presence lijst is nu als volgt: ");
-                                for (int x=0; x<presence.size(); x++){
-                                    System.out.println(presence.get(x));
-                                }
-                                presence.clear();
-                            }
-                        }
-
-                        if (data[1] == 3){
-                            if (!presence.contains(data[1]) && data[1] != 0){
-                                presence.add(data[1]);
-                            }
-                            if (receivedPing3 == 0){
-                                seconds5 = System.currentTimeMillis();
-                                receivedPing3 ++;
-                            } else {
-                                seconds6 = System.currentTimeMillis();
-                                receivedPing3 ++;
-                            }
-                            if ((seconds6 - seconds5 > 3000) && (receivedPing3 != 0)){
-                                sendRoutingPacket(data[1], receivedPing3, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPing3);
-                            }
-                            if ((seconds6 - seconds5 > 4500) && (receivedPing3 != 0)){
-                                seconds5 = 0;
-                                seconds6 = 0;
-                                receivedPing3 = 0;
-                                System.out.println("presence lijst is nu als volgt: ");
-                                for (int x=0; x<presence.size(); x++){
-                                    System.out.println(presence.get(x));
-                                }
-                                presence.clear();
-                            }
-                        }
-
-                        if (data[1] == 4){
-                            if (!presence.contains(data[1]) && data[1] != 0){
-                                presence.add(data[1]);
-                            }
-                            if (receivedPing4 == 0){
-                                seconds7 = System.currentTimeMillis();
-                                receivedPing4 ++;
-                            } else {
-                                seconds8 = System.currentTimeMillis();
-                                receivedPing4 ++;
-                            }
-                            if ((seconds8 - seconds7 > 3000) && (receivedPing4 != 0)){
-                                sendRoutingPacket(data[1], receivedPing4, routing.getForwardingTable());
-                                System.out.println("received ping pakkets= " + receivedPing4);
-                            }
-                            if ((seconds8 - seconds7 > 4500) && (receivedPing4 != 0)){
-                                seconds7 = 0;
-                                seconds8 = 0;
-                                receivedPing4 = 0;
-                                System.out.println("presence lijst is nu als volgt: ");
-                                for (int x=0; x<presence.size(); x++){
-                                    System.out.println(presence.get(x));
-                                }
-                                presence.clear();
-                            }
-                        }
-
+                        byte[] message = new byte[data.length - 4 - seq.length];
+                        System.arraycopy(data, 4 + seq.length, message, 0, message.length);
+                        receiver.received.put(seq, message);
                         break;
 
                     // startpacket
@@ -344,6 +254,7 @@ public class MultiCast2 implements Runnable{
                     case 4:
                         System.out.println("ACK");
                         seq = new byte[HEADER*4];
+
                         System.arraycopy(data, 4, seq, 0, HEADER*4);
                         seqint = byteToInt(seq);
                         if (seqint == 0) {
@@ -359,8 +270,8 @@ public class MultiCast2 implements Runnable{
                             sender.removeNotReceived(seq);
                         }
                         break;
-                        //finishpacket
-                        //Only receiver gets these
+                    //finishpacket
+                    //Only receiver gets these
                     case 5:
                         seq = intToByte(1);
                         sendAck(data[1], seq);
@@ -371,8 +282,8 @@ public class MultiCast2 implements Runnable{
                         for (int j = 0; j < dataArray.length; j++) {
                             byteArray[j] = dataArray[j];
                         }
-//                        receiver.showImage(byteArray);
-                        System.out.println(new String(byteArray));
+                        receiver.showImage(byteArray);
+                        System.out.println(String.valueOf(receiver.goodOrder));
                         break;
                     case 6:
                         //This is the packet for the request of one's public key.
@@ -407,8 +318,7 @@ public class MultiCast2 implements Runnable{
                         sendAck(data[1], intToByte(2));
                         break;
                 }
-            }
-            else if (computerNumber != data[1] && computerNumber == data[3]){
+            } else if (computerNumber != data[1] && computerNumber == data[3]){
                 int tussenHop = getNextHop(data[2]);
                 data[3] = (byte) tussenHop;
                 DatagramPacket datagramdata = new DatagramPacket(data, data.length, group, PORT);
@@ -480,23 +390,14 @@ public class MultiCast2 implements Runnable{
      */
     public void sendPing(int computerNumber) {
         System.out.println("computernumber given with pingpackets= " + computerNumber);
-        for (int i = 0; i < 255; i++){
-            PingPacket burstPacket1 = new PingPacket(computerNumber);
-            PingPacket burstPacket2 = new PingPacket(computerNumber);
-            PingPacket burstPacket3 = new PingPacket(computerNumber);
-            DatagramPacket burst1 = new DatagramPacket(burstPacket1.getPingPacket(), burstPacket1.getPingPacket().length, group, PORT);
-            DatagramPacket burst2 = new DatagramPacket(burstPacket2.getPingPacket(), burstPacket2.getPingPacket().length, group, PORT);
-            DatagramPacket burst3 = new DatagramPacket(burstPacket3.getPingPacket(), burstPacket3.getPingPacket().length, group, PORT);
-            try {
-                this.s.send(burst1);
-                this.s.send(burst2);
-                this.s.send(burst3);
-            } catch (IOException e) {
-                gui.showError("IOException in sendPing(..). " +
-                        "The sending of a DatagramPacket went wrong. " +
-                        "Check internet connection or if you are in the ad-hoc network (try leaving and entering network in admin mode). " +
-                        "\nError message: " + e.getMessage());
-            }
+        for (int i = 0; i < 255; i++) {
+            PingPacket burstPacket = new PingPacket(computerNumber);
+            DatagramPacket burst = new DatagramPacket(burstPacket.getPingPacket(), burstPacket.getPingPacket().length, group, PORT);
+//            try {
+//                this.s.send(burst);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 
@@ -535,8 +436,8 @@ public class MultiCast2 implements Runnable{
         }
     }
 
-    private void sendRoutingPacket(int destinationAddress, int linkcost, int[] data_table){
-        RoutingPacket routingPacket = new RoutingPacket(computerNumber, destinationAddress, 256-linkcost, data_table);
+    private void sendRoutingPacket(int destinationAddress, int linkcost, int[] data_table) {
+        RoutingPacket routingPacket = new RoutingPacket(computerNumber, destinationAddress, 256 - linkcost, data_table);
         DatagramPacket routing = new DatagramPacket(routingPacket.getRoutingPacket(), routingPacket.getRoutingPacket().length, group, PORT);
         try {
             this.s.send(routing);
@@ -717,7 +618,7 @@ public class MultiCast2 implements Runnable{
             }
         }
 
-        System.out.println("SUCCESS");
+//        System.out.println("SUCCESS");
 
         //If the receiver received their 'First' message and replied with an ack, send the message
         System.out.println("Het firstreceived zetten is goed gegaan");
