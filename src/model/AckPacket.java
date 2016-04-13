@@ -9,6 +9,7 @@ public class AckPacket {
     private int destination;
     private int nextHop;
     private byte[] ack;
+    private int nextHop;
     private final int ACKPACKET = 4;
 
     public AckPacket(int source, int destination, byte[] ack, int nextHop){
