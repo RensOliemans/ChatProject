@@ -5,13 +5,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.util.Scanner;
 import java.awt.*;
 import javax.swing.*;
 import java.util.*;
 import controller.*;
 import java.util.List;
-import java.net.*;
 
 /**
  * Created by Eric on 6-4-2016.
@@ -33,6 +31,9 @@ public class GUI extends JFrame {
 	private Map<MessageScroll, Integer> chatnumbermap = new HashMap<MessageScroll, Integer>();
 	private int chatnumber;
 
+	/*
+	Makes a new GUI window.
+	 */
 	public GUI(int pcnumber, MultiCast2 multiCast) {
 		super("ChatUI");
 		this.pcnumber = pcnumber;
@@ -63,10 +64,16 @@ public class GUI extends JFrame {
 		setResizable(false);
 	}
 
+	/*
+	Basic method for showing an error in a dialog window.
+	 */
 	public void showError(String errormessage	) {
 		JOptionPane.showMessageDialog(this, "Error: " + errormessage, "ERROR", JOptionPane.ERROR_MESSAGE);
 	}
 
+	/*
+	This method is called by a different thread to update the list of people that are online.
+	 */
 	public void updateOnlinePeople() {
 		group22 = multiCast.presence;
 		remove(peopleOnline);
@@ -92,7 +99,9 @@ public class GUI extends JFrame {
 		repaint();
 	}
 
-
+	/*
+	A private custom JPanel class
+	 */
 	private class ChatsOverview extends JPanel {
 
 		public ChatsOverview() {
