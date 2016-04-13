@@ -1,11 +1,7 @@
 package model;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 
@@ -13,9 +9,6 @@ import controller.MultiCast2;
 import view.GUI;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 
 /**
  * Created by Birte on 7-4-2016.
@@ -53,12 +46,12 @@ public class Receiver {
         goodOrderList = result;
         Byte[] dataArray = goodOrderList.toArray(new Byte[goodOrderList.size()]);
         this.goodOrder = new byte[dataArray.length];
-        for (int j = 0; j < dataArray.length; j++){
+        for (int j = 0; j < dataArray.length; j++) {
             this.goodOrder[j] = dataArray[j];
         }
         int i = 0;
-        for (Byte b: goodOrder){
-            goodOrder[i] = b;
+        for (Byte b: this.goodOrder){
+            this.goodOrder[i] = b;
             i++;
         }
     }

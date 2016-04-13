@@ -11,19 +11,19 @@ import java.util.Scanner;
 public class Starter {
     private static GUI gui;
     private static MultiCast2 multiCast2;
-    private static final int computerNumber = 4;
 
     public static void main(String[] args) {
 //        System.out.println("Enter computer number");
-//        int computerNumber = new Scanner(System.in).nextInt();
-
+        int computerNumber = 1;
 
 //        gui = new GUI(computerNumber, multiCast2);
-        multiCast2 = new MultiCast2(computerNumber);
-        multiCast2.setComputerNumber(computerNumber);
+
+        multiCast2 = new MultiCast2(1);
+
         multiCast2.generateKeys();
         Ping ping = new Ping(computerNumber, multiCast2);
 
+//        gui = new GUI(computerNumber, multiCast2);
         Thread receiveThread = new Thread(multiCast2);
         receiveThread.start();
 

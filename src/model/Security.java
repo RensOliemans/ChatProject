@@ -311,19 +311,4 @@ public class Security {
         }
         return "Error";
     }
-
-
-
-//    public static void main(String[] args) {
-//        Security security = new Security();
-//        security.generateAESKey(1);
-//        String text = "heloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohehelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloohelooheloolooheloohelooheloohelooheloohelooheloohelooheloo";
-////        text = "hello";
-//        System.out.println(text);
-//        String encrypted = security.encryptSymm(text, security.getSymmetricKey(1));
-//        System.out.println(encrypted);
-//        String decrypted = security.decryptSymm(encrypted, security.getSymmetricKey(1));
-//        System.out.println(decrypted);
-//
-//    }
 }

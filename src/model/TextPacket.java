@@ -21,9 +21,9 @@ public class TextPacket {
     public TextPacket(int sourceAddress, int destinationAddress, byte[] syn, String msg, int nextHop) {
         this.sourceAddress = sourceAddress;
         this.destinationAddress = destinationAddress;
+        this.nextHop = nextHop;
         this.syn = syn;
         this.msg = msg;
-        this.nextHop = nextHop;
     }
 
     public byte[] getTextPacket() {
