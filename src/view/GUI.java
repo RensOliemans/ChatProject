@@ -84,6 +84,7 @@ public class GUI extends JFrame {
 			}
 		}
 		group22 = multiCast.presence;
+		System.out.println("iets" + multiCast.presence.toString());
 		remove(peopleOnline);
 		peopleOnline = new JPanel();
 		peopleOnline.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Group22"));
@@ -340,6 +341,7 @@ public class GUI extends JFrame {
 	}
 
 	public void printMessage(String message, int src) {
+		System.out.println("\n gekregen: " + message + "\n");
 		String name = "";
 		switch (src) {
 			case 1:
