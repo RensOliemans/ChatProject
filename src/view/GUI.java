@@ -347,6 +347,7 @@ public class GUI extends JFrame {
 				break;
 		}
 		if (message.startsWith("joinrequest:chat")) {
+			System.out.println(message);
 			String[] chatnumberandparticipants = message.split(";");
 			JOptionPane.showMessageDialog(GUI.this, name + " added you to chat" + chatnumberandparticipants[0].substring(16));
 			JTextArea newChatArea = new JTextArea();

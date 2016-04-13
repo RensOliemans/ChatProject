@@ -51,6 +51,11 @@ public class Receiver {
             }
         }
         goodOrderList = result;
+        Byte[] dataArray = goodOrderList.toArray(new Byte[goodOrderList.size()]);
+        this.goodOrder = new byte[dataArray.length];
+        for (int j = 0; j < dataArray.length; j++){
+            this.goodOrder[j] = dataArray[j];
+        }
         int i = 0;
         for (Byte b: goodOrder){
             goodOrder[i] = b;

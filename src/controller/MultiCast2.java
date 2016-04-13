@@ -100,11 +100,13 @@ public class MultiCast2 implements Runnable{
                 (array[3]<< 0)&0x000000ff;
     }
 
-    public MultiCast2() {
+    public MultiCast2(int computerNumber) {
         try {
             this.group = InetAddress.getByName(HOST);
             this.s = new MulticastSocket(PORT);
-//            gui = new GUI(computerNumber, this);
+            this.computerNumber = computerNumber;
+            this.gui = new GUI(this.computerNumber, this);
+            this.routing = new Routing(this.computerNumber);
             join();
         } catch (UnknownHostException e) {
             gui.showError("UnkownHostException in constructor of MultiCast. " +
@@ -136,7 +138,6 @@ public class MultiCast2 implements Runnable{
 
     public void setComputerNumber(int computerNumber) {
         this.computerNumber = computerNumber;
-        routing = new Routing(computerNumber);
     }
 
     /*
@@ -418,11 +419,11 @@ public class MultiCast2 implements Runnable{
         for (int i = 0; i < 255; i++) {
             PingPacket burstPacket = new PingPacket(computerNumber);
             DatagramPacket burst = new DatagramPacket(burstPacket.getPingPacket(), burstPacket.getPingPacket().length, group, PORT);
-//            try {
-//                this.s.send(burst);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
+            try {
+                this.s.send(burst);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
