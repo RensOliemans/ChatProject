@@ -72,6 +72,7 @@ public class MultiCast2 implements Runnable{
         int[] forwardingtable = routing.getForwardingTable();
         int nextHop;
         //  System.out.println(destination + " " + forwardingtable.length);
+        System.out.println(destination);
         if (forwardingtable[destination + 7] == computerNumber || forwardingtable[destination+7] == 0){
             nextHop = destination;
         }
@@ -154,12 +155,6 @@ public class MultiCast2 implements Runnable{
             byte[] data = recv.getData();
             byte[] seq;
             int seqint;
-            if (data[0] != 0 && data[0] != 1 && data[0] != 2) {
-                for (byte b : data) {
-                    System.out.print(b + " ");
-                }
-            }
-            int i = data.length;
             for (Map.Entry<Integer, Sender> e: senders.entrySet()){
                 if ((int) e.getKey() == (int) data[1]){
                     sender = e.getValue();

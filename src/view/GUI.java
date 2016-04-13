@@ -278,6 +278,7 @@ public class GUI extends JFrame {
             chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + text + "\n");
             ((JTextField)e.getSource()).setText("");
             for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
+                System.out.println("i: " + i);
                 multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + text, i.intValue());
             }
         }
