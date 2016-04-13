@@ -63,4 +63,16 @@ public class Receiver {
                     "\nError message: " + e.getMessage());
         }
     }
+
+    public void putReceived(byte[] seq, byte[] decryptedData) {
+        boolean nietAanwezig = true;
+        for (Map.Entry<byte[], byte[]> e : received.entrySet()) {
+            if (MultiCast2.byteToInt(e.getKey()) == MultiCast2.byteToInt(seq)) {
+                nietAanwezig = false;
+            }
+        }
+        if (nietAanwezig) {
+            received.put(seq, decryptedData);
+        }
+    }
 }

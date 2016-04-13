@@ -129,6 +129,7 @@ public class MultiCast2 implements Runnable {
         try {
             this.s.joinGroup(group);
         } catch (IOException e) {
+            e.printStackTrace();
             gui.showError("IOException in join(). " +
                     "Check your internet connection and if you are correctly connected to the ad-hoc network." +
                     "\nError message: " + e.getMessage());
@@ -240,7 +241,8 @@ public class MultiCast2 implements Runnable {
                         String decryptedDataString = this.security.decryptSymm(encryptedDataString, this.security.getSymmetricKey(data[1]));
                         byte[] decryptedData = decryptedDataString.getBytes();
 //                        byte[] decryptedData = this.security.decryptSymm(new String(encryptedData), this.security.getSymmetricKey(data[1])).getBytes();
-                        receiver.received.put(seq, decryptedData);
+                        receiver.putReceived(seq, decryptedData);
+
                         break;
 
                     // startpacket
@@ -257,7 +259,6 @@ public class MultiCast2 implements Runnable {
                     case 4:
                         System.out.println("ACK");
                         seq = new byte[HEADER * 4];
-
                         System.arraycopy(data, 4, seq, 0, HEADER * 4);
                         seqint = byteToInt(seq);
                         if (seqint == 0) {
@@ -286,7 +287,7 @@ public class MultiCast2 implements Runnable {
                             byteArray[j] = dataArray[j];
                         }
 //                        receiver.showImage(byteArray);
-                        System.out.println(String.valueOf(receiver.goodOrder));
+                        System.out.println(new String(byteArray));
                         break;
                     case 6:
                         //This is the packet for the request of one's public key.
@@ -571,7 +572,7 @@ public class MultiCast2 implements Runnable {
         }
 
         try {
-            Thread.sleep(100);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             gui.showError("InterruptedException in sendMessage(..). " +
                     "Happened while waiting for ACKs (first time). " +
