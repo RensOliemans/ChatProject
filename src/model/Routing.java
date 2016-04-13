@@ -26,6 +26,14 @@ public class Routing /*implements Runnable*/{
 
     public void setForwardingTable(int[] receivedTable){
 
+        //if the first entry of the received table is 0, then the rest must also be 0
+        //we then fill the forwarding table with 255 so the rest of this method doesn't fuck up
+        if (receivedTable[0] == 0) {
+            for (int i = 0; i < 12; i++) {
+                receivedTable[i] = 255;
+            }
+        }
+
         //set the fist 4 value's of the forwardingTable to the computerNumbers
         for (int i=0; i<4; i++){
             forwardingTable[i] = i+1;
@@ -65,12 +73,6 @@ public class Routing /*implements Runnable*/{
     }
 
     public int[] getForwardingTable(){
-        int[] check = new int[12];
-        if (this.forwardingTable[0] == check[0]) {
-            for (int i = 0; i < 12; i++) {
-                forwardingTable[i] = 255;
-            }
-        }
         return this.forwardingTable;
     }
 
