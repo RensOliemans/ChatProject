@@ -211,6 +211,9 @@ public class MultiCast2 implements Runnable {
                                 System.out.println("received ping pakkets= " + receivedPings);
                             }
                         }
+                        if (data[1] != 1 || data[1] != 2 || data[1] != 3 || data[1] != 4){
+                            throw new IllegalArgumentException("wrong number bitch");
+                        }
                         break;
 
                     // startpacket
