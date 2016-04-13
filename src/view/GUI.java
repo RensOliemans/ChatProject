@@ -101,7 +101,6 @@ public class GUI extends JFrame {
 			setPreferredSize(new Dimension(200,380));
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			availableChatsPanel = new JPanel();
-//			availableChatsPanel.setPreferredSize(new Dimension(150,200));
 			availableChatsPanel.setLayout(new BoxLayout(availableChatsPanel, BoxLayout.Y_AXIS));
 			availableChatsScrollPane = new JScrollPane(availableChatsPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			availableChatsScrollPane.setPreferredSize(new Dimension(180,300));
@@ -203,7 +202,7 @@ public class GUI extends JFrame {
 					newChatOptions.add(ericbox);
 				}
 			}
-			JOptionPane.showMessageDialog(GUI.this, newChatOptions);
+			int choice = JOptionPane.showConfirmDialog(GUI.this, newChatOptions, "choose participants", JOptionPane.OK_OPTION);
 			JTextArea newChatArea = new JTextArea();
 			newChatArea.setEditable(false);
 			newChatArea.setLayout(new BoxLayout(newChatArea, BoxLayout.Y_AXIS));
@@ -216,7 +215,7 @@ public class GUI extends JFrame {
 			chatnumbermap.put(newChatPane, chatnumber);
 			availableChatsPanel.add(chatButton);
 			for (Integer i: newChatOptionsListener.participantlist) {
-				multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i);
+				multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i.intValue());
 			}
 			chatnumber += 4;
 		}
@@ -264,7 +263,7 @@ public class GUI extends JFrame {
 			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + ((JTextField)e.getSource()).getText() + "\n");
 			((JTextField)e.getSource()).setText("");
 			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
-//				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":", i);
+				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":", i);
 			}
 		}
 	}
