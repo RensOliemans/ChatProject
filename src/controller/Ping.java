@@ -16,7 +16,7 @@ public class Ping implements Runnable{
     private long seconds2;
     private int receivedPing1;
     private boolean sent = false;
-    public List presence = new ArrayList<>();
+//    private List presence = new ArrayList<>();
 
     public Ping(int computerNumber, MultiCast2 multiCast) {
         this.multiCast = multiCast;
@@ -35,10 +35,7 @@ public class Ping implements Runnable{
 
     }
 
-    public int calculateReceivedPings(int data){
-        if (!presence.contains(data) && data != 0) {
-            presence.add(data);
-        }
+    public int calculateReceivedPings(){
         if (receivedPing1 == 0) {
             seconds1 = System.currentTimeMillis();
             receivedPing1++;
@@ -55,11 +52,6 @@ public class Ping implements Runnable{
             seconds2 = 0;
             receivedPing1 = 0;
             sent = false;
-            System.out.println("presence lijst is nu als volgt: ");
-            for (int i = 0; i < presence.size(); i++) {
-                System.out.println(presence.get(i));
-            }
-            presence.clear();
         }
         return 0;
     }

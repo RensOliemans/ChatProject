@@ -3,7 +3,7 @@ package model;
 /**
  * Created by Rens on 5-4-2016.
  */
-public class Routing /*implements Runnable*/{
+public class Routing {
 
     private int linkcost;
     private int sourceAdress;
@@ -16,6 +16,9 @@ public class Routing /*implements Runnable*/{
 
 
     public void setLinkCost(int receivedInt){
+        if (receivedInt < 0){
+            receivedInt = 1;
+        }
         this.linkcost = receivedInt;
         System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
     }
@@ -39,8 +42,9 @@ public class Routing /*implements Runnable*/{
             forwardingTable[i] = i+1;
         }
 
-        //update the linkCost to the person who sent the packet to the newly received linkCost
+        //update the linkCost to the person who sent the packet to the newly received linkCost and set their nextHop
         forwardingTable[this.sourceAdress+3] = this.linkcost;
+        forwardingTable[this.sourceAdress+7] = this.sourceAdress;
 
         //check if the received table contains cheaper routes and update accordingly
         for (int i=4; i<8; i++){

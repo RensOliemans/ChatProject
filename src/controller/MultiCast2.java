@@ -60,7 +60,13 @@ public class MultiCast2 implements Runnable{
     Ping ping3 = new Ping(computerNumber, this);
     Ping ping4 = new Ping(computerNumber, this);
 
-    public List presence = new ArrayList<>();
+    private List presence = new ArrayList<>();
+
+    private long lastPingReceived1;
+    private long lastPingReceived2;
+    private long lastPingReceived3;
+    private long lastPingReceived4;
+    private long currentTime;
 
     /*
      * Getter for computerNumber
@@ -184,32 +190,40 @@ public class MultiCast2 implements Runnable{
                 if (data[0] == 2){
                     System.out.println("pingPacket received met data[1]= " + data[1]);
                     if (data[1] == 1){
-                        receivedPings = ping1.calculateReceivedPings(data[1]);
+                        lastPingReceived1 = System.currentTimeMillis();
+                        receivedPings = ping1.calculateReceivedPings();
                         if (receivedPings != 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
+                        updatePresenceList();
                     }
                     if (data[1] == 2){
-                        receivedPings = ping2.calculateReceivedPings(data[1]);
+                        lastPingReceived2 = System.currentTimeMillis();
+                        receivedPings = ping2.calculateReceivedPings();
                         if (receivedPings != 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
+                        updatePresenceList();
                     }
                     if (data[1] == 3){
-                        receivedPings = ping3.calculateReceivedPings(data[1]);
+                        lastPingReceived3 = System.currentTimeMillis();
+                        receivedPings = ping3.calculateReceivedPings();
                         if (receivedPings != 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
+                        updatePresenceList();
                     }
                     if (data[1] == 4){
-                        receivedPings = ping4.calculateReceivedPings(data[1]);
+                        lastPingReceived4 = System.currentTimeMillis();
+                        receivedPings = ping4.calculateReceivedPings();
                         if (receivedPings != 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
+                        updatePresenceList();
                     }
                 }
             }
@@ -285,6 +299,22 @@ public class MultiCast2 implements Runnable{
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void updatePresenceList(){
+        currentTime = System.currentTimeMillis();
+        if (currentTime - lastPingReceived1 > 5000){
+            presence.remove(1);
+        }
+        if (currentTime - lastPingReceived2 > 5000){
+            presence.remove(2);
+        }
+        if (currentTime - lastPingReceived3 > 5000){
+            presence.remove(3);
+        }
+        if (currentTime - lastPingReceived4 > 5000){
+            presence.remove(4);
         }
     }
 
