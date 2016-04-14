@@ -15,7 +15,10 @@ public class Routing /*implements Runnable*/{
     }
 
 
-    public void setLinkCost(int receivedInt){
+    public void setLinkCost(int receivedInt) {
+		if (receivedInt < 0) {
+			receivedInt = 100;
+		}
         this.linkcost = receivedInt;
         System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
     }
@@ -48,8 +51,8 @@ public class Routing /*implements Runnable*/{
             if (forwardingTable[i] == 0){
                 forwardingTable[i] = 255;
             }
-			if (forwardingTable[i]<0){
-				forwardingTable[i] = 100;
+			if (receivedTable[i]<0){
+				receivedTable[i] = 100;
 			}
             if (receivedTable[i] + this.linkcost < forwardingTable[i]){
                 forwardingTable[i] = receivedTable[i] + this.linkcost;

@@ -154,11 +154,6 @@ public class MultiCast2 implements Runnable{
             byte[] data = recv.getData();
             byte[] seq;
             int seqint;
-            if (data[0] != 0 && data[0] != 1 && data[0] != 2) {
-                for (byte b : data) {
-                    System.out.print(b + " ");
-                }
-            }
             int i = data.length;
             for (Map.Entry<Integer, Sender> e: senders.entrySet()){
                 if ((int) e.getKey() == (int) data[1]){
@@ -312,8 +307,8 @@ public class MultiCast2 implements Runnable{
 //                            byteArray[j] = dataArray[j];
 //                        }
                         String toGUI = new String(receiver.goodOrder);
+						receivers.remove((int) data[1], receiver);
                         gui.printMessage(toGUI, data[1]);
-                        receivers.remove((int) data[1], receiver);
                         break;
                     case 6:
                         //This is the packet for the request of one's public key.
@@ -560,7 +555,7 @@ public class MultiCast2 implements Runnable{
     /*
      * This message sends a message (
      */
-    private void sendMessage(byte[] msg, int destination) {
+    public void sendMessage(byte[] msg, int destination) {
         try {
             //Send the entire message, split and with send data from TCP
             int seqint = 3;
@@ -598,7 +593,7 @@ public class MultiCast2 implements Runnable{
         }
 
         try {
-            Thread.sleep(100);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             gui.showError("InterruptedException in sendMessage(..). " +
                     "Happened while waiting for ACKs (first time). " +

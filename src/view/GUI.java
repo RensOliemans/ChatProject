@@ -147,19 +147,22 @@ public class GUI extends JFrame {
 			messages.setLayout(new BoxLayout(messages, BoxLayout.Y_AXIS));
 			messages.setLineWrap(true);
 			scrollmessages = new MessageScroll(messages, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			scrollmessages.setPreferredSize(new Dimension(180,300));
-			add(scrollmessages);
+			scrollmessages.setPreferredSize(new Dimension(300,250));
+			add(scrollmessages, BorderLayout.CENTER);
 			JPanel textfieldpanel = new JPanel();
 			textfield = new JTextField();
-			textfield.setPreferredSize(new Dimension(300, 20));
+			textfield.setPreferredSize(new Dimension(250, 20));
 			textfield.addActionListener(new SendingFieldListener());
 			textfieldpanel.add(textfield);
-			ImageIcon camera = new ImageIcon();
-			ImageIcon imageIcon = new ImageIcon("icon-camera-128small.png");
-			JButton addImage = new JButton(imageIcon);
-			addImage.setPreferredSize(new Dimension(80,20));
+			ImageIcon camera = new ImageIcon("icon-camera-128small.png");
+			JButton addImage = new JButton(camera);
+			addImage.setPreferredSize(new Dimension(30,20));
 			addImage.addActionListener(new SendingImageListener());
 			textfieldpanel.add(addImage);
+			ImageIcon leave = new ImageIcon("door-leavesmall.png");
+			JButton exit = new JButton(leave);
+			exit.setPreferredSize(new Dimension(30,20));
+			textfieldpanel.add(exit);
 			add(textfieldpanel, BorderLayout.SOUTH);
 		}
 	}
@@ -226,20 +229,19 @@ public class GUI extends JFrame {
 				newChatArea.setEditable(false);
 				newChatArea.setLayout(new BoxLayout(newChatArea, BoxLayout.Y_AXIS));
 				newChatArea.setLineWrap(true);
-				newChatArea.setText("participants: " + ListToString(newChatOptionsListener.participantlist));
 				MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				newChatPane.setPreferredSize(new Dimension(180,300));
-				ChatButton chatButton = new ChatButton(Integer.toString(chatnumber));
+				ChatButton chatButton = new ChatButton(Integer.toString(chatnumber) + ", " + ListToNamesAbr(newChatOptionsListener.participantlist));
 				chatmap.put(chatButton,newChatPane);
 				participantsmap.put(newChatPane, newChatOptionsListener.participantlist);
 				chatnumbermap.put(newChatPane, chatnumber);
 				availableChatsPanel.add(chatButton);
 				for (Integer i: newChatOptionsListener.participantlist) {
+					System.out.println("participanten: " + ListToString(newChatOptionsListener.participantlist));
 					multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i.intValue());
 				}
 				chatnumber += 4;
 			}
-
 		}
 	}
 
@@ -257,6 +259,25 @@ public class GUI extends JFrame {
 			list.add(Character.getNumericValue(string.charAt(i)));
 		}
 		return list;
+	}
+
+	public String ListToNamesAbr(List<Integer> list) {
+		String liststr = "";
+		for (Integer i: list) {
+			if (i == 1) {
+				liststr = liststr.concat(" Rens,");
+			}
+			if (i == 2) {
+				liststr = liststr.concat(" Birte,");
+			}
+			if (i == 3) {
+				liststr = liststr.concat(" Coen,");
+			}
+			if (i == 4) {
+				liststr = liststr.concat(" Eric,");
+			}
+		}
+		return liststr;
 	}
 
 	private class ChatChooseListener implements ActionListener {
@@ -286,7 +307,7 @@ public class GUI extends JFrame {
 			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + txt + "\n");
 			((JTextField)e.getSource()).setText("");
 			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
-				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt, i);
+				multiCast.sendMessage(("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt).getBytes(), i);
 			}
 		}
 	}
@@ -303,6 +324,13 @@ public class GUI extends JFrame {
 //					multiCast.sendImage(selectedFile.getName(), i);
 				}
 			}
+		}
+	}
+
+	private class ExitOptionListener implements ActionListener {
+
+		public void actionPerformed(ActionEvent e) {
+
 		}
 	}
 
@@ -360,25 +388,27 @@ public class GUI extends JFrame {
 		}
 		if (message.startsWith("joinrequest:chat")) {
 			String[] chatnumberandparticipants = message.split(";");
-			JOptionPane.showMessageDialog(GUI.this, name + " added you to chat" + chatnumberandparticipants[0].substring(16));
-			JTextArea newChatArea = new JTextArea();
-			newChatArea.setEditable(false);
-			newChatArea.setLayout(new BoxLayout(newChatArea, BoxLayout.Y_AXIS));
-			newChatArea.setLineWrap(true);
-			MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			newChatPane.setPreferredSize(new Dimension(180,300));
-			ChatButton chatButton = new ChatButton(chatnumberandparticipants[0].substring(16));
-			chatmap.put(chatButton,newChatPane);
-			List<Integer> stringlist = StringToList(chatnumberandparticipants[1]);
-			stringlist.add(new Integer(src));
-			participantsmap.put(newChatPane, stringlist);
-			chatnumbermap.put(newChatPane, new Integer((chatnumberandparticipants[0].substring(16))));
-			availableChatsPanel.add(chatButton);
+			if (!chatnumbermap.containsValue(new Integer(chatnumberandparticipants[0].substring(16)))) {
+				JOptionPane.showMessageDialog(GUI.this, name + " added you to chat" + chatnumberandparticipants[0].substring(16));
+				JTextArea newChatArea = new JTextArea();
+				newChatArea.setEditable(false);
+				newChatArea.setLayout(new BoxLayout(newChatArea, BoxLayout.Y_AXIS));
+				newChatArea.setLineWrap(true);
+				MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				newChatPane.setPreferredSize(new Dimension(180,300));
+				List<Integer> stringlist = StringToList(chatnumberandparticipants[1]);
+				stringlist.add(new Integer(src));
+				ChatButton chatButton = new ChatButton(chatnumberandparticipants[0].substring(16) + ", " + ListToNamesAbr(stringlist));
+				chatmap.put(chatButton,newChatPane);
+				participantsmap.put(newChatPane, stringlist);
+				chatnumbermap.put(newChatPane, new Integer((chatnumberandparticipants[0].substring(16))));
+				availableChatsPanel.add(chatButton);
+			}
 		}
 		else if (message.startsWith("chat")) {
 			String[] msg = message.split(":");
 			for (Map.Entry<MessageScroll, Integer> e: chatnumbermap.entrySet()) {
-				if (new Integer(msg[0].substring(4)) == e.getValue()) {
+				if (Integer.parseInt(msg[0].substring(4)) == e.getValue()) {
 					e.getKey().messages.setText(e.getKey().messages.getText() + "\n " + name + message.substring(5) + "\n");
 				}
 			}
