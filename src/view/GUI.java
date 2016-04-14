@@ -238,7 +238,7 @@ public class GUI extends JFrame {
 				availableChatsPanel.add(chatButton);
 				for (Integer i: newChatOptionsListener.participantlist) {
 					System.out.println("participanten: " + ListToString(newChatOptionsListener.participantlist));
-					multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i.intValue());
+					multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i.intValue(), true);
 				}
 				chatnumber += 4;
 			}
@@ -307,7 +307,7 @@ public class GUI extends JFrame {
 			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + txt + "\n");
 			((JTextField)e.getSource()).setText("");
 			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
-				multiCast.sendMessage(("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt).getBytes(), i);
+				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt, i, false);
 			}
 		}
 	}
