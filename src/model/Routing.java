@@ -21,8 +21,11 @@ public class Routing /*implements Runnable*/{
 
 
     public void setLinkCost(int receivedInt){
+        if (receivedInt < 0) {
+            receivedInt = 100;
+        }
         this.linkcost = receivedInt;
-        System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
+//        System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
     }
 
     public void setPresence(List<Integer> list){
@@ -81,11 +84,11 @@ public class Routing /*implements Runnable*/{
         forwardingTable[this.computerNumber+3] = 0;
 
         //print the new forwardingTable
-        System.out.println("the forwarding table is now as followed: ");
-        for (int h = 0; h<12; h++){
-            System.out.print(forwardingTable[h] + " ");
-        }
-        System.out.println("");
+//        System.out.println("the forwarding table is now as followed: ");
+//        for (int h = 0; h<12; h++){
+//            System.out.print(forwardingTable[h] + " ");
+//        }
+//        System.out.println("");
 
     }
 

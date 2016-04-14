@@ -39,7 +39,7 @@
 //	private JCheckBox coenbox;
 //	private JCheckBox birtebox;
 //	private int groupnumber;
-//	private MultiCast2 multiCast;
+//	private MultiCast multiCast;
 //    private GridBagConstraints newchatgbc = new GridBagConstraints();
 //    private GridBagConstraints chatbuttonsgbc = new GridBagConstraints();
 //    private JScrollPane chatscrollpane;
@@ -47,7 +47,7 @@
 //    private JPanel eastside = new JPanel();
 //
 //
-//	public GUIold(int pcnumber, MultiCast2 multiCast) {
+//	public GUIold(int pcnumber, MultiCast multiCast) {
 //
 //		/*
 //		Create frame.
@@ -418,7 +418,7 @@
 //	}
 //
 //	public static void main(String[] args) {
-//        new GUIold(4, new MultiCast2());
+//        new GUIold(4, new MultiCast());
 //    }
 //
 //}

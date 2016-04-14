@@ -32,7 +32,7 @@ import javax.imageio.ImageIO;
  * This is the main class that does the sending and the receiving.
  * Every 'person' that is connected has an instance of MultiCast.
  */
-public class MultiCast2 implements Runnable{
+public class MultiCast implements Runnable{
 
     private static final String HOST = "228.0.0.0";
     private static final int PORT = 1234;
@@ -72,7 +72,7 @@ public class MultiCast2 implements Runnable{
         int[] forwardingtable = routing.getForwardingTable();
         int nextHop;
         //  System.out.println(destination + " " + forwardingtable.length);
-        System.out.println(destination);
+        System.out.println("destination (in getNextHop(): " + destination);
         if (forwardingtable[destination + 7] == computerNumber || forwardingtable[destination+7] == 0){
             nextHop = destination;
         }
@@ -101,12 +101,13 @@ public class MultiCast2 implements Runnable{
                 (array[3]<< 0)&0x000000ff;
     }
 
-    public MultiCast2(int computerNumber) {
+    public MultiCast(int computerNumber) {
         try {
             this.group = InetAddress.getByName(HOST);
             this.s = new MulticastSocket(PORT);
             this.computerNumber = computerNumber;
             this.routing = new Routing(this.computerNumber);
+            this.generateKeys();
             this.gui = new GUI(this.computerNumber, this);
             join();
         } catch (UnknownHostException e) {
@@ -302,6 +303,7 @@ public class MultiCast2 implements Runnable{
                         sendAck(data[1], seq);
                         System.out.println("Hij gaat nu in order");
                         receiver.order();
+                        receivers.remove((int) data[1], receiver);
 //                        Byte[] dataArray = receiver.goodOrder.toArray(new Byte[receiver.goodOrder.size()]);
 //                        byte[] byteArray = new byte[dataArray.length];
 //                        for (int j = 0; j < dataArray.length; j++) {
@@ -309,7 +311,6 @@ public class MultiCast2 implements Runnable{
 //                        }
                         String toGUI = new String(receiver.goodOrder);
                         gui.printMessage(toGUI, data[1]);
-                        receivers.remove((int) data[1], receiver);
                         break;
                     case 6:
                         //This is the packet for the request of one's public key.
@@ -399,11 +400,11 @@ public class MultiCast2 implements Runnable{
      */
     private void sendAck(int destination, byte[] ackNumber) {
         AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber, getNextHop(destination));
-//        System.out.println("comp + dest + ack[3] : " + computerNumber + ", " + destination + ", " + ackNumber[3]);
         byte[] packet = ackPacket.getAckPacket();
         DatagramPacket ack = new DatagramPacket(packet, packet.length, group, PORT);
         try {
             this.s.send(ack);
+            System.out.println("just sent an ack");
         } catch (IOException e) {
             gui.showError("IOException in sendAck(..). " +
                     "The sending of a DatagramPacket went wrong. " +
@@ -494,7 +495,7 @@ public class MultiCast2 implements Runnable{
         SecretKey AESKey = security.getSymmetricKey(destination);
         if (AESKey != null) {
             //Encrypt the AES key with the public key of the receiver
-            byte[] encryptedAESKey = security.getEncryptedAESKey(this.publicKeys.get(destination), AESKey);
+            byte[] encryptedAESKey = security.EncryptSecretKey(this.publicKeys.get(destination), AESKey);
             AESPacket aesPacket = new AESPacket(computerNumber, destination, getNextHop(destination), encryptedAESKey);
             DatagramPacket packet = new DatagramPacket(aesPacket.getAESPacket(), aesPacket.getAESPacket().length, group, PORT);
             try {
@@ -556,7 +557,7 @@ public class MultiCast2 implements Runnable{
     /*
      * This message sends a message (
      */
-    private void sendMessage(byte[] msg, int destination) {
+    public void sendMessage(byte[] msg, int destination) {
         try {
             //Send the entire message, split and with send data from TCP
             int seqint = 3;
@@ -568,6 +569,7 @@ public class MultiCast2 implements Runnable{
                 byte[] encryptedData = this.security.encryptSymm(new String(packet), this.security.getSymmetricKey(destination)).getBytes();
                 TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(encryptedData), getNextHop(destination));
                 System.out.println(new String(toSend.getTextPacket()));
+                System.out.println(new String(packet));
 //                System.out.println("seq[0] + seq[1] + seq[2] + seq[3]: " + seq[0] + seq[1] + seq[2] + seq[3]);
 //                DatagramPacket messagePacket = new DatagramPacket(encryptedData, encryptedData.length, group, PORT);
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
@@ -594,7 +596,7 @@ public class MultiCast2 implements Runnable{
         }
 
         try {
-            Thread.sleep(100);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             gui.showError("InterruptedException in sendMessage(..). " +
                     "Happened while waiting for ACKs (first time). " +
@@ -646,7 +648,7 @@ public class MultiCast2 implements Runnable{
                 }
             }
 
-            System.out.println("SUCCESS");
+//            System.out.println("SUCCESS");
 
             //If the receiver received their 'First' message and replied with an ack, send the message
             System.out.println("Het firstreceived zetten is goed gegaan");
