@@ -401,7 +401,7 @@ public class MultiCast implements Runnable {
         DatagramPacket ack = new DatagramPacket(packet, packet.length, group, PORT);
         try {
             this.s.send(ack);
-            System.out.println("just sent an ack");
+            System.out.println("just sent an ack to: " + destination);
         } catch (IOException e) {
             gui.showError("IOException in sendAck(..). " +
                     "The sending of a DatagramPacket went wrong. " +
