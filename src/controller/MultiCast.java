@@ -72,7 +72,6 @@ public class MultiCast implements Runnable {
         int[] forwardingtable = routing.getForwardingTable();
         int nextHop;
         //  System.out.println(destination + " " + forwardingtable.length);
-        System.out.println("destination (in getNextHop(): " + destination);
         if (forwardingtable[destination + 7] == computerNumber || forwardingtable[destination + 7] == 0) {
             nextHop = destination;
         } else {
@@ -268,7 +267,7 @@ public class MultiCast implements Runnable {
                         System.out.println("START");
                         byte[] nul = intToByte(0);
                         sendAck(data[1], nul);
-                        if (receivers.containsKey((int) data[1])) {
+                        if (!receivers.containsKey((int) data[1])) {
                             receivers.put((int) data[1], new Receiver(data[1]));
                         }
                         System.out.println("size: " + receivers.size());
@@ -297,11 +296,11 @@ public class MultiCast implements Runnable {
                     //finishpacket
                     //Only receiver gets these
                     case 5:
-                        if (receiver != null) {
                             seq = intToByte(1);
                             sendAck(data[1], seq);
                             System.out.println("Hij gaat nu in order");
-                            receiver.order();
+						if (receiver != null) {
+							receiver.order();
                             receivers.remove((int) data[1], receiver);
 //                        Byte[] dataArray = receiver.goodOrder.toArray(new Byte[receiver.goodOrder.size()]);
 //                        byte[] byteArray = new byte[dataArray.length];
@@ -404,7 +403,11 @@ public class MultiCast implements Runnable {
         try {
             this.s.send(ack);
             System.out.println("just sent an ack");
-        } catch (IOException e) {
+			for (int i = 0; i < Math.min(10, packet.length); i++) {
+				System.out.print(packet[i]);
+			}
+			System.out.println();
+		} catch (IOException e) {
             gui.showError("IOException in sendAck(..). " +
                     "The sending of a DatagramPacket went wrong. " +
                     "Check internet connection or if you are in the ad-hoc network (try leaving and entering network in admin mode). " +

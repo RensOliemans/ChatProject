@@ -304,9 +304,13 @@ public class GUI extends JFrame {
 	private class SendingFieldListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
+			System.out.println("check1");
 			String txt = ((JTextField)e.getSource()).getText();
+			System.out.println("check2");
 			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + txt + "\n");
+			System.out.println("check3");
 			((JTextField)e.getSource()).setText("");
+			System.out.println("check4");
 			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
 				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt, i, false);
 			}
@@ -417,6 +421,7 @@ public class GUI extends JFrame {
 				stringlist.add(new Integer(src));
 				stringlist.remove(new Integer(pcnumber));
 				ChatButton chatButton = new ChatButton(chatnumberandparticipants[0].substring(16) + ", " + ListToNamesAbr(stringlist));
+				System.out.println(ListToNamesAbr(stringlist));
 				chatmap.put(chatButton,newChatPane);
 				participantsmap.put(newChatPane, stringlist);
 				chatnumbermap.put(newChatPane, new Integer((chatnumberandparticipants[0].substring(16))));
