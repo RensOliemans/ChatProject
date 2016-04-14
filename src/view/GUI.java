@@ -23,7 +23,7 @@ public class GUI extends JFrame {
 	private ChatRoom chatRoom;
 	private JScrollPane availableChatsScrollPane;
 	private int pcnumber;
-	private MultiCast2 multiCast;
+	private MultiCast multiCast;
 	private Dimension framesize = new Dimension(700,400);
 	private List<Integer> group22 = new ArrayList<Integer>();
 	private Map<ChatButton, MessageScroll> chatmap = new HashMap<ChatButton, MessageScroll>();
@@ -34,7 +34,7 @@ public class GUI extends JFrame {
 	/*
 	Makes a new GUI window.
 	 */
-	public GUI(int pcnumber, MultiCast2 multiCast) {
+	public GUI(int pcnumber, MultiCast multiCast) {
 		super("ChatUI");
 		this.pcnumber = pcnumber;
 		this.chatnumber = pcnumber;
