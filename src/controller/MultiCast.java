@@ -32,7 +32,7 @@ import javax.imageio.ImageIO;
  * This is the main class that does the sending and the receiving.
  * Every 'person' that is connected has an instance of MultiCast.
  */
-public class MultiCast2 implements Runnable{
+public class MultiCast implements Runnable{
 
     private static final String HOST = "228.0.0.0";
     private static final int PORT = 1234;
@@ -72,6 +72,7 @@ public class MultiCast2 implements Runnable{
         int[] forwardingtable = routing.getForwardingTable();
         int nextHop;
         //  System.out.println(destination + " " + forwardingtable.length);
+        System.out.println("destination (in getNextHop(): " + destination);
         if (forwardingtable[destination + 7] == computerNumber || forwardingtable[destination+7] == 0){
             nextHop = destination;
         }
@@ -100,12 +101,13 @@ public class MultiCast2 implements Runnable{
                 (array[3]<< 0)&0x000000ff;
     }
 
-    public MultiCast2(int computerNumber) {
+    public MultiCast(int computerNumber) {
         try {
             this.group = InetAddress.getByName(HOST);
             this.s = new MulticastSocket(PORT);
             this.computerNumber = computerNumber;
             this.routing = new Routing(this.computerNumber);
+            this.generateKeys();
             this.gui = new GUI(this.computerNumber, this);
             join();
         } catch (UnknownHostException e) {
@@ -154,7 +156,6 @@ public class MultiCast2 implements Runnable{
             byte[] data = recv.getData();
             byte[] seq;
             int seqint;
-            int i = data.length;
             for (Map.Entry<Integer, Sender> e: senders.entrySet()){
                 if ((int) e.getKey() == (int) data[1]){
                     sender = e.getValue();
@@ -171,6 +172,7 @@ public class MultiCast2 implements Runnable{
                     if (data[2] == computerNumber) {
                         routing.setSourceAddress(data[1]);
                         routing.setLinkCost(data[3]);
+                        routing.setPresence(presence);
                         byte[] bArray = new byte[12];
                         for (int k = 0; k < 12; k++) {
                             bArray[k] = data[k + 4];
@@ -198,7 +200,7 @@ public class MultiCast2 implements Runnable{
                             presence.add(new Integer (data[1]));
                         }
                         receivedPings = ping1.calculateReceivedPings(new Integer(data[1]));
-                        if (receivedPings != 0 && receivedPings > 0){
+                        if (receivedPings > 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
@@ -212,7 +214,7 @@ public class MultiCast2 implements Runnable{
                             presence.add(new Integer (data[1]));
                         }
                         receivedPings = ping2.calculateReceivedPings(new Integer (data[1]));
-                        if (receivedPings != 0 && receivedPings > 0){
+                        if (receivedPings > 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
@@ -223,7 +225,7 @@ public class MultiCast2 implements Runnable{
                             presence.add(new Integer (data[1]));
                         }
                         receivedPings = ping3.calculateReceivedPings(new Integer (data[1]));
-                        if (receivedPings != 0 && receivedPings > 0){
+                        if (receivedPings > 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
@@ -237,7 +239,7 @@ public class MultiCast2 implements Runnable{
                             presence.add(new Integer (data[1]));
                         }
                         receivedPings = ping4.calculateReceivedPings(new Integer (data[1]));
-                        if (receivedPings != 0 && receivedPings > 0){
+                        if (receivedPings > 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
@@ -301,13 +303,13 @@ public class MultiCast2 implements Runnable{
                         sendAck(data[1], seq);
                         System.out.println("Hij gaat nu in order");
                         receiver.order();
+                        receivers.remove((int) data[1], receiver);
 //                        Byte[] dataArray = receiver.goodOrder.toArray(new Byte[receiver.goodOrder.size()]);
 //                        byte[] byteArray = new byte[dataArray.length];
 //                        for (int j = 0; j < dataArray.length; j++) {
 //                            byteArray[j] = dataArray[j];
 //                        }
                         String toGUI = new String(receiver.goodOrder);
-						receivers.remove((int) data[1], receiver);
                         gui.printMessage(toGUI, data[1]);
                         break;
                     case 6:
@@ -398,11 +400,11 @@ public class MultiCast2 implements Runnable{
      */
     private void sendAck(int destination, byte[] ackNumber) {
         AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber, getNextHop(destination));
-//        System.out.println("comp + dest + ack[3] : " + computerNumber + ", " + destination + ", " + ackNumber[3]);
         byte[] packet = ackPacket.getAckPacket();
         DatagramPacket ack = new DatagramPacket(packet, packet.length, group, PORT);
         try {
             this.s.send(ack);
+            System.out.println("just sent an ack");
         } catch (IOException e) {
             gui.showError("IOException in sendAck(..). " +
                     "The sending of a DatagramPacket went wrong. " +
@@ -422,7 +424,9 @@ public class MultiCast2 implements Runnable{
             try {
                 this.s.send(burst);
             } catch (IOException e) {
-                e.printStackTrace();
+                gui.showError("Error while sending ping pcakets. " +
+                        "This is probably because you are not in the ad-hoc network anymore. " +
+                        "Error message: " + e.getMessage());
             }
         }
     }
@@ -493,7 +497,7 @@ public class MultiCast2 implements Runnable{
         SecretKey AESKey = security.getSymmetricKey(destination);
         if (AESKey != null) {
             //Encrypt the AES key with the public key of the receiver
-            byte[] encryptedAESKey = security.getEncryptedAESKey(this.publicKeys.get(destination), AESKey);
+            byte[] encryptedAESKey = security.EncryptSecretKey(this.publicKeys.get(destination), AESKey);
             AESPacket aesPacket = new AESPacket(computerNumber, destination, getNextHop(destination), encryptedAESKey);
             DatagramPacket packet = new DatagramPacket(aesPacket.getAESPacket(), aesPacket.getAESPacket().length, group, PORT);
             try {
@@ -567,6 +571,7 @@ public class MultiCast2 implements Runnable{
                 byte[] encryptedData = this.security.encryptSymm(new String(packet), this.security.getSymmetricKey(destination)).getBytes();
                 TextPacket toSend = new TextPacket(computerNumber, destination, seq, new String(encryptedData), getNextHop(destination));
                 System.out.println(new String(toSend.getTextPacket()));
+                System.out.println(new String(packet));
 //                System.out.println("seq[0] + seq[1] + seq[2] + seq[3]: " + seq[0] + seq[1] + seq[2] + seq[3]);
 //                DatagramPacket messagePacket = new DatagramPacket(encryptedData, encryptedData.length, group, PORT);
                 DatagramPacket messagePacket = new DatagramPacket(toSend.getTextPacket(), toSend.getTextPacket().length, group, PORT);
@@ -617,55 +622,56 @@ public class MultiCast2 implements Runnable{
         }
     }
 
-    public void send(String msg, int destination) {
-		if (this.computerNumber != destination) {
-			sender = new Sender(destination);
-			senders.put(destination, sender);
+    public void send(String msg, int destination, boolean requestKeys) {
+        if (destination != computerNumber) {
+            sender = new Sender(destination);
+            senders.put(destination, sender);
 
 //        First send the 'First' message
-			while (!sender.firstReceived) {
-				sendFirst(destination);
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					gui.showError("InterruptedException in send(..). " +
-							"Happened while waiting for ACK of first received. " +
-							"Shouldn't happen. Error message: " + e.getMessage());
-				}
-			}
+            while (!sender.firstReceived) {
+                sendFirst(destination);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    gui.showError("InterruptedException in send(..). " +
+                            "Happened while waiting for ACK of first received. " +
+                            "Shouldn't happen. Error message: " + e.getMessage());
+                }
+            }
+            if (requestKeys) {
+                while (!sender.keysReceived) {
+                    sendPublicKey(destination, false);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        gui.showError("InterruptedException in send(..). " +
+                                "Happened while waiting for ACK of keysReceived. " +
+                                "Shouldn't happen. Error message: " + e.getMessage());
+                    }
+                }
+            }
 
-			while (!sender.keysReceived) {
-				sendPublicKey(destination, false);
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					gui.showError("InterruptedException in send(..). " +
-							"Happened while waiting for ACK of keysReceived. " +
-							"Shouldn't happen. Error message: " + e.getMessage());
-				}
-			}
+//            System.out.println("SUCCESS");
 
-			System.out.println("SUCCESS");
-
-			//If the receiver received their 'First' message and replied with an ack, send the message
-			System.out.println("Het firstreceived zetten is goed gegaan");
-			sendMessage(msg.getBytes(), destination);
+            //If the receiver received their 'First' message and replied with an ack, send the message
+            System.out.println("Het firstreceived zetten is goed gegaan");
+            sendMessage(msg.getBytes(), destination);
 //        sendImage(msg, destination);
 
-			//After the message has been sent, send the 'Finish' message and wait for ack
-			while (!sender.finishReceived) {
-				sendFinish(destination);
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					gui.showError("InterruptedException in send(..). " +
-							"Happened while waiting for finish ACK. " +
-							"Shouldn't happen. Error message: " + e.getMessage());
-				}
-			}
-			senders.remove(destination, sender);
-			System.out.println("finish is received");
-		}
+            //After the message has been sent, send the 'Finish' message and wait for ack
+            while (!sender.finishReceived) {
+                sendFinish(destination);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    gui.showError("InterruptedException in send(..). " +
+                            "Happened while waiting for finish ACK. " +
+                            "Shouldn't happen. Error message: " + e.getMessage());
+                }
+            }
+            senders.remove(destination, sender);
+            System.out.println("finish is received");
+        }
     }
 
     public void leave() {

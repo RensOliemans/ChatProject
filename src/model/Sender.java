@@ -1,11 +1,9 @@
 package model;
 
 
-import controller.MultiCast2;
+import controller.MultiCast;
 
-import java.nio.ByteBuffer;
 import java.util.*;
-import java.net.DatagramPacket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -45,7 +43,7 @@ public class Sender {
         for (Map.Entry<byte[], byte[]> entry : notReceived.entrySet()) {
             toRemove = entry.getKey();
             Object value = entry.getValue();
-            if (MultiCast2.byteToInt(toRemove) == MultiCast2.byteToInt(key)) {
+            if (MultiCast.byteToInt(toRemove) == MultiCast.byteToInt(key)) {
                 break;
             }
         }

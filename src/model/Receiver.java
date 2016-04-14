@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 
-import controller.MultiCast2;
+import controller.MultiCast;
 import view.GUI;
 
 import javax.imageio.ImageIO;
@@ -32,9 +32,9 @@ public class Receiver {
     public void order() {
         List<Byte> result = new ArrayList<>();
         for (int i = 3; i < this.received.size() + 3; i++) {
-            byte[] j = MultiCast2.intToByte(i);
+            byte[] j = MultiCast.intToByte(i);
             for (Map.Entry<byte[], byte[]> e : this.received.entrySet()) {
-//                System.out.println("seq nummer " + MultiCast2.byteToInt(e.getKey()));
+//                System.out.println("seq nummer " + MultiCast.byteToInt(e.getKey()));
                 if (Arrays.equals(e.getKey(), j)) {
                     byte[] packet = e.getValue();
                     for (int k = 0; k < packet.length; k++) {
@@ -71,7 +71,7 @@ public class Receiver {
     public void putReceived(byte[] seq, byte[] decryptedData) {
         boolean nietAanwezig = true;
         for (Map.Entry<byte[], byte[]> e: received.entrySet()){
-            if (MultiCast2.byteToInt(e.getKey()) == MultiCast2.byteToInt(seq)){
+            if (MultiCast.byteToInt(e.getKey()) == MultiCast.byteToInt(seq)){
                 nietAanwezig = false;
             }
         }

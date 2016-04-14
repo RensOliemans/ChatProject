@@ -1,8 +1,6 @@
 package model;
 
-import controller.MultiCast2;
-
-import static controller.MultiCast2.HEADER;
+import static controller.MultiCast.HEADER;
 
 /**
  * Created by coen on 7-4-2016.

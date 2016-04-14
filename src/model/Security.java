@@ -15,35 +15,36 @@ import view.GUI;
  * This is the main security class, which holds
  */
 public class Security {
-    //TODO: implement the following:
-    //The steps to encryption are to share the person's symmetric key via public/private keys:
-    //  1.  Send the receiver the symmetric key, encrypted with their public key
-    //  2.
-
-    //HashMap with K: computerNumber and V: SecretKey.
+    //HashMap with K: computerNumber and V: SecretKey. This is because every sender-receiver connection has a separate SecretKey
     private Map<Integer, SecretKey> symmetricKeys;
-    private GUI gui;
-    private KeyPair RSAKeyPair;
-    private static final String xform = "RSA/ECB/PKCS1Padding";
+    private GUI gui; //GUI to call errors that happen during encryption/decryption
+    private KeyPair RSAKeyPair; //RSAKeyPair. Every MultiCast (person) has a separate Security object, so every person has a public and private key
+    private static final String xform = "RSA/ECB/PKCS1Padding"; //The instance used for the public/private key (RSA)
 
+    /**
+     * The constructor of the Security object. Also generates RSA public and private keys
+     * @param gui GUI gui, a GUI object so it can show errors
+     */
     public Security(GUI gui) {
         this.gui = gui;
         this.symmetricKeys = new HashMap<Integer, SecretKey>();
-        System.out.println("Generating public and private keys...");
-        long startTime = System.currentTimeMillis();
-        generateRSAKeyPair();
-        System.out.println("Successfully created 512 byte RSA keys in : " + (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
+        generateRSAKeyPair(); //generates the RSA public and private keys
     }
 
-
+    /**
+     * Returns the PublicKey of the RSAKeyPair
+     * @return PublicKey, the publicKey of the person.
+     */
     public PublicKey getPublicKey() {
         return RSAKeyPair.getPublic();
     }
 
-    public byte[] getEncryptedAESKey(PublicKey publicKey, SecretKey AESKey) {
-        return EncryptSecretKey(publicKey, AESKey);
-    }
 
+    /**
+     * Gets the symmetric key that belongs to a computerNumber.
+     * @param computerNumber int computerNumber, the computerNumber that belongs to a symmetric key
+     * @return SecretKey symmetricKey, the key that belongs to a person (with computerNumber)
+     */
     public SecretKey getSymmetricKey(int computerNumber) {
         if (symmetricKeys.containsKey(computerNumber)) {
             return symmetricKeys.get(computerNumber);
@@ -51,6 +52,11 @@ public class Security {
         return null;
     }
 
+    /**
+     * Adds a symmetric key with a computernumber to the hashMap this.symmetricKeys
+     * @param computerNumber int computerNumber, the computerNumber that belongs to the new key
+     * @param secretKey SecretKey secretKey, the new key, belonging to a computernumber
+     */
     public void addSymmetricKey(int computerNumber, SecretKey secretKey) {
         if (!this.symmetricKeys.containsKey(computerNumber)) {
             this.symmetricKeys.put(computerNumber, secretKey);
@@ -59,8 +65,10 @@ public class Security {
         }
     }
 
-
-
+    /**
+     * Generates RSA key pairs of 512 bits.
+     * Can give a NoAlgorithmException exception when the instance is incorrect.
+     */
     private void generateRSAKeyPair() {
         KeyPair kp = null;
         //Generate a key
@@ -76,10 +84,14 @@ public class Security {
         this.RSAKeyPair = kp;
     }
 
+    /**
+     * Generates a symmetric key belonging to a computerNumber.
+     * Can give a NoSuchAlgorithmException when the instance is incorrect
+     * @param computerNumber int computerNumber, the computerNumber to whom the key belongs
+     */
     public void generateAESKey(int computerNumber) {
         KeyGenerator keyGen = null;
         try {
-
             keyGen = KeyGenerator.getInstance("AES");
         } catch (NoSuchAlgorithmException e) {
             gui.showError("NoSuchAlgoritmException in generateAESKey(..). " +
@@ -89,7 +101,13 @@ public class Security {
         this.symmetricKeys.put(computerNumber, keyGen.generateKey());
     }
 
-    //symmetric encryption with symmetricKey in SecretKey format
+    /**
+     * Encrypts a piece of text with a symmetric key.
+     * Can give several Exceptions
+     * @param text String text, the text to be encrypted
+     * @param secretKey SecretKey secretKey, the key to encrypt the text with
+     * @return String encryptedText, the encrypted text
+     */
     public String encryptSymm(String text, SecretKey secretKey) {
         byte[] raw;
         String encryptedString;
@@ -135,7 +153,13 @@ public class Security {
 //        return encryptedString;
     }
 
-    //symmetric decryption with symmetricKey in SecretKey format
+    /**
+     * Decrypts a piece of text with a SecretKey.
+     * Can throw several exceptions
+     * @param text String text, encrypted text to be decrypted
+     * @param secretKey SecretKey secretKey, the key to decrypt the data with
+     * @return String decryptedText, the decrypted text.
+     */
     public String decryptSymm(String text, SecretKey secretKey) {
         Cipher cipher = null;
         String encryptedString;
@@ -165,7 +189,7 @@ public class Security {
             return "Error";
         } catch (BadPaddingException e) {
             gui.showError("BadPaddingException in decryptSymm(..). " +
-                    "Ask Rens. " +
+                    "Ask Rens . " + "cipher length: " + cipher.getAlgorithm().getBytes().length + " encryptLength: " + encryptText.length +
                     "\nError message: " + e.getMessage());
             return "Error";
         } catch (IllegalBlockSizeException e) {
@@ -180,8 +204,13 @@ public class Security {
         return encryptedString;
     }
 
-
-    private byte[] EncryptSecretKey(PublicKey publicKey, SecretKey symmetricKey) {
+    /**
+     * This method encrypts the symmetric key with a public key
+     * @param publicKey PublicKey publicKey, the key to encrypt the symmetric keys with
+     * @param symmetricKey SecretKey secrteKey, the symmetricKey that has to be encrypted
+     * @return byte[] secretKey, the encrypted symmetric key
+     */
+    public byte[] EncryptSecretKey(PublicKey publicKey, SecretKey symmetricKey) {
         Cipher cipher = null;
         byte[] key = null;
 
@@ -213,6 +242,11 @@ public class Security {
         return key;
     }
 
+    /**
+     * A method that decrypts a symmetric key with its own private key
+     * @param data byte[] data, the encrypted key
+     * @return SecretKey secretKey, the decrypted secret key
+     */
     public SecretKey decryptAESKey(byte[] data) {
         //This method decrypts an encrypted AES key with its own private key
         SecretKey key = null;

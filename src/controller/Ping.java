@@ -1,15 +1,12 @@
 package controller;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by Rens on 7-4-2016.
  */
 public class Ping implements Runnable {
 
-	private MultiCast2 multiCast;
+	private MultiCast multiCast;
 	private int computerNumber;
 
 	private long seconds1;
@@ -17,7 +14,7 @@ public class Ping implements Runnable {
 	private int receivedPing1;
 	private boolean sent = false;
 
-	public Ping(int computerNumber, MultiCast2 multiCast) {
+	public Ping(int computerNumber, MultiCast multiCast) {
 		this.multiCast = multiCast;
 		this.computerNumber = computerNumber;
 	}
