@@ -71,8 +71,6 @@ public class MultiCast implements Runnable {
     public int getNextHop(int destination) {
         int[] forwardingtable = routing.getForwardingTable();
         int nextHop;
-        //  System.out.println(destination + " " + forwardingtable.length);
-        System.out.println("destination (in getNextHop(): " + destination);
         if (forwardingtable[destination + 7] == computerNumber || forwardingtable[destination + 7] == 0) {
             nextHop = destination;
         } else {
@@ -268,7 +266,7 @@ public class MultiCast implements Runnable {
                         System.out.println("START");
                         byte[] nul = intToByte(0);
                         sendAck(data[1], nul);
-                        if (receivers.containsKey((int) data[1])) {
+                        if (!receivers.containsKey((int) data[1])) {
                             receivers.put((int) data[1], new Receiver(data[1]));
                         }
                         System.out.println("size: " + receivers.size());

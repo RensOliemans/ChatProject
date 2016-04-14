@@ -304,11 +304,16 @@ public class GUI extends JFrame {
 	private class SendingFieldListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
-			String txt = ((JTextField)e.getSource()).getText();
-			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + txt + "\n");
-			((JTextField)e.getSource()).setText("");
-			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
-				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt, i, false);
+            System.out.println("check1");
+            String txt = ((JTextField)e.getSource()).getText();
+            System.out.println("check2");
+            chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + txt + "\n");
+            System.out.println("check3");
+            ((JTextField)e.getSource()).setText("");
+            System.out.println("check4");
+            for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
+                System.out.println("check in for " + i);
+                multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt, i, false);
 			}
 		}
 	}
