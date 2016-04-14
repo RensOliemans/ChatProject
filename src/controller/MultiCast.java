@@ -424,7 +424,9 @@ public class MultiCast implements Runnable{
             try {
                 this.s.send(burst);
             } catch (IOException e) {
-                e.printStackTrace();
+                gui.showError("Error while sending ping pcakets. " +
+                        "This is probably because you are not in the ad-hoc network anymore. " +
+                        "Error message: " + e.getMessage());
             }
         }
     }
