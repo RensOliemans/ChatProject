@@ -310,7 +310,7 @@ public class GUI extends JFrame {
             chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + txt + "\n");
             System.out.println("check3");
             ((JTextField)e.getSource()).setText("");
-            System.out.println("check4");
+            System.out.println(participantsmap.get(chatRoom.scrollmessages));
             for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
                 System.out.println("check in for " + i);
                 multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt, i, false);

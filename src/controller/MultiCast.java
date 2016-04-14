@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -63,10 +64,10 @@ public class MultiCast implements Runnable {
 
     public List<Integer> presence = new ArrayList<>();
 
-    /*
-     * Getter for computerNumber
+    /**
      *
-     * @return the computerNumber of the person belonging to MultiCast
+     * @param destination
+     * @return
      */
     public int getNextHop(int destination) {
         int[] forwardingtable = routing.getForwardingTable();
@@ -81,14 +82,28 @@ public class MultiCast implements Runnable {
 
     }
 
+    /**
+     *
+     * @return
+     */
     public int getComputerNumber() {
         return computerNumber;
     }
 
+    /**
+     *
+     * @param number
+     * @return
+     */
     public static byte[] intToByte(int number) {
         return ByteBuffer.allocate(4).putInt(number).array();
     }
 
+    /**
+     *
+     * @param array
+     * @return
+     */
     public static int byteToInt(byte[] array) {
         return (array[0] << 24) & 0xff000000 |
                 (array[1] << 16) & 0x00ff0000 |
@@ -96,6 +111,10 @@ public class MultiCast implements Runnable {
                 (array[3] << 0) & 0x000000ff;
     }
 
+    /**
+     *
+     * @param computerNumber
+     */
     public MultiCast(int computerNumber) {
         try {
             this.group = InetAddress.getByName(HOST);
@@ -116,13 +135,16 @@ public class MultiCast implements Runnable {
         }
     }
 
+    /**
+     *
+     */
     public void generateKeys() {
         security = new Security(this.gui);
     }
 
-    /*
-     * This joins the group of the Internet Address
-     * */
+    /**
+     *
+     */
     public void join() {
         try {
             this.s.joinGroup(group);
@@ -133,22 +155,25 @@ public class MultiCast implements Runnable {
         }
     }
 
+    /**
+     *
+     * @param computerNumber
+     */
     public void setComputerNumber(int computerNumber) {
         this.computerNumber = computerNumber;
     }
 
-    /*
-     * This receives the message. It first calls MultiCastSocket.receive and fills a DatagramPacket.
-     * After the packet has been received, it receives the excess buffer data (0's at the end) and handles the message
-     *  by sending an ACK if it received a DataPacket, creating a new Receiver object (and acking) if it received a StartPacket
-     *  and forwarding the messages to the GUI and deleting the Receiver object if it received a FinPacket.
+    /**
+     *
      */
     private void receive() {
         try {
+            System.out.println("HELP SEE ME");
             byte[] buf = new byte[2000];
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             this.s.receive(recv);
             byte[] data = recv.getData();
+            if (data[0] != 2) System.out.println("in receive now");
             byte[] seq;
             int seqint;
             Receiver receiver = null;
@@ -161,6 +186,12 @@ public class MultiCast implements Runnable {
                 if ((int) e.getKey() == (int) data[1]) {
                     receiver = e.getValue();
                 }
+            }
+            if (data[0] != 2) {
+                for (int i = 0; i < 10; i++) {
+                    System.out.print(data[i] + " ");
+                }
+                System.out.println();
             }
             if (computerNumber != data[1] && (data[0] == 1 || data[0] == 2)) {
                 if (data[0] == 1) {
@@ -243,6 +274,9 @@ public class MultiCast implements Runnable {
             }
             if (computerNumber != data[1] && computerNumber == data[2] && computerNumber == data[3]) {
                 data = removeRensByte(data);
+                for (byte b : data) {
+                    System.out.print(b + " ");
+                }
                 switch (data[0]) {
                     //textPacket
                     //Only receiver gets these
@@ -276,7 +310,6 @@ public class MultiCast implements Runnable {
                     case 4:
                         System.out.println("ACK");
                         seq = new byte[HEADER * 4];
-
                         System.arraycopy(data, 4, seq, 0, HEADER * 4);
                         seqint = byteToInt(seq);
                         if (seqint == 0) {
@@ -289,16 +322,18 @@ public class MultiCast implements Runnable {
                             System.out.println("Key ack received");
                             sender.setKeysRecievedTrue();
                         } else {
+                            System.out.println(sender.notReceived.size());
                             sender.removeNotReceived(seq);
+                            System.out.println(sender.notReceived.size());
                         }
                         break;
                     //finishpacket
                     //Only receiver gets these
                     case 5:
-                        if (receiver != null) {
                             seq = intToByte(1);
                             sendAck(data[1], seq);
                             System.out.println("Hij gaat nu in order");
+                        if (receiver != null) {
                             receiver.order();
                             receivers.remove((int) data[1], receiver);
 //                        Byte[] dataArray = receiver.goodOrder.toArray(new Byte[receiver.goodOrder.size()]);
@@ -367,11 +402,10 @@ public class MultiCast implements Runnable {
         }
     }
 
-    /*
-     * Removes the Rens byte of a message and all of the 0's after it
+    /**
      *
-     * @param byte[] data, the uncropped message
-     * @result byte[] croppedResult, the cropped message
+     * @param data
+     * @return
      */
     private byte[] removeRensByte(byte[] data) {
         //De 'Rens byte' is vernoemd naar de geniaalste coder die er bestaat.
@@ -389,11 +423,10 @@ public class MultiCast implements Runnable {
         return croppedResult;
     }
 
-    /*
-     * Sends an ACK message by creating an AckPacket and sending it using MultiCastSocket.send(DatagramPacket).
+    /**
      *
-     * @param int destination, the computernumber of the player to send the message to
-     * @param byte[] acknumber, the acknumber to send in the ACK message
+     * @param destination
+     * @param ackNumber
      */
     private void sendAck(int destination, byte[] ackNumber) {
         AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber, getNextHop(destination));
@@ -410,8 +443,9 @@ public class MultiCast implements Runnable {
         }
     }
 
-    /*
-     * Sends a ping to everyone on the network.
+    /**
+     *
+     * @param computerNumber
      */
     public void sendPing(int computerNumber) {
         System.out.println("computernumber given with pingpackets= " + computerNumber);
@@ -428,10 +462,9 @@ public class MultiCast implements Runnable {
         }
     }
 
-    /*
-     * Sends a FIRST message to make sure that the receiver can receive messages.
+    /**
      *
-     * @param int destination, the computernumber of the player to send the message to
+     * @param destination
      */
     private void sendFirst(int destination) {
         StartPacket firstPacket = new StartPacket(computerNumber, destination, getNextHop(destination));
@@ -515,14 +548,15 @@ public class MultiCast implements Runnable {
         try {
             //open image
             File image = new File(imageName);
-            BufferedImage bufferedImage = ImageIO.read(image);
-
-            //get DataBufferBytes from raster
-            WritableRaster raster = bufferedImage.getRaster();
-            DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+            byte[] data = Files.readAllBytes(image.toPath());
+//            BufferedImage bufferedImage = ImageIO.read(image);
+//
+//            //get DataBufferBytes from raster
+//            WritableRaster raster = bufferedImage.getRaster();
+//            DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
 
             //send the image
-            sendMessage(data.getData(), destination);
+            sendMessage(data, destination);
         } catch (IOException e) {
             gui.showError("IOException in sendImage(..). " +
                     "Reading of image file went wrong. " +
@@ -558,6 +592,7 @@ public class MultiCast implements Runnable {
      * This message sends a message (
      */
     public void sendMessage(byte[] msg, int destination) {
+        System.out.println("sending..");
         try {
             //Send the entire message, split and with send data from TCP
             int seqint = 3;
@@ -577,6 +612,7 @@ public class MultiCast implements Runnable {
                 this.s.send(messagePacket);
                 boolean alAanwezig = false;
                 synchronized (sender) {
+                    System.out.println("check 1");
                     for (Map.Entry<byte[], byte[]> e : sender.getNotReceived().entrySet()) {
                         if (java.util.Arrays.equals(e.getKey(), seq)) {
                             alAanwezig = true;
@@ -607,8 +643,11 @@ public class MultiCast implements Runnable {
         while (sender.getNotReceived().size() > 0) {
             System.out.println("notreceived is nog niet leeg");
             Map<byte[], byte[]> notreceived = sender.getNotReceived();
-            for (Map.Entry<byte[], byte[]> e : notreceived.entrySet()) {
-                sendMessage(e.getValue(), destination);
+            synchronized (sender) {
+                System.out.println("check 2");
+                for (Map.Entry<byte[], byte[]> e : notreceived.entrySet()) {
+                    sendMessage(e.getValue(), destination);
+                }
             }
             try {
                 Thread.sleep(100);
@@ -658,6 +697,7 @@ public class MultiCast implements Runnable {
 
             //After the message has been sent, send the 'Finish' message and wait for ack
             while (!sender.finishReceived) {
+                System.out.println("finish not yet sent");
                 sendFinish(destination);
                 try {
                     Thread.sleep(100);
@@ -688,7 +728,10 @@ public class MultiCast implements Runnable {
 
     @Override
     public void run() {
-        while (true) receive();
+        while (true) {
+            System.out.println("hello");
+            receive();
+        }
     }
 
 
