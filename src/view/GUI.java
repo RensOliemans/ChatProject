@@ -327,12 +327,18 @@ public class GUI extends JFrame {
 		}
 	}
 
-	private class ExitOptionListener implements ActionListener {
+//	private class ExitOptionListener implements ActionListener {
 
-		public void actionPerformed(ActionEvent e) {
-
-		}
-	}
+//		public void actionPerformed(ActionEvent e) {
+//			ChatButton chatButton;
+//			for (Map.Entry<ChatButton, MessageScroll> i: chatmap.entrySet()) {
+//				if (i.getValue().equals(chatRoom.scrollmessages)) {
+//					chatButton = i.getKey();
+//				}
+//			}
+//			for (Integer i: )
+//		}
+//	}
 
 	private class NewChatOptionsListener implements ItemListener {
 
@@ -398,6 +404,7 @@ public class GUI extends JFrame {
 				newChatPane.setPreferredSize(new Dimension(180,300));
 				List<Integer> stringlist = StringToList(chatnumberandparticipants[1]);
 				stringlist.add(new Integer(src));
+				stringlist.remove(new Integer(pcnumber));
 				ChatButton chatButton = new ChatButton(chatnumberandparticipants[0].substring(16) + ", " + ListToNamesAbr(stringlist));
 				chatmap.put(chatButton,newChatPane);
 				participantsmap.put(newChatPane, stringlist);
