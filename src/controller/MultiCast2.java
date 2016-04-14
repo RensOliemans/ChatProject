@@ -171,6 +171,7 @@ public class MultiCast2 implements Runnable{
                     if (data[2] == computerNumber) {
                         routing.setSourceAddress(data[1]);
                         routing.setLinkCost(data[3]);
+                        routing.setPresence(presence);
                         byte[] bArray = new byte[12];
                         for (int k = 0; k < 12; k++) {
                             bArray[k] = data[k + 4];
@@ -198,7 +199,7 @@ public class MultiCast2 implements Runnable{
                             presence.add(new Integer (data[1]));
                         }
                         receivedPings = ping1.calculateReceivedPings(new Integer(data[1]));
-                        if (receivedPings != 0){
+                        if (receivedPings > 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
@@ -212,7 +213,7 @@ public class MultiCast2 implements Runnable{
                             presence.add(new Integer (data[1]));
                         }
                         receivedPings = ping2.calculateReceivedPings(new Integer (data[1]));
-                        if (receivedPings != 0){
+                        if (receivedPings > 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
@@ -223,7 +224,7 @@ public class MultiCast2 implements Runnable{
                             presence.add(new Integer (data[1]));
                         }
                         receivedPings = ping3.calculateReceivedPings(new Integer (data[1]));
-                        if (receivedPings != 0){
+                        if (receivedPings > 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
@@ -237,7 +238,7 @@ public class MultiCast2 implements Runnable{
                             presence.add(new Integer (data[1]));
                         }
                         receivedPings = ping4.calculateReceivedPings(new Integer (data[1]));
-                        if (receivedPings != 0){
+                        if (receivedPings > 0){
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable());
                             System.out.println("received ping pakkets= " + receivedPings);
                         }
