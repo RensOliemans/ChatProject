@@ -39,7 +39,7 @@ public class MultiCast implements Runnable {
     private InetAddress group;
     private MulticastSocket s;
     private Sender sender;
-    private Receiver receiver;
+//    private Receiver receiver;
     private GUI gui;
     private Security security;
     private Map<Integer, SecretKey> symmetricKeys = new HashMap<>(); //HashMap with K: computerNumber and V: our symmetric key
@@ -153,6 +153,7 @@ public class MultiCast implements Runnable {
             byte[] data = recv.getData();
             byte[] seq;
             int seqint;
+            Receiver receiver = null;
             for (Map.Entry<Integer, Sender> e : senders.entrySet()) {
                 if ((int) e.getKey() == (int) data[1]) {
                     sender = e.getValue();
@@ -161,7 +162,6 @@ public class MultiCast implements Runnable {
             for (Map.Entry<Integer, Receiver> e : receivers.entrySet()) {
                 if ((int) e.getKey() == (int) data[1]) {
                     receiver = e.getValue();
-                    System.out.println("receiver == null?(in receive() before case): " + receiver == null);
                 }
             }
             if (computerNumber != data[1] && (data[0] == 1 || data[0] == 2)) {
@@ -249,16 +249,18 @@ public class MultiCast implements Runnable {
                     //textPacket
                     //Only receiver gets these
                     case 0:
-                        System.out.println("TEXT");
-                        seq = new byte[HEADER * 4];
-                        System.arraycopy(data, 4, seq, 0, HEADER * 4);
-                        sendAck(data[1], seq);
-                        byte[] encryptedMessage = new byte[data.length - 4 - seq.length];
-                        System.arraycopy(data, 4 + seq.length, encryptedMessage, 0, encryptedMessage.length);
-                        String encryptedDataString = new String(encryptedMessage);
-                        String decryptedDataString = this.security.decryptSymm(encryptedDataString, this.security.getSymmetricKey(data[1]));
-                        byte[] decryptedData = decryptedDataString.getBytes();
-                        receiver.putReceived(seq, decryptedData);
+                        if (receiver != null) {
+                            System.out.println("TEXT");
+                            seq = new byte[HEADER * 4];
+                            System.arraycopy(data, 4, seq, 0, HEADER * 4);
+                            sendAck(data[1], seq);
+                            byte[] encryptedMessage = new byte[data.length - 4 - seq.length];
+                            System.arraycopy(data, 4 + seq.length, encryptedMessage, 0, encryptedMessage.length);
+                            String encryptedDataString = new String(encryptedMessage);
+                            String decryptedDataString = this.security.decryptSymm(encryptedDataString, this.security.getSymmetricKey(data[1]));
+                            byte[] decryptedData = decryptedDataString.getBytes();
+                            receiver.putReceived(seq, decryptedData);
+                        }
                         break;
                     // startpacket
                     //Only receiver gets these
@@ -266,9 +268,8 @@ public class MultiCast implements Runnable {
                         System.out.println("START");
                         byte[] nul = intToByte(0);
                         sendAck(data[1], nul);
-                        receiver = new Receiver(data[1]);
                         if (receivers.containsKey((int) data[1])) {
-                            receivers.put((int) data[1], receiver);
+                            receivers.put((int) data[1], new Receiver(data[1]));
                         }
                         System.out.println("size: " + receivers.size());
                         break;
@@ -296,20 +297,20 @@ public class MultiCast implements Runnable {
                     //finishpacket
                     //Only receiver gets these
                     case 5:
-                        seq = intToByte(1);
-                        sendAck(data[1], seq);
-                        System.out.println("Hij gaat nu in order");
-                        receiver.order();
-                        System.out.print("receiver: null (in finish)");
-                        System.out.println(receiver == null);
-                        receivers.remove((int) data[1], receiver);
+                        if (receiver != null) {
+                            seq = intToByte(1);
+                            sendAck(data[1], seq);
+                            System.out.println("Hij gaat nu in order");
+                            receiver.order();
+                            receivers.remove((int) data[1], receiver);
 //                        Byte[] dataArray = receiver.goodOrder.toArray(new Byte[receiver.goodOrder.size()]);
 //                        byte[] byteArray = new byte[dataArray.length];
 //                        for (int j = 0; j < dataArray.length; j++) {
 //                            byteArray[j] = dataArray[j];
 //                        }
-                        String toGUI = new String(receiver.goodOrder);
-                        gui.printMessage(toGUI, data[1]);
+                            String toGUI = new String(receiver.goodOrder);
+                            gui.printMessage(toGUI, data[1]);
+                        }
                         break;
                     case 6:
                         //This is the packet for the request of one's public key.

@@ -11,7 +11,7 @@ public class RoutingPacket {
     private int sourceAddress;
     private int destinationAddress;
     private int linkcost;
-    private int[] presence;
+    private int[] presence = new int[4];
     private int[] data_table;
     private final int ROUTINGPACKET = 1;
     private List<Integer> receivedList = new ArrayList<>();
@@ -27,11 +27,6 @@ public class RoutingPacket {
     private void setPresence(List<Integer> list){
         for (int i=0; i<list.size(); i++){
             presence[i] = list.get(i);
-        }
-        if (presence.length<4){
-            for (int i=0; i<4-presence.length; i++){
-                presence[presence.length+i]=0;
-            }
         }
     }
 
