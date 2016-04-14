@@ -295,10 +295,10 @@ public class MultiCast implements Runnable {
                     //finishpacket
                     //Only receiver gets these
                     case 5:
-                        if (receiver != null) {
                             seq = intToByte(1);
                             sendAck(data[1], seq);
                             System.out.println("Hij gaat nu in order");
+                        if (receiver != null) {
                             receiver.order();
                             receivers.remove((int) data[1], receiver);
 //                        Byte[] dataArray = receiver.goodOrder.toArray(new Byte[receiver.goodOrder.size()]);
