@@ -1,5 +1,8 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by coen on 7-4-2016.
  */
@@ -8,18 +11,35 @@ public class RoutingPacket {
     private int sourceAddress;
     private int destinationAddress;
     private int linkcost;
+    private int[] presence;
     private int[] data_table;
     private final int ROUTINGPACKET = 1;
+    private List<Integer> receivedList = new ArrayList<>();
 
-    public RoutingPacket(int sourceAddress, int destinationAddress, int linkcost, int[] data_table) {
+    public RoutingPacket(int sourceAddress, int destinationAddress, int linkcost, int[] data_table, List<Integer> receivedList) {
         this.sourceAddress = sourceAddress;
         this.destinationAddress = destinationAddress;
         this.linkcost = linkcost;
         this.data_table = data_table;
+        this.receivedList = receivedList;
+    }
+
+    private void setPresence(List<Integer> list){
+        for (int i=0; i<list.size(); i++){
+            presence[i] = list.get(i);
+        }
+        if (presence.length<4){
+            for (int i=0; i<4-presence.length; i++){
+                presence[presence.length+i]=0;
+            }
+        }
     }
 
     public byte[] getRoutingPacket() {
-        byte[] txpkt = new byte[17];
+
+        setPresence(receivedList);
+
+        byte[] txpkt = new byte[21];
 
         //add the incation byte that indicates what type of packet this is
         txpkt[0] = intToByte(ROUTINGPACKET);
@@ -36,9 +56,14 @@ public class RoutingPacket {
             txpkt[i] = intToByte(this.data_table[i-4]);
         }
 
+        //add the receivedList to the packet
+        for(int i=16; i<20; i++){
+            txpkt[i] = (byte) presence[i-16];
+        }
+
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        txpkt[16] = intToByte(1);
+        txpkt[20] = intToByte(1);
 
         return txpkt;
     }
