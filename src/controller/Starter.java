@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class Starter {
     private static GUI gui;
     private static MultiCast2 multiCast2;
-    private static final int computerNumber = 1;
+    private static final int computerNumber = 2;
 
     public static void main(String[] args) {
 //        System.out.println("Enter computer number");

@@ -17,6 +17,9 @@ public class Routing /*implements Runnable*/{
 
 
     public void setLinkCost(int receivedInt){
+        if (receivedInt < 0){
+            receivedInt = 100;
+        }
         this.linkcost = receivedInt;
         System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
     }
@@ -42,11 +45,15 @@ public class Routing /*implements Runnable*/{
 
         //update the linkCost to the person who sent the packet to the newly received linkCost
         forwardingTable[this.sourceAdress+3] = this.linkcost;
+        forwardingTable[this.sourceAdress+7] = this.sourceAdress;
 
         //check if the received table contains cheaper routes and update accordingly
         for (int i=4; i<8; i++){
             if (forwardingTable[i] == 0){
                 forwardingTable[i] = 255;
+            }
+            if (receivedTable[i] < 0){
+                receivedTable[i] = 100;
             }
             if (receivedTable[i] + this.linkcost < forwardingTable[i]){
                 forwardingTable[i] = receivedTable[i] + this.linkcost;
@@ -60,6 +67,8 @@ public class Routing /*implements Runnable*/{
                 forwardingTable[i] = this.computerNumber;
             }
         }
+
+        forwardingTable[this.computerNumber+7] = this.computerNumber;
 
         //set own linkCost in the forwardingTable to 0
         forwardingTable[this.computerNumber+3] = 0;
