@@ -23,7 +23,7 @@ public class GUI extends JFrame {
 	private ChatRoom chatRoom;
 	private JScrollPane availableChatsScrollPane;
 	private int pcnumber;
-	private MultiCast2 multiCast;
+	private MultiCast multiCast;
 	private Dimension framesize = new Dimension(700,400);
 	private List<Integer> group22 = new ArrayList<Integer>();
 	private Map<ChatButton, MessageScroll> chatmap = new HashMap<ChatButton, MessageScroll>();
@@ -34,7 +34,7 @@ public class GUI extends JFrame {
 	/*
 	Makes a new GUI window.
 	 */
-	public GUI(int pcnumber, MultiCast2 multiCast) {
+	public GUI(int pcnumber, MultiCast multiCast) {
 		super("ChatUI");
 		this.pcnumber = pcnumber;
 		this.chatnumber = pcnumber;
@@ -161,6 +161,7 @@ public class GUI extends JFrame {
 			textfieldpanel.add(addImage);
 			ImageIcon leave = new ImageIcon("door-leavesmall.png");
 			JButton exit = new JButton(leave);
+			exit.addActionListener(new ExitOptionListener());
 			exit.setPreferredSize(new Dimension(30,20));
 			textfieldpanel.add(exit);
 			add(textfieldpanel, BorderLayout.SOUTH);
@@ -327,18 +328,28 @@ public class GUI extends JFrame {
 		}
 	}
 
-//	private class ExitOptionListener implements ActionListener {
+	private class ExitOptionListener implements ActionListener {
 
-//		public void actionPerformed(ActionEvent e) {
-//			ChatButton chatButton;
-//			for (Map.Entry<ChatButton, MessageScroll> i: chatmap.entrySet()) {
-//				if (i.getValue().equals(chatRoom.scrollmessages)) {
-//					chatButton = i.getKey();
-//				}
-//			}
-//			for (Integer i: )
-//		}
-//	}
+		public void actionPerformed(ActionEvent e) {
+			if (!participantsmap.get(chatRoom.scrollmessages).equals(null)) {
+				for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
+					multiCast.send(pcnumber + "leftchat" + chatnumbermap.get(chatRoom.scrollmessages), i, false);
+				}
+			}
+			ChatButton chatButton = null;
+			for (Map.Entry<ChatButton, MessageScroll> i: chatmap.entrySet()) {
+				if (i.getValue().equals(chatRoom.scrollmessages)) {
+					chatButton = i.getKey();
+				}
+			}
+			availableChatsPanel.remove(chatButton);
+			JScrollPane scrollPane = chatRoom.scrollmessages;
+			chatRoom.remove(chatRoom.scrollmessages);
+			chatmap.remove(chatButton);
+			participantsmap.remove(scrollPane);
+			chatnumbermap.remove(scrollPane);
+		}
+	}
 
 	private class NewChatOptionsListener implements ItemListener {
 
@@ -417,6 +428,20 @@ public class GUI extends JFrame {
 			for (Map.Entry<MessageScroll, Integer> e: chatnumbermap.entrySet()) {
 				if (Integer.parseInt(msg[0].substring(4)) == e.getValue()) {
 					e.getKey().messages.setText(e.getKey().messages.getText() + "\n " + name + message.substring(5) + "\n");
+				}
+			}
+		}
+		else  if (message.substring(1).startsWith("leftchat")) {
+			MessageScroll messageScroll = null;
+			for (Map.Entry<MessageScroll, Integer> entry: chatnumbermap.entrySet()) {
+				if (entry.getValue().equals(Integer.parseInt(message.substring(9)))) {
+					messageScroll = entry.getKey();
+				}
+			}
+			participantsmap.get(messageScroll).remove(new Integer(Character.getNumericValue(message.charAt(0))));
+			for (Map.Entry<ChatButton, MessageScroll> entry: chatmap.entrySet()) {
+				if (entry.getValue().equals(messageScroll)) {
+					entry.getKey().setText(ListToNamesAbr(participantsmap.get(messageScroll)));
 				}
 			}
 		}
