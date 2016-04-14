@@ -622,7 +622,7 @@ public class MultiCast implements Runnable{
         }
     }
 
-    public void send(String msg, int destination) {
+    public void send(String msg, int destination, boolean requestKeys) {
         if (destination != computerNumber) {
             sender = new Sender(destination);
             senders.put(destination, sender);
@@ -638,15 +638,16 @@ public class MultiCast implements Runnable{
                             "Shouldn't happen. Error message: " + e.getMessage());
                 }
             }
-
-            while (!sender.keysReceived) {
-                sendPublicKey(destination, false);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    gui.showError("InterruptedException in send(..). " +
-                            "Happened while waiting for ACK of keysReceived. " +
-                            "Shouldn't happen. Error message: " + e.getMessage());
+            if (requestKeys) {
+                while (!sender.keysReceived) {
+                    sendPublicKey(destination, false);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        gui.showError("InterruptedException in send(..). " +
+                                "Happened while waiting for ACK of keysReceived. " +
+                                "Shouldn't happen. Error message: " + e.getMessage());
+                    }
                 }
             }
 
