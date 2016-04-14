@@ -2,7 +2,7 @@ package model;
 
 import java.security.PublicKey;
 
-import static controller.MultiCast2.HEADER;
+import static controller.MultiCast.HEADER;
 
 /**
  * Created by Rens on 12-4-2016.

@@ -21,30 +21,20 @@ public class FinishPacket {
         byte[] finpacket = new byte[5];
 
         //add the incation byte that indicates what type of packet this is
-        finpacket[0] = intToByte(FINISHPACKET);
+        finpacket[0] = (byte) FINISHPACKET;
 
         //add the source and destination to the packet
-        finpacket[1] = intToByte(this.source);
-        finpacket[2] = intToByte(this.destination);
+        finpacket[1] = (byte) this.source;
+        finpacket[2] = (byte) this.destination;
 
         //add the nextHop to the packet
         finpacket[3] = (byte) this.nextHop;
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        finpacket[4] = intToByte(1);
+        finpacket[4] = (byte) 1;
 //        System.out.println("finpacket " + finpacket[0] + finpacket[1] + finpacket[2] + finpacket[3]);
 
         return finpacket;
-    }
-
-    public byte intToByte(int val){
-        byte b = (byte)val;
-        return b;
-    }
-
-    public byte[] StringToByte(String string){
-        byte[] b = string.getBytes();
-        return b;
     }
 }

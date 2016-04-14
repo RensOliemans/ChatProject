@@ -1,5 +1,8 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Rens on 5-4-2016.
  */
@@ -9,6 +12,7 @@ public class Routing /*implements Runnable*/{
     private int sourceAdress;
     private int[] forwardingTable;
     private int computerNumber;
+    private List<Integer> presence = new ArrayList<>();
 
     public Routing(int computerNumber) {
         this.computerNumber = computerNumber;
@@ -17,11 +21,15 @@ public class Routing /*implements Runnable*/{
 
 
     public void setLinkCost(int receivedInt){
-        if (receivedInt < 0){
+        if (receivedInt < 0) {
             receivedInt = 100;
         }
         this.linkcost = receivedInt;
-        System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
+//        System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
+    }
+
+    public void setPresence(List<Integer> list){
+
     }
 
     public void setSourceAddress(int sourceAdress){
@@ -52,7 +60,7 @@ public class Routing /*implements Runnable*/{
             if (forwardingTable[i] == 0){
                 forwardingTable[i] = 255;
             }
-            if (receivedTable[i] < 0){
+            if (receivedTable[i] < 0) {
                 receivedTable[i] = 100;
             }
             if (receivedTable[i] + this.linkcost < forwardingTable[i]){
@@ -61,6 +69,7 @@ public class Routing /*implements Runnable*/{
             }
         }
 
+
         //set the empty nextHops in the forwardingTable to own computerNumber
         for (int i=8; i<12; i++){
             if (forwardingTable[i] == 0){
@@ -68,17 +77,18 @@ public class Routing /*implements Runnable*/{
             }
         }
 
+        //set own nextHop to own computerNumber
         forwardingTable[this.computerNumber+7] = this.computerNumber;
 
         //set own linkCost in the forwardingTable to 0
         forwardingTable[this.computerNumber+3] = 0;
 
         //print the new forwardingTable
-        System.out.println("the forwarding table is now as followed: ");
-        for (int h = 0; h<12; h++){
-            System.out.print(forwardingTable[h] + " ");
-        }
-        System.out.println("");
+//        System.out.println("the forwarding table is now as followed: ");
+//        for (int h = 0; h<12; h++){
+//            System.out.print(forwardingTable[h] + " ");
+//        }
+//        System.out.println("");
 
     }
 
