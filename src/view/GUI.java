@@ -226,6 +226,7 @@ public class GUI extends JFrame {
 				newChatArea.setEditable(false);
 				newChatArea.setLayout(new BoxLayout(newChatArea, BoxLayout.Y_AXIS));
 				newChatArea.setLineWrap(true);
+				newChatArea.setText("participants: " + ListToString(newChatOptionsListener.participantlist));
 				MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				newChatPane.setPreferredSize(new Dimension(180,300));
 				ChatButton chatButton = new ChatButton(Integer.toString(chatnumber));
@@ -253,7 +254,7 @@ public class GUI extends JFrame {
 	private List StringToList(String string) {
 		List<Integer> list = new ArrayList<Integer>();
 		for (int i = 0; i < string.length(); i = i+2) {
-			list.add(new Integer(string.charAt(i)));
+			list.add(Character.getNumericValue(string.charAt(i)));
 		}
 		return list;
 	}
@@ -375,8 +376,9 @@ public class GUI extends JFrame {
 			availableChatsPanel.add(chatButton);
 		}
 		else if (message.startsWith("chat")) {
+			String[] msg = message.split(":");
 			for (Map.Entry<MessageScroll, Integer> e: chatnumbermap.entrySet()) {
-				if (Character.getNumericValue(message.charAt(4)) == e.getValue()) {
+				if (new Integer(msg[0].substring(4)) == e.getValue()) {
 					e.getKey().messages.setText(e.getKey().messages.getText() + "\n " + name + message.substring(5) + "\n");
 				}
 			}
