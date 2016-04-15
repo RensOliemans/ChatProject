@@ -28,25 +28,23 @@ public class TextPacket {
         byte[] txpkt = new byte[(msg.length() + (4+ HEADER*4))+1];
 
         //add the incation byte that indicates what type of packet this is
-        txpkt[0] = intToByte(TEXTPACKET);
+        txpkt[0] = TEXTPACKET;
 
         //add the source and destination to the packet
-        txpkt[1] = intToByte(this.sourceAddress);
-        txpkt[2] = intToByte(this.destinationAddress);
+        txpkt[1] = (byte) this.sourceAddress;
+        txpkt[2] = (byte) this.destinationAddress;
 
         //add the nextHop to the packet
         txpkt[3] = (byte) this.nextHop;
 
         //add the SYN to the packet
-        for (int i = 0; i < this.syn.length; i++) {
-            txpkt[4+i] = this.syn[i];
-        }
+        System.arraycopy(this.syn, 0, txpkt, 4, this.syn.length);
 
         for (int i = 0; i < this.msg.length(); i++) {
             txpkt[4+i+this.syn.length] = this.msg.getBytes()[i];
         }
 
-        txpkt[txpkt.length-1] = intToByte(1);
+        txpkt[txpkt.length-1] = 1;
 
         return txpkt;
     }

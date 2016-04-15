@@ -12,23 +12,20 @@ import controller.*;
 import java.util.List;
 
 /**
+ * This is the Graphical User Interface.
  * Created by Eric on 6-4-2016.
  */
 public class GUI extends JFrame {
 
 	private JPanel peopleOnline;
-	private ChatsOverview chatsOverview;
-	private JPanel availableChatsPanel;
-	private JPanel newChatPanel;
-	private ChatRoom chatRoom;
-	private JScrollPane availableChatsScrollPane;
-	private int pcnumber;
+    private JPanel availableChatsPanel;
+    private ChatRoom chatRoom;
+    private int pcnumber;
 	private MultiCast multiCast;
-	private Dimension framesize = new Dimension(700,400);
-	private List<Integer> group22 = new ArrayList<Integer>();
-	private Map<ChatButton, MessageScroll> chatmap = new HashMap<ChatButton, MessageScroll>();
-	private Map<MessageScroll, List<Integer>> participantsmap = new HashMap<MessageScroll, List<Integer>>();
-	private Map<MessageScroll, Integer> chatnumbermap = new HashMap<MessageScroll, Integer>();
+    private List<Integer> group22 = new ArrayList</*Integer*/>();
+	private Map<ChatButton, MessageScroll> chatmap = new HashMap</*ChatButton, MessageScroll*/>();
+	private Map<MessageScroll, List<Integer>> participantsmap = new HashMap</*MessageScroll, List<Integer>*/>();
+	private Map<MessageScroll, Integer> chatnumbermap = new HashMap</*MessageScroll, Integer*/>();
 	private int chatnumber;
 
 	/*
@@ -41,7 +38,8 @@ public class GUI extends JFrame {
 		this.multiCast = multiCast;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setVisible(true);
-		setPreferredSize(framesize);
+        Dimension framesize = new Dimension(700, 400);
+        setPreferredSize(framesize);
 		setMinimumSize(framesize);
 		setMaximumSize(framesize);
 		setLayout(new BorderLayout());
@@ -49,7 +47,7 @@ public class GUI extends JFrame {
 		peopleOnline.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Group22"));
 		peopleOnline.setPreferredSize(new Dimension(100,380));
 		add(peopleOnline, BorderLayout.WEST);
-		chatsOverview = new ChatsOverview();
+        ChatsOverview chatsOverview = new ChatsOverview();
 		add(chatsOverview, BorderLayout.CENTER);
 		chatRoom = new ChatRoom();
 		add(chatRoom, BorderLayout.EAST);
@@ -74,7 +72,7 @@ public class GUI extends JFrame {
 	/*
 	This method is called by a different thread to update the list of people that are online.
 	 */
-	public void updateOnlinePeople() {
+	private void updateOnlinePeople() {
 		for (int i = 0; i<4; i++){
 			if (group22.contains(i+1)){
 				long huidigetijd = System.currentTimeMillis();
@@ -90,16 +88,16 @@ public class GUI extends JFrame {
 		peopleOnline.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Group22"));
 		peopleOnline.setPreferredSize(new Dimension(100,380));
 		peopleOnline.setLayout(new BoxLayout(peopleOnline, BoxLayout.Y_AXIS));
-		if (group22.contains(new Integer(1))) {
+		if (group22.contains(1)) {
 			peopleOnline.add(new JLabel("Rens"));
 		}
-		if (group22.contains(new Integer(2))) {
+		if (group22.contains(2)) {
 			peopleOnline.add(new JLabel("Birte"));
 		}
-		if (group22.contains(new Integer(3))) {
+		if (group22.contains(3)) {
 			peopleOnline.add(new JLabel("Coen"));
 		}
-		if (group22.contains(new Integer(4))) {
+		if (group22.contains(4)) {
 			peopleOnline.add(new JLabel("Eric"));
 		}
 		add(peopleOnline, BorderLayout.WEST);
@@ -113,17 +111,17 @@ public class GUI extends JFrame {
 	 */
 	private class ChatsOverview extends JPanel {
 
-		public ChatsOverview() {
+		ChatsOverview() {
 			super();
 			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Chats Overview"));
 			setPreferredSize(new Dimension(200,380));
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			availableChatsPanel = new JPanel();
 			availableChatsPanel.setLayout(new BoxLayout(availableChatsPanel, BoxLayout.Y_AXIS));
-			availableChatsScrollPane = new JScrollPane(availableChatsPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            JScrollPane availableChatsScrollPane = new JScrollPane(availableChatsPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			availableChatsScrollPane.setPreferredSize(new Dimension(180,300));
 			add(availableChatsScrollPane);
-			newChatPanel = new JPanel();
+            JPanel newChatPanel = new JPanel();
 			NewChatButton newChatButton = new NewChatButton();
 			newChatButton.addActionListener(new NewChatListener());
 			newChatPanel.add(newChatButton);
@@ -133,11 +131,11 @@ public class GUI extends JFrame {
 
 	private class ChatRoom extends JPanel {
 
-		public JTextArea messages;
-		public MessageScroll scrollmessages;
-		public JTextField textfield;
+		JTextArea messages;
+		MessageScroll scrollmessages;
+		JTextField textfield;
 
-		public ChatRoom() {
+		ChatRoom() {
 			super();
 			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Chatroom"));
 			setPreferredSize(new Dimension(400,380));
@@ -170,7 +168,7 @@ public class GUI extends JFrame {
 
 	private class ChatButton extends JButton {
 
-		public ChatButton(String title) {
+		ChatButton(String title) {
 			super(title);
 			setPreferredSize(new Dimension(160,30));
 			setMinimumSize(new Dimension(160,30));
@@ -182,16 +180,16 @@ public class GUI extends JFrame {
 
 	private class NewChatButton extends JButton {
 
-		public NewChatButton() {
+		NewChatButton() {
 			super("New Chat");
 		}
 	}
 
 	private class MessageScroll extends JScrollPane {
 
-		public JTextArea messages;
+		JTextArea messages;
 
-		public MessageScroll(Component view,  int vsbPolicy, int hsbPolicy) {
+		MessageScroll(Component view,  int vsbPolicy, int hsbPolicy) {
 			super(view, vsbPolicy, hsbPolicy);
 			this.messages = (JTextArea)view;
 		}
@@ -239,7 +237,7 @@ public class GUI extends JFrame {
 				availableChatsPanel.add(chatButton);
 				for (Integer i: newChatOptionsListener.participantlist) {
 					System.out.println("participanten: " + ListToString(newChatOptionsListener.participantlist));
-					multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i.intValue(), true);
+					multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i, true);
 				}
 				chatnumber += 4;
 			}
@@ -262,7 +260,7 @@ public class GUI extends JFrame {
 		return list;
 	}
 
-	public String ListToNamesAbr(List<Integer> list) {
+	private String ListToNamesAbr(List<Integer> list) {
 		String liststr = "";
 		for (Integer i: list) {
 			if (i == 1) {
@@ -322,7 +320,7 @@ public class GUI extends JFrame {
 				File selectedFile = fileChooser.getSelectedFile();
 				chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: sent image" + selectedFile.getName() + "\n");
 				for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
-//					multiCast.sendImage(selectedFile.getName(), i);
+					multiCast.sendImage(selectedFile.getName(), i);
 				}
 			}
 		}
@@ -353,20 +351,20 @@ public class GUI extends JFrame {
 
 	private class NewChatOptionsListener implements ItemListener {
 
-		public List<Integer> participantlist = new ArrayList<Integer>();
+		List<Integer> participantlist = new ArrayList<Integer>();
 
 		public void itemStateChanged(ItemEvent e) {
 			if (((JCheckBox)e.getSource()).getText().equals("Rens")) {
-				participantlist.add(new Integer(1));
+				participantlist.add(1);
 			}
 			if (((JCheckBox)e.getSource()).getText().equals("Birte")) {
-				participantlist.add(new Integer(2));
+				participantlist.add(2);
 			}
 			if (((JCheckBox)e.getSource()).getText().equals("Coen")) {
-				participantlist.add(new Integer(3));
+				participantlist.add(3);
 			}
 			if (((JCheckBox)e.getSource()).getText().equals("Eric")) {
-				participantlist.add(new Integer(4));
+				participantlist.add(4);
 			}
 		}
 	}
@@ -414,7 +412,7 @@ public class GUI extends JFrame {
 				MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				newChatPane.setPreferredSize(new Dimension(180,300));
 				List<Integer> stringlist = StringToList(chatnumberandparticipants[1]);
-				stringlist.add(new Integer(src));
+				stringlist.add(src);
 				stringlist.remove(new Integer(pcnumber));
 				ChatButton chatButton = new ChatButton(chatnumberandparticipants[0].substring(16) + ", " + ListToNamesAbr(stringlist));
 				chatmap.put(chatButton,newChatPane);

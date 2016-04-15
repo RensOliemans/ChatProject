@@ -37,18 +37,18 @@ public class RoutingPacket {
         byte[] txpkt = new byte[21];
 
         //add the incation byte that indicates what type of packet this is
-        txpkt[0] = intToByte(ROUTINGPACKET);
+        txpkt[0] = (byte) ROUTINGPACKET;
 
         //add the source and destination to the packet
-        txpkt[1] = intToByte(this.sourceAddress);
-        txpkt[2] = intToByte(this.destinationAddress);
+        txpkt[1] = (byte) this.sourceAddress;
+        txpkt[2] = (byte) this.destinationAddress;
 
         //add the linkcost to the packet
-        txpkt[3] = intToByte(this.linkcost);
+        txpkt[3] = (byte) this.linkcost;
 
         //add the data_table to the packet
         for (int i = 4; i<16; i++){
-            txpkt[i] = intToByte(this.data_table[i-4]);
+            txpkt[i] = (byte) this.data_table[i-4];
         }
 
         //add the receivedList to the packet
@@ -58,22 +58,9 @@ public class RoutingPacket {
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        txpkt[20] = intToByte(1);
+        txpkt[20] = (byte) 1;
 
         return txpkt;
-    }
-
-    public byte[] intArrayToByteArray(int[] iArray){
-        byte[] bArray = new byte[iArray.length];
-        for (int i = 0; i<iArray.length; i++){
-            bArray[i] = (byte)iArray[i];
-        }
-        return bArray;
-    }
-
-    public byte intToByte(int val){
-        byte b = (byte)val;
-        return b;
     }
 
 }

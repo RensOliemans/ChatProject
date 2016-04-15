@@ -1,5 +1,10 @@
 package controller;
 
+import model.*;
+import view.GUI;
+
+import javax.crypto.SecretKey;
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
@@ -15,31 +20,30 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import model.Sender;
-
-import model.*;
 //import org.apache.commons.io.FileUtils;
 //import org.apache.commons.io.IOUtils;
-import view.GUI;
-
-import javax.crypto.SecretKey;
-import javax.imageio.ImageIO;
 
 /**
- *
  * <h1>MultiCast</h1>
- *
+ * <p>
  * This is the main class that does the sending and the receiving.
  * Every 'person' that is connected has an instance of MultiCast.
- *
+ * <p>
  * Created by Rens on 5-4-2016.
  */
 public class MultiCast implements Runnable {
 
+    public static final int HEADER = 1;
     private static final String HOST = "228.0.0.0";
     private static final int PORT = 1234;
+    private static final int DATASIZE = 128;
+    public long[] lastTimePing = new long[4];
+    public List<Integer> presence = new ArrayList<>();
     private InetAddress group;
     private MulticastSocket s;
     private Sender sender;
@@ -51,74 +55,12 @@ public class MultiCast implements Runnable {
     private Map<Integer, Receiver> receivers = new HashMap<>();
     private Map<Integer, Sender> senders = new HashMap<>();
     private int computerNumber;
-    private static final int DATASIZE = 128;
-    public static final int HEADER = 1;
     private int synint;
-
-    Routing routing;
-
-    private int receivedPings;
-
-    Ping ping1 = new Ping(computerNumber, this);
-    Ping ping2 = new Ping(computerNumber, this);
-    Ping ping3 = new Ping(computerNumber, this);
-    Ping ping4 = new Ping(computerNumber, this);
-    public long[] lastTimePing = new long[4];
-
-    public List<Integer> presence = new ArrayList<>();
-
-    /**
-     * Gets the next hop
-     *
-     * @param destination int destination, the final destination
-     * @return int nextHop, the person to send the file to first
-     */
-    public int getNextHop(int destination) {
-        int[] forwardingtable = routing.getForwardingTable();
-        int nextHop;
-        //  System.out.println(destination + " " + forwardingtable.length);
-        System.out.println("destination (in getNextHop(): " + destination);
-        if (forwardingtable[destination + 7] == computerNumber || forwardingtable[destination + 7] == 0) {
-            nextHop = destination;
-        } else {
-            nextHop = forwardingtable[destination + 7];
-        }
-        return nextHop;
-
-
-    }
-
-    /**
-     * Gets the computerNumber of this person.
-     *
-     * @return int computerNumber
-     */
-    public int getComputerNumber() {
-        return computerNumber;
-    }
-
-    /**
-     * Converts an int to a byte array
-     *
-     * @param number int number, the int to be converted
-     * @return byte[] byteArray, the array that is returned
-     */
-    public static byte[] intToByte(int number) {
-        return ByteBuffer.allocate(4).putInt(number).array();
-    }
-
-    /**
-     * Converts a byte array to an int
-     *
-     * @param array byte[] array, the byte[] to be converted
-     * @return int number, the number that is converted from the byte array
-     */
-    public static int byteToInt(byte[] array) {
-        return (array[0] << 24) & 0xff000000 |
-                (array[1] << 16) & 0x00ff0000 |
-                (array[2] << 8) & 0x0000ff00 |
-                (array[3] << 0) & 0x000000ff;
-    }
+    private Routing routing;
+    private Ping ping1 = new Ping(computerNumber, this);
+    private Ping ping2 = new Ping(computerNumber, this);
+    private Ping ping3 = new Ping(computerNumber, this);
+    private Ping ping4 = new Ping(computerNumber, this);
 
     /**
      * Constructor, creates a new connection, GUI, Routing object, generates keys and joins the group
@@ -146,9 +88,62 @@ public class MultiCast implements Runnable {
     }
 
     /**
+     * Converts an int to a byte array
+     *
+     * @param number int number, the int to be converted
+     * @return byte[] byteArray, the array that is returned
+     */
+    public static byte[] intToByte(int number) {
+        return ByteBuffer.allocate(4).putInt(number).array();
+    }
+
+    /**
+     * Converts a byte array to an int
+     *
+     * @param array byte[] array, the byte[] to be converted
+     * @return int number, the number that is converted from the byte array
+     */
+    public static int byteToInt(byte[] array) {
+        return (array[0] << 24) & 0xff000000 |
+                (array[1] << 16) & 0x00ff0000 |
+                (array[2] << 8) & 0x0000ff00 |
+                (array[3]) & 0x000000ff;
+    }
+
+    /**
+     * Gets the next hop
+     *
+     * @param destination int destination, the final destination
+     * @return int nextHop, the person to send the file to first
+     */
+    private int getNextHop(int destination) {
+        int[] forwardingtable = routing.getForwardingTable();
+        int nextHop;
+        //  System.out.println(destination + " " + forwardingtable.length);
+        System.out.println("destination (in getNextHop(): " + destination);
+        if (forwardingtable[destination + 7] == computerNumber || forwardingtable[destination + 7] == 0) {
+            nextHop = destination;
+        } else {
+            nextHop = forwardingtable[destination + 7];
+        }
+        return nextHop;
+
+
+    }
+
+    /**
+     * Gets the computerNumber of this person.
+     *
+     * @return int computerNumber
+     */
+    public int getComputerNumber() {
+        return computerNumber;
+    }
+
+    /**
      * This joins the group of the multicast address
      */
-    public void join() {
+    private void join() {
         try {
             this.s.joinGroup(group);
         } catch (IOException e) {
@@ -181,7 +176,6 @@ public class MultiCast implements Runnable {
             for (Map.Entry<Integer, Receiver> e : receivers.entrySet()) {
                 if ((int) e.getKey() == (int) data[1]) {
                     receiver = e.getValue();
-                    System.out.println("receiver == null?(in receive() before case): " + receiver == null);
                 }
             }
             if (computerNumber != data[1] && (data[0] == 1 || data[0] == 2)) {
@@ -191,9 +185,7 @@ public class MultiCast implements Runnable {
                         routing.setSourceAddress(data[1]);
                         routing.setLinkCost(data[3]);
                         byte[] bArray = new byte[12];
-                        for (int i = 0; i < 12; i++) {
-                            bArray[i] = data[i + 4];
-                        }
+                        System.arraycopy(data, 4, bArray, 0, 12);
                         for (int i = 16; i < 20; i++) {
                             if (!presence.contains((int) data[i])) {
                                 presence.add((int) data[i]);
@@ -216,12 +208,13 @@ public class MultiCast implements Runnable {
                 }
                 if (data[0] == 2) {
                     // System.out.println("pingpacket");
+                    int receivedPings;
                     if (data[1] == 1) {
                         lastTimePing[0] = System.currentTimeMillis();
-                        if (!presence.contains(new Integer(data[1])) && data[1] != 0) {
-                            presence.add(new Integer(data[1]));
+                        if (!presence.contains((int) data[1]) && data[1] != 0) {
+                            presence.add((int) data[1]);
                         }
-                        receivedPings = ping1.calculateReceivedPings(new Integer(data[1]));
+                        receivedPings = ping1.calculateReceivedPings((int) data[1]);
                         if (receivedPings > 0) {
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable(), presence);
                             System.out.println("received ping pakkets= " + receivedPings);
@@ -229,10 +222,10 @@ public class MultiCast implements Runnable {
                     }
                     if (data[1] == 2) {
                         lastTimePing[1] = System.currentTimeMillis();
-                        if (!presence.contains(new Integer(data[1])) && data[1] != 0) {
-                            presence.add(new Integer(data[1]));
+                        if (!presence.contains((int) data[1]) && data[1] != 0) {
+                            presence.add((int) data[1]);
                         }
-                        receivedPings = ping2.calculateReceivedPings(new Integer(data[1]));
+                        receivedPings = ping2.calculateReceivedPings((int) data[1]);
                         if (receivedPings > 0) {
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable(), presence);
                             System.out.println("received ping pakkets= " + receivedPings);
@@ -240,10 +233,10 @@ public class MultiCast implements Runnable {
                     }
                     if (data[1] == 3) {
                         lastTimePing[2] = System.currentTimeMillis();
-                        if (!presence.contains(new Integer(data[1])) && data[1] != 0) {
-                            presence.add(new Integer(data[1]));
+                        if (!presence.contains((int) data[1]) && data[1] != 0) {
+                            presence.add((int) data[1]);
                         }
-                        receivedPings = ping3.calculateReceivedPings(new Integer(data[1]));
+                        receivedPings = ping3.calculateReceivedPings((int) data[1]);
                         if (receivedPings > 0) {
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable(), presence);
                             System.out.println("received ping pakkets= " + receivedPings);
@@ -251,10 +244,10 @@ public class MultiCast implements Runnable {
                     }
                     if (data[1] == 4) {
                         lastTimePing[3] = System.currentTimeMillis();
-                        if (!presence.contains(new Integer(data[1])) && data[1] != 0) {
-                            presence.add(new Integer(data[1]));
+                        if (!presence.contains((int) data[1]) && data[1] != 0) {
+                            presence.add((int) data[1]);
                         }
-                        receivedPings = ping4.calculateReceivedPings(new Integer(data[1]));
+                        receivedPings = ping4.calculateReceivedPings((int) data[1]);
                         if (receivedPings > 0) {
                             sendRoutingPacket(data[1], receivedPings, routing.getForwardingTable(), presence);
                             System.out.println("received ping pakkets= " + receivedPings);
@@ -414,7 +407,7 @@ public class MultiCast implements Runnable {
      * Sends an ACK message by creating an AckPacket and sending it using MultiCastSocket.send(DatagramPacket).
      *
      * @param destination int destination, person to send the ack to
-     * @param ackNumber byte[] acknumber, the sequence number to be acked
+     * @param ackNumber   byte[] acknumber, the sequence number to be acked
      */
     private void sendAck(int destination, byte[] ackNumber) {
         AckPacket ackPacket = new AckPacket(computerNumber, destination, ackNumber, getNextHop(destination));
@@ -436,7 +429,7 @@ public class MultiCast implements Runnable {
      *
      * @param computerNumber int computerNumber
      */
-    public void sendPing(int computerNumber) {
+    void sendPing(int computerNumber) {
         System.out.println("computernumber given with pingpackets= " + computerNumber);
         for (int i = 0; i < 255; i++) {
             PingPacket burstPacket = new PingPacket(computerNumber);
@@ -491,9 +484,9 @@ public class MultiCast implements Runnable {
      * Sends a routing packet to a person
      *
      * @param destinationAddress int, the person to send the packet to
-     * @param linkcost int, the cost of the link to the person
-     * @param data_table int[], the forwarding table
-     * @param presence List of Integers, the people online
+     * @param linkcost           int, the cost of the link to the person
+     * @param data_table         int[], the forwarding table
+     * @param presence           List of Integers, the people online
      */
     private void sendRoutingPacket(int destinationAddress, int linkcost, int[] data_table, List<Integer> presence) {
         RoutingPacket routingPacket = new RoutingPacket(computerNumber, destinationAddress, 256 - linkcost, data_table, presence);
@@ -512,8 +505,8 @@ public class MultiCast implements Runnable {
      * Sends a public key to a person
      *
      * @param destination int, person to send the public key to
-     * @param isAck boolean, this is because sendPublicKey can also be sent as an Acknowledgement (as in the Ack of the public key
-     *              you have to send your public key as well)
+     * @param isAck       boolean, this is because sendPublicKey can also be sent as an Acknowledgement (as in the Ack of the public key
+     *                    you have to send your public key as well)
      */
     private void sendPublicKey(int destination, boolean isAck) {
         KeyPacket keyPacket = new KeyPacket(computerNumber, destination, getNextHop(destination), security.getPublicKey(), isAck);
@@ -531,6 +524,7 @@ public class MultiCast implements Runnable {
 
     /**
      * This sends the AES key belonging to the destination (person to send to) to that person
+     *
      * @param destination int, person to send their AES key to.
      */
     private void sendAESKey(int destination) {
@@ -555,7 +549,8 @@ public class MultiCast implements Runnable {
 
     /**
      * Sends an image. <i>Currently not working.</i>
-     * @param imageName String, the name of the file
+     *
+     * @param imageName   String, the name of the file
      * @param destination int, the person to send the file to.
      */
     public void sendImage(String imageName, int destination) {
@@ -603,7 +598,8 @@ public class MultiCast implements Runnable {
 
     /**
      * This method simply sends a message (and resends if it does not get an ACK on time)
-     * @param msg byte[], the message.
+     *
+     * @param msg         byte[], the message.
      * @param destination int, the person to send the message to
      */
     private void sendMessage(byte[] msg, int destination) {
@@ -672,7 +668,8 @@ public class MultiCast implements Runnable {
     /**
      * This sends an entire message, along with the firstReceived message, the messages needed to setup
      * privacy (although this is not necessary as it only has to be done at the start of a connection), and the destination
-     * @param msg String, the message to be sent
+     *
+     * @param msg         String, the message to be sent
      * @param destination int, the person to send the message to
      * @param requestKeys boolean, if the Key exchange has to be done or not.
      */

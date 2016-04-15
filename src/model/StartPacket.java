@@ -21,28 +21,18 @@ public class StartPacket {
         byte[] startpacket = new byte[5];
 
         //add the incation byte that indicates what type of packet this is
-        startpacket[0] = intToByte(STARTPACKET);
+        startpacket[0] = STARTPACKET;
 
         //add the source and destination to the packet
-        startpacket[1] = intToByte(this.source);
-        startpacket[2] = intToByte(this.destination);
-        startpacket[3] = intToByte(this.nextHop);
+        startpacket[1] = (byte) this.source;
+        startpacket[2] = (byte) this.destination;
+        startpacket[3] = (byte) this.nextHop;
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes
-        startpacket[4] = intToByte(1);
+        startpacket[4] = 1;
 
         return startpacket;
-    }
-
-    public byte intToByte(int val){
-        byte b = (byte)val;
-        return b;
-    }
-
-    public byte[] StringToByte(String string){
-        byte[] b = string.getBytes();
-        return b;
     }
 
 }

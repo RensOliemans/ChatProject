@@ -38,7 +38,7 @@ public class Ping implements Runnable {
 			seconds2 = System.currentTimeMillis();
 			receivedPing1++;
 		}
-		if ((seconds2 - seconds1 > 3000) && (receivedPing1 != 0) && (sent == false)) {
+		if ((seconds2 - seconds1 > 3000) && (receivedPing1 != 0) && (!sent)) {
 			sent = true;
 			return receivedPing1;
 		}
