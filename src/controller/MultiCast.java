@@ -184,6 +184,7 @@ public class MultiCast implements Runnable {
                         routing.setLinkCost(data[3]);
                         byte[] bArray = new byte[12];
                         System.arraycopy(data, 4, bArray, 0, 12);
+                        //De presence lijst staat op posities 16-20 in de byte array
                         for (int i = 16; i < 20; i++) {
                             if (!presence.contains((int) data[i])) {
                                 presence.add((int) data[i]);

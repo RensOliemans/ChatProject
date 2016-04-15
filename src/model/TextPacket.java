@@ -48,12 +48,4 @@ public class TextPacket {
 
         return txpkt;
     }
-
-    public byte intToByte(int val){
-        return (byte)val;
-    }
-
-    public byte[] StringToByte(String string){
-        return string.getBytes();
-    }
 }
