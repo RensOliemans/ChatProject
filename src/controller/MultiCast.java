@@ -169,7 +169,6 @@ public class MultiCast implements Runnable {
                     if (data[2] == computerNumber) {
                         routing.setSourceAddress(data[1]);
                         routing.setLinkCost(data[3]);
-                        routing.setPresence(presence);
                         byte[] bArray = new byte[12];
                         for (int i = 0; i < 12; i++) {
                             bArray[i] = data[i + 4];

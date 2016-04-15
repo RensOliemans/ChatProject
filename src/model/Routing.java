@@ -12,7 +12,6 @@ public class Routing /*implements Runnable*/{
     private int sourceAdress;
     private int[] forwardingTable;
     private int computerNumber;
-    private List<Integer> presence = new ArrayList<>();
 
     public Routing(int computerNumber) {
         this.computerNumber = computerNumber;
@@ -26,10 +25,6 @@ public class Routing /*implements Runnable*/{
         }
         this.linkcost = receivedInt;
 //        System.out.println("linkcost to " + this.sourceAdress + " is now: " + receivedInt);
-    }
-
-    public void setPresence(List<Integer> list){
-
     }
 
     public void setSourceAddress(int sourceAdress){

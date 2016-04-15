@@ -31,6 +31,8 @@ public class GUI extends JFrame {
 	private Map<MessageScroll, Integer> chatnumbermap = new HashMap<MessageScroll, Integer>();
 	private int chatnumber;
 
+	//------------------------------------------------------------Constructor------------------------------------------------------------------------------
+
 	/*
 	Makes a new GUI window.
 	 */
@@ -64,6 +66,8 @@ public class GUI extends JFrame {
 		setResizable(false);
 	}
 
+	//------------------------------------------------------------Public Methods------------------------------------------------------------------------------
+
 	/*
 	Basic method for showing an error in a dialog window.
 	 */
@@ -72,324 +76,8 @@ public class GUI extends JFrame {
 	}
 
 	/*
-	This method is called by a different thread to update the list of people that are online.
+	This method is called by the MultiCast instance corresponding to this GUI instance upon receiving a message from the multicast group this pc is in. The message is displayed in the appropriate chat window.
 	 */
-	public void updateOnlinePeople() {
-		for (int i = 0; i<4; i++){
-			if (group22.contains(i+1)){
-				long huidigetijd = System.currentTimeMillis();
-				if (huidigetijd - multiCast.lastTimePing[i] > 5000){
-					multiCast.presence.remove(new Integer(i+1));
-				}
-			}
-		}
-		group22 = multiCast.presence;
-		System.out.println("iets" + multiCast.presence.toString());
-		remove(peopleOnline);
-		peopleOnline = new JPanel();
-		peopleOnline.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Group22"));
-		peopleOnline.setPreferredSize(new Dimension(100,380));
-		peopleOnline.setLayout(new BoxLayout(peopleOnline, BoxLayout.Y_AXIS));
-		if (group22.contains(new Integer(1))) {
-			peopleOnline.add(new JLabel("Rens"));
-		}
-		if (group22.contains(new Integer(2))) {
-			peopleOnline.add(new JLabel("Birte"));
-		}
-		if (group22.contains(new Integer(3))) {
-			peopleOnline.add(new JLabel("Coen"));
-		}
-		if (group22.contains(new Integer(4))) {
-			peopleOnline.add(new JLabel("Eric"));
-		}
-		add(peopleOnline, BorderLayout.WEST);
-		invalidate();
-		validate();
-		repaint();
-	}
-
-	/*
-	A private custom JPanel class
-	 */
-	private class ChatsOverview extends JPanel {
-
-		public ChatsOverview() {
-			super();
-			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Chats Overview"));
-			setPreferredSize(new Dimension(200,380));
-			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-			availableChatsPanel = new JPanel();
-			availableChatsPanel.setLayout(new BoxLayout(availableChatsPanel, BoxLayout.Y_AXIS));
-			availableChatsScrollPane = new JScrollPane(availableChatsPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			availableChatsScrollPane.setPreferredSize(new Dimension(180,300));
-			add(availableChatsScrollPane);
-			newChatPanel = new JPanel();
-			NewChatButton newChatButton = new NewChatButton();
-			newChatButton.addActionListener(new NewChatListener());
-			newChatPanel.add(newChatButton);
-			add(newChatPanel);
-		}
-	}
-
-	private class ChatRoom extends JPanel {
-
-		public JTextArea messages;
-		public MessageScroll scrollmessages;
-		public JTextField textfield;
-
-		public ChatRoom() {
-			super();
-			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Chatroom"));
-			setPreferredSize(new Dimension(400,380));
-			setLayout(new BorderLayout());
-			messages = new JTextArea();
-			messages.setEditable(false);
-			messages.setLayout(new BoxLayout(messages, BoxLayout.Y_AXIS));
-			messages.setLineWrap(true);
-			scrollmessages = new MessageScroll(messages, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			scrollmessages.setPreferredSize(new Dimension(300,250));
-			add(scrollmessages, BorderLayout.CENTER);
-			JPanel textfieldpanel = new JPanel();
-			textfield = new JTextField();
-			textfield.setPreferredSize(new Dimension(250, 20));
-			textfield.addActionListener(new SendingFieldListener());
-			textfieldpanel.add(textfield);
-			ImageIcon camera = new ImageIcon("icon-camera-128small.png");
-			JButton addImage = new JButton(camera);
-			addImage.setPreferredSize(new Dimension(30,20));
-			addImage.addActionListener(new SendingImageListener());
-			textfieldpanel.add(addImage);
-			ImageIcon leave = new ImageIcon("door-leavesmall.png");
-			JButton exit = new JButton(leave);
-			exit.addActionListener(new ExitOptionListener());
-			exit.setPreferredSize(new Dimension(30,20));
-			textfieldpanel.add(exit);
-			add(textfieldpanel, BorderLayout.SOUTH);
-		}
-	}
-
-	private class ChatButton extends JButton {
-
-		public ChatButton(String title) {
-			super(title);
-			setPreferredSize(new Dimension(160,30));
-			setMinimumSize(new Dimension(160,30));
-			setMaximumSize(new Dimension(160,30));
-			setBackground(Color.WHITE);
-			addActionListener(new ChatChooseListener());
-		}
-	}
-
-	private class NewChatButton extends JButton {
-
-		public NewChatButton() {
-			super("New Chat");
-		}
-	}
-
-	private class MessageScroll extends JScrollPane {
-
-		public JTextArea messages;
-
-		public MessageScroll(Component view,  int vsbPolicy, int hsbPolicy) {
-			super(view, vsbPolicy, hsbPolicy);
-			this.messages = (JTextArea)view;
-		}
-	}
-
-	private class NewChatListener implements ActionListener {
-
-		public void actionPerformed(ActionEvent e) {
-			JPanel newChatOptions = new JPanel();
-			NewChatOptionsListener newChatOptionsListener = new NewChatOptionsListener();
-			for (Integer i: group22) {
-				if (i==1) {
-					JCheckBox rensbox = new JCheckBox("Rens");
-					rensbox.addItemListener(newChatOptionsListener);
-					newChatOptions.add(rensbox);
-				}
-				if (i==2) {
-					JCheckBox birtebox = new JCheckBox("Birte");
-					birtebox.addItemListener(newChatOptionsListener);
-					newChatOptions.add(birtebox);
-				}
-				if (i==3) {
-					JCheckBox coenbox = new JCheckBox("Coen");
-					coenbox.addItemListener(newChatOptionsListener);
-					newChatOptions.add(coenbox);
-				}
-				if (i==4) {
-					JCheckBox ericbox = new JCheckBox("Eric");
-					ericbox.addItemListener(newChatOptionsListener);
-					newChatOptions.add(ericbox);
-				}
-			}
-			int choice = JOptionPane.showConfirmDialog(GUI.this, newChatOptions, "choose participants", JOptionPane.OK_CANCEL_OPTION);
-			if (choice == JOptionPane.OK_OPTION) {
-				JTextArea newChatArea = new JTextArea();
-				newChatArea.setEditable(false);
-				newChatArea.setLayout(new BoxLayout(newChatArea, BoxLayout.Y_AXIS));
-				newChatArea.setLineWrap(true);
-				MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-				newChatPane.setPreferredSize(new Dimension(180,300));
-				ChatButton chatButton = new ChatButton(Integer.toString(chatnumber) + ", " + ListToNamesAbr(newChatOptionsListener.participantlist));
-				chatmap.put(chatButton,newChatPane);
-				participantsmap.put(newChatPane, newChatOptionsListener.participantlist);
-				chatnumbermap.put(newChatPane, chatnumber);
-				availableChatsPanel.add(chatButton);
-				for (Integer i: newChatOptionsListener.participantlist) {
-					System.out.println("participanten: " + ListToString(newChatOptionsListener.participantlist));
-					multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i.intValue(), true);
-				}
-				chatnumber += 4;
-			}
-		}
-	}
-
-	private String ListToString(List<Integer> list) {
-		String liststr = "";
-		for (Integer i: list) {
-			liststr = liststr.concat(Integer.toString(i) + ",");
-		}
-		return liststr;
-	}
-
-	private List StringToList(String string) {
-		List<Integer> list = new ArrayList<Integer>();
-		for (int i = 0; i < string.length(); i = i+2) {
-			list.add(Character.getNumericValue(string.charAt(i)));
-		}
-		return list;
-	}
-
-	public String ListToNamesAbr(List<Integer> list) {
-		String liststr = "";
-		for (Integer i: list) {
-			if (i == 1) {
-				liststr = liststr.concat(" Rens,");
-			}
-			if (i == 2) {
-				liststr = liststr.concat(" Birte,");
-			}
-			if (i == 3) {
-				liststr = liststr.concat(" Coen,");
-			}
-			if (i == 4) {
-				liststr = liststr.concat(" Eric,");
-			}
-		}
-		return liststr;
-	}
-
-	private class ChatChooseListener implements ActionListener {
-
-		public void actionPerformed(ActionEvent e) {
-			chatRoom.remove(chatRoom.scrollmessages);
-			chatRoom.scrollmessages = chatmap.get(e.getSource());
-			for (ChatButton c: chatmap.keySet()) {
-				if (c.equals(e.getSource())) {
-					c.setBackground(Color.LIGHT_GRAY);
-				}
-				else {
-					c.setBackground(Color.WHITE);
-				}
- 			}
-			chatRoom.add(chatRoom.scrollmessages, BorderLayout.CENTER);
-			chatRoom.invalidate();
-			chatRoom.validate();
-			chatRoom.repaint();
-		}
-	}
-
-	private class SendingFieldListener implements ActionListener {
-
-		public void actionPerformed(ActionEvent e) {
-			System.out.println("check1");
-			String txt = ((JTextField)e.getSource()).getText();
-			System.out.println("check2");
-			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + txt + "\n");
-			System.out.println("check3");
-			((JTextField)e.getSource()).setText("");
-			System.out.println("check4");
-			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
-				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt, i, false);
-			}
-		}
-	}
-
-	private class SendingImageListener implements ActionListener {
-
-		public void actionPerformed(ActionEvent e) {
-			JFileChooser fileChooser = new JFileChooser();
-			int returnValue = fileChooser.showOpenDialog(GUI.this);
-			if (returnValue == fileChooser.APPROVE_OPTION) {
-				File selectedFile = fileChooser.getSelectedFile();
-				chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: sent image" + selectedFile.getName() + "\n");
-				for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
-//					multiCast.sendImage(selectedFile.getName(), i);
-				}
-			}
-		}
-	}
-
-	private class ExitOptionListener implements ActionListener {
-
-		public void actionPerformed(ActionEvent e) {
-			if (!participantsmap.get(chatRoom.scrollmessages).equals(null)) {
-				for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
-					multiCast.send(pcnumber + "leftchat" + chatnumbermap.get(chatRoom.scrollmessages), i, false);
-				}
-			}
-			ChatButton chatButton = null;
-			for (Map.Entry<ChatButton, MessageScroll> i: chatmap.entrySet()) {
-				if (i.getValue().equals(chatRoom.scrollmessages)) {
-					chatButton = i.getKey();
-				}
-			}
-			availableChatsPanel.remove(chatButton);
-			JScrollPane scrollPane = chatRoom.scrollmessages;
-			chatRoom.remove(chatRoom.scrollmessages);
-			chatmap.remove(chatButton);
-			participantsmap.remove(scrollPane);
-			chatnumbermap.remove(scrollPane);
-		}
-	}
-
-	private class NewChatOptionsListener implements ItemListener {
-
-		public List<Integer> participantlist = new ArrayList<Integer>();
-
-		public void itemStateChanged(ItemEvent e) {
-			if (((JCheckBox)e.getSource()).getText().equals("Rens")) {
-				participantlist.add(new Integer(1));
-			}
-			if (((JCheckBox)e.getSource()).getText().equals("Birte")) {
-				participantlist.add(new Integer(2));
-			}
-			if (((JCheckBox)e.getSource()).getText().equals("Coen")) {
-				participantlist.add(new Integer(3));
-			}
-			if (((JCheckBox)e.getSource()).getText().equals("Eric")) {
-				participantlist.add(new Integer(4));
-			}
-		}
-	}
-
-	private class Updating implements Runnable {
-
-		public void run() {
-			while (true) {
-				try {
-					Thread.sleep(500);
-				}
-				catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				updateOnlinePeople();
-			}
-		}
-	}
-
 	public void printMessage(String message, int src) {
 		System.out.println("\n gekregen: " + message + "\n");
 		String name = "";
@@ -455,8 +143,363 @@ public class GUI extends JFrame {
 		}
 	}
 
-	public static void main(String[] args) {
+	//------------------------------------------------------------Private Methods------------------------------------------------------------------------------
 
+	/*
+	This method is used multiple times, meant to convert a list with Integers, representing participants, into an appropriate string.
+	 */
+	private String ListToString(List<Integer> list) {
+		String liststr = "";
+		for (Integer i: list) {
+			liststr = liststr.concat(Integer.toString(i) + ",");
+		}
+		return liststr;
+	}
+
+	/*
+	This method is the counterpart of the method above, and is used to convert a String, representing a list of participants, into an appropriate ArrayList with Integers.
+	 */
+	private List<Integer> StringToList(String string) {
+		List<Integer> list = new ArrayList<Integer>();
+		for (int i = 0; i < string.length(); i = i+2) {
+			list.add(Character.getNumericValue(string.charAt(i)));
+		}
+		return list;
+	}
+
+	/*
+	This method is used to take a list of participants and give a String that will be set as a part of the name of a new ChatButton.
+	 */
+	private String ListToNamesAbr(List<Integer> list) {
+		String liststr = "";
+		for (Integer i: list) {
+			if (i == 1) {
+				liststr = liststr.concat(" Rens,");
+			}
+			if (i == 2) {
+				liststr = liststr.concat(" Birte,");
+			}
+			if (i == 3) {
+				liststr = liststr.concat(" Coen,");
+			}
+			if (i == 4) {
+				liststr = liststr.concat(" Eric,");
+			}
+		}
+		return liststr;
+	}
+
+	/*
+	This method is called by a different thread to update the list of people that are online.
+	 */
+	private void updateOnlinePeople() {
+		for (int i = 0; i<4; i++){
+			if (group22.contains(i+1)){
+				long huidigetijd = System.currentTimeMillis();
+				if (huidigetijd - multiCast.lastTimePing[i] > 5000){
+					multiCast.presence.remove(new Integer(i+1));
+				}
+			}
+		}
+		group22 = multiCast.presence;
+		System.out.println("iets" + multiCast.presence.toString());
+		remove(peopleOnline);
+		peopleOnline = new JPanel();
+		peopleOnline.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Group22"));
+		peopleOnline.setPreferredSize(new Dimension(100,380));
+		peopleOnline.setLayout(new BoxLayout(peopleOnline, BoxLayout.Y_AXIS));
+		if (group22.contains(new Integer(1))) {
+			peopleOnline.add(new JLabel("Rens"));
+		}
+		if (group22.contains(new Integer(2))) {
+			peopleOnline.add(new JLabel("Birte"));
+		}
+		if (group22.contains(new Integer(3))) {
+			peopleOnline.add(new JLabel("Coen"));
+		}
+		if (group22.contains(new Integer(4))) {
+			peopleOnline.add(new JLabel("Eric"));
+		}
+		add(peopleOnline, BorderLayout.WEST);
+		invalidate();
+		validate();
+		repaint();
+	}
+
+	//------------------------------------------------------------Private Runnable-implementation------------------------------------------------------------------------------
+
+	/*
+	This class is called as seperate thread to always keep updating the list of online people.
+	 */
+	private class Updating implements Runnable {
+
+		public void run() {
+			while (true) {
+				try {
+					Thread.sleep(500);
+				}
+				catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				updateOnlinePeople();
+			}
+		}
+	}
+
+	//------------------------------------------------------------Private JComponent-extensions------------------------------------------------------------------------------
+
+	/*
+	A private custom JPanel class, to represent all available chats, with a new-chat button to instantiate a new chat, in the middle of the window.
+	 */
+	private class ChatsOverview extends JPanel {
+
+		public ChatsOverview() {
+			super();
+			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Chats Overview"));
+			setPreferredSize(new Dimension(200,380));
+			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+			availableChatsPanel = new JPanel();
+			availableChatsPanel.setLayout(new BoxLayout(availableChatsPanel, BoxLayout.Y_AXIS));
+			availableChatsScrollPane = new JScrollPane(availableChatsPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			availableChatsScrollPane.setPreferredSize(new Dimension(180,300));
+			add(availableChatsScrollPane);
+			newChatPanel = new JPanel();
+			JButton newChatButton = new JButton("New Chat");
+			newChatButton.addActionListener(new NewChatListener());
+			newChatPanel.add(newChatButton);
+			add(newChatPanel);
+		}
+	}
+
+	/*
+	A private custom JPanel class, to represent the chat window, with a JTextArea within a JScrollPane to display the correspondence between the participants, and a JTextField to type and send a new message.
+	 */
+	private class ChatRoom extends JPanel {
+
+		public JTextArea messages;
+		public MessageScroll scrollmessages;
+		public JTextField textfield;
+
+		public ChatRoom() {
+			super();
+			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Chatroom"));
+			setPreferredSize(new Dimension(400,380));
+			setLayout(new BorderLayout());
+			messages = new JTextArea();
+			messages.setEditable(false);
+			messages.setLayout(new BoxLayout(messages, BoxLayout.Y_AXIS));
+			messages.setLineWrap(true);
+			scrollmessages = new MessageScroll(messages, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			scrollmessages.setPreferredSize(new Dimension(300,250));
+			add(scrollmessages, BorderLayout.CENTER);
+			JPanel textfieldpanel = new JPanel();
+			textfield = new JTextField();
+			textfield.setPreferredSize(new Dimension(250, 20));
+			textfield.addActionListener(new SendingFieldListener());
+			textfieldpanel.add(textfield);
+			ImageIcon camera = new ImageIcon("icon-camera-128small.png");
+			JButton addImage = new JButton(camera);
+			addImage.setPreferredSize(new Dimension(30,20));
+			addImage.addActionListener(new SendingImageListener());
+			textfieldpanel.add(addImage);
+			ImageIcon leave = new ImageIcon("door-leavesmall.png");
+			JButton exit = new JButton(leave);
+			exit.addActionListener(new ExitOptionListener());
+			exit.setPreferredSize(new Dimension(30,20));
+			textfieldpanel.add(exit);
+			add(textfieldpanel, BorderLayout.SOUTH);
+		}
+	}
+
+	/*
+	A private custom JButton class, to represent an available chat in the middle of the screen, if you press it it turns light gray and the corresponding chat window is displayed.
+	 */
+	private class ChatButton extends JButton {
+
+		public ChatButton(String title) {
+			super(title);
+			setPreferredSize(new Dimension(160,30));
+			setMinimumSize(new Dimension(160,30));
+			setMaximumSize(new Dimension(160,30));
+			setBackground(Color.WHITE);
+			addActionListener(new ChatChooseListener());
+		}
+	}
+
+	/*
+	A private custom JScrollPane with a JTextArea to display correspondence between participants. Objects of this type are mapped to corresponding ChatButtons.
+	 */
+	private class MessageScroll extends JScrollPane {
+
+		public JTextArea messages;
+
+		public MessageScroll(Component view,  int vsbPolicy, int hsbPolicy) {
+			super(view, vsbPolicy, hsbPolicy);
+			this.messages = (JTextArea)view;
+		}
+	}
+
+	//------------------------------------------------------------Private ActionListener implementations------------------------------------------------------------------------------
+
+	/*
+	An ActionListener implementation to take care of the actions that need to be taken when the new-chat button is pressed.
+	 */
+	private class NewChatListener implements ActionListener {
+
+		public void actionPerformed(ActionEvent e) {
+			JPanel newChatOptions = new JPanel();
+			NewChatOptionsListener newChatOptionsListener = new NewChatOptionsListener();
+			for (Integer i: group22) {
+				if (i==1) {
+					JCheckBox rensbox = new JCheckBox("Rens");
+					rensbox.addItemListener(newChatOptionsListener);
+					newChatOptions.add(rensbox);
+				}
+				if (i==2) {
+					JCheckBox birtebox = new JCheckBox("Birte");
+					birtebox.addItemListener(newChatOptionsListener);
+					newChatOptions.add(birtebox);
+				}
+				if (i==3) {
+					JCheckBox coenbox = new JCheckBox("Coen");
+					coenbox.addItemListener(newChatOptionsListener);
+					newChatOptions.add(coenbox);
+				}
+				if (i==4) {
+					JCheckBox ericbox = new JCheckBox("Eric");
+					ericbox.addItemListener(newChatOptionsListener);
+					newChatOptions.add(ericbox);
+				}
+			}
+			int choice = JOptionPane.showConfirmDialog(GUI.this, newChatOptions, "choose participants", JOptionPane.OK_CANCEL_OPTION);
+			if (choice == JOptionPane.OK_OPTION) {
+				JTextArea newChatArea = new JTextArea();
+				newChatArea.setEditable(false);
+				newChatArea.setLayout(new BoxLayout(newChatArea, BoxLayout.Y_AXIS));
+				newChatArea.setLineWrap(true);
+				MessageScroll newChatPane = new MessageScroll(newChatArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				newChatPane.setPreferredSize(new Dimension(180,300));
+				ChatButton chatButton = new ChatButton(Integer.toString(chatnumber) + ", " + ListToNamesAbr(newChatOptionsListener.participantlist));
+				chatmap.put(chatButton,newChatPane);
+				participantsmap.put(newChatPane, newChatOptionsListener.participantlist);
+				chatnumbermap.put(newChatPane, chatnumber);
+				availableChatsPanel.add(chatButton);
+				for (Integer i: newChatOptionsListener.participantlist) {
+					System.out.println("participanten: " + ListToString(newChatOptionsListener.participantlist));
+					multiCast.send("joinrequest:chat" + chatnumber + ";" + ListToString(newChatOptionsListener.participantlist) ,i.intValue(), true);
+				}
+				chatnumber += 4;
+			}
+		}
+	}
+
+	/*
+	An ActionListener implementation to take care of the actions that need to be taken when a ChatButton is pressed.
+	 */
+	private class ChatChooseListener implements ActionListener {
+
+		public void actionPerformed(ActionEvent e) {
+			chatRoom.remove(chatRoom.scrollmessages);
+			chatRoom.scrollmessages = chatmap.get(e.getSource());
+			for (ChatButton c: chatmap.keySet()) {
+				if (c.equals(e.getSource())) {
+					c.setBackground(Color.LIGHT_GRAY);
+				}
+				else {
+					c.setBackground(Color.WHITE);
+				}
+ 			}
+			chatRoom.add(chatRoom.scrollmessages, BorderLayout.CENTER);
+			chatRoom.invalidate();
+			chatRoom.validate();
+			chatRoom.repaint();
+		}
+	}
+
+	/*
+	An ActionListener implementation to take care of the actions that need to be taken when enter is pressed in the text field in a chat window.
+	 */
+	private class SendingFieldListener implements ActionListener {
+
+		public void actionPerformed(ActionEvent e) {
+			System.out.println("check1");
+			String txt = ((JTextField)e.getSource()).getText();
+			System.out.println("check2");
+			chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: " + txt + "\n");
+			System.out.println("check3");
+			((JTextField)e.getSource()).setText("");
+			System.out.println("check4");
+			for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
+				multiCast.send("chat" + chatnumbermap.get(chatRoom.scrollmessages) + ":" + txt, i, false);
+			}
+		}
+	}
+
+	/*
+	An ActionListener implementation to take care of the actions that need to be taken when the attach-image button is pressed.
+	 */
+	private class SendingImageListener implements ActionListener {
+
+		public void actionPerformed(ActionEvent e) {
+			JFileChooser fileChooser = new JFileChooser();
+			int returnValue = fileChooser.showOpenDialog(GUI.this);
+			if (returnValue == fileChooser.APPROVE_OPTION) {
+				File selectedFile = fileChooser.getSelectedFile();
+				chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: sent image" + selectedFile.getName() + "\n");
+				for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
+//					multiCast.sendImage(selectedFile.getName(), i);
+				}
+			}
+		}
+	}
+
+	/*
+	An ActionListener implementation to take care of the actions that need to be taken when the exit button is pressed.
+	 */
+	private class ExitOptionListener implements ActionListener {
+
+		public void actionPerformed(ActionEvent e) {
+			if (!participantsmap.get(chatRoom.scrollmessages).equals(null)) {
+				for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {
+					multiCast.send(pcnumber + "leftchat" + chatnumbermap.get(chatRoom.scrollmessages), i, false);
+				}
+			}
+			ChatButton chatButton = null;
+			for (Map.Entry<ChatButton, MessageScroll> i: chatmap.entrySet()) {
+				if (i.getValue().equals(chatRoom.scrollmessages)) {
+					chatButton = i.getKey();
+				}
+			}
+			availableChatsPanel.remove(chatButton);
+			JScrollPane scrollPane = chatRoom.scrollmessages;
+			chatRoom.remove(chatRoom.scrollmessages);
+			chatmap.remove(chatButton);
+			participantsmap.remove(scrollPane);
+			chatnumbermap.remove(scrollPane);
+		}
+	}
+
+	/*
+	An ItemListener to listen to the checkboxes that are ticked in the dialog screen when a new class is created.
+	 */
+	private class NewChatOptionsListener implements ItemListener {
+
+		public List<Integer> participantlist = new ArrayList<Integer>();
+
+		public void itemStateChanged(ItemEvent e) {
+			if (((JCheckBox)e.getSource()).getText().equals("Rens")) {
+				participantlist.add(new Integer(1));
+			}
+			if (((JCheckBox)e.getSource()).getText().equals("Birte")) {
+				participantlist.add(new Integer(2));
+			}
+			if (((JCheckBox)e.getSource()).getText().equals("Coen")) {
+				participantlist.add(new Integer(3));
+			}
+			if (((JCheckBox)e.getSource()).getText().equals("Eric")) {
+				participantlist.add(new Integer(4));
+			}
+		}
 	}
 
 }
