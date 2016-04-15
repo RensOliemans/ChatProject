@@ -8,11 +8,10 @@ package controller;
  */
 public class Starter {
     private static MultiCast multiCast;
-    private static final int computerNumber = 2;    //Your computerNumber
+    private static final int computerNumber = 1;    //Your computerNumber
 
     public static void main(String[] args) {multiCast = new MultiCast(computerNumber);
 
-        multiCast.generateKeys();
         Ping ping = new Ping(computerNumber, multiCast);
 
         //Starts a new thread so you can receive and send

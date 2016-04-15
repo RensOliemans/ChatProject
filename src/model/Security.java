@@ -260,18 +260,22 @@ public class Security {
 
             key = new SecretKeySpec(cipher.doFinal(data), "AES");
         } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
             gui.showError("NoSuchAlgorithmException in decryptAESKey(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (InvalidKeyException e) {
+            e.printStackTrace();
             gui.showError("InvalidKeyException in decryptAESKey(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
             gui.showError("NoSuchPaddingException in decryptAESKey(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (BadPaddingException e) {
+            e.printStackTrace();
             gui.showError("BadPaddingException in decryptAESKey(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
@@ -292,22 +296,27 @@ public class Security {
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             return new String(cipher.doFinal(text.getBytes()));
         } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
             gui.showError("NoSuchAlgorithmException in encryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (InvalidKeyException e) {
+            e.printStackTrace();
             gui.showError("InvalidKeyException in encryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
             gui.showError("NoSuchPaddingException in encryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (BadPaddingException e) {
+            e.printStackTrace();
             gui.showError("BadPaddingException in encryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
             gui.showError("IllegalBlockSizeException in encryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
@@ -323,22 +332,27 @@ public class Security {
             cipher.init(Cipher.DECRYPT_MODE, RSAKeyPair.getPrivate());
             return new String(cipher.doFinal(text.getBytes()));
         } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
             gui.showError("NoSuchAlgorithmException in decryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (InvalidKeyException e) {
+            e.printStackTrace();
             gui.showError("NoSuchAlgorithmException in decryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
             gui.showError("NoSuchAlgorithmException in decryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (BadPaddingException e) {
+            e.printStackTrace();
             gui.showError("NoSuchAlgorithmException in decryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
             gui.showError("NoSuchAlgorithmException in decryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
