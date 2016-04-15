@@ -252,7 +252,7 @@ public class GUI extends JFrame {
 		return liststr;
 	}
 
-	private List StringToList(String string) {
+	private List<Integer> StringToList(String string) {
 		List<Integer> list = new ArrayList<Integer>();
 		for (int i = 0; i < string.length(); i = i+2) {
 			list.add(Character.getNumericValue(string.charAt(i)));

@@ -289,11 +289,12 @@ public class Security {
 
 
     private String encryptRSA(String text, PublicKey publicKey) {
+        //for testing purposes
         //Uses a public key (so you can send an encrypted AES key with someone else's keys)
         try {
             Cipher cipher = Cipher.getInstance(xform);
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            return new String(cipher.doFinal(text.getBytes()));
+            return Base64.encodeBase64String(cipher.doFinal(Base64.decodeBase64(text)));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             gui.showError("NoSuchAlgorithmException in encryptRSA(..). " +
@@ -329,7 +330,7 @@ public class Security {
         try {
             cipher = Cipher.getInstance(xform);
             cipher.init(Cipher.DECRYPT_MODE, RSAKeyPair.getPrivate());
-            return new String(cipher.doFinal(text.getBytes()));
+            return Base64.encodeBase64String(cipher.doFinal(Base64.decodeBase64(text)));
         } catch (NoSuchAlgorithmException e) {
             gui.showError("NoSuchAlgorithmException in decryptRSA(..). " +
                     "Ask Rens. " +
@@ -343,10 +344,13 @@ public class Security {
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (BadPaddingException e) {
+            System.out.println();
+            e.printStackTrace();
             gui.showError("BadPaddingException in decryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
         } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
             gui.showError("IllegalBlockSizeException in decryptRSA(..). " +
                     "Ask Rens. " +
                     "\nError message: " + e.getMessage());
