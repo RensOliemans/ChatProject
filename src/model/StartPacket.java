@@ -1,6 +1,7 @@
 package model;
 
 /**
+ * This object has the data for a START packet.
  * Created by coen on 8-4-2016.
  */
 public class StartPacket {

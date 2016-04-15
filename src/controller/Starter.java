@@ -6,7 +6,7 @@ package controller;
  * Also creates a Ping thread, which pings every 5 seconds.
  * Also creates a Receive thread, which continuously receives data
  */
-public class Starter {
+class Starter {
     private static MultiCast multiCast;
     private static final int computerNumber = 1;    //Your computerNumber
 

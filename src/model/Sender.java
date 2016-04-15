@@ -9,24 +9,26 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * This class handles the sending of messages. More specifically, this class has the data to see what messages have been sent but not ACKed.
+ * For every connection there is an instance of this object.
  * Created by Rens on 5-4-2016.
  */
 public class Sender {
 
     //HashMap with Key: SYN and Value: Message, just message, no header
-    public Map<byte[], byte[]> notReceived = new ConcurrentHashMap<byte[], byte[]>();
+    private Map<byte[], byte[]> notReceived = new ConcurrentHashMap<>();
     int f = 0;
     private int receiver;
-    public Lock senderLock = new ReentrantLock();
+    private Lock senderLock = new ReentrantLock();
     public boolean finishReceived;
     public boolean firstReceived;
     public boolean keysReceived;
-    public List<byte[]> received;
+    private List<byte[]> received;
 
     public Sender(int receiver) {
         this.received = new ArrayList<>();
         this.receiver = receiver;
-        this.notReceived = new HashMap<byte[], byte[]>();
+        this.notReceived = new HashMap<>();
         this.finishReceived = false;
         this.firstReceived = false;
     }
@@ -42,7 +44,6 @@ public class Sender {
 //        System.out.println(notReceived.containsKey(key));
         for (Map.Entry<byte[], byte[]> entry : notReceived.entrySet()) {
             toRemove = entry.getKey();
-            Object value = entry.getValue();
             if (MultiCast.byteToInt(toRemove) == MultiCast.byteToInt(key)) {
                 break;
             }

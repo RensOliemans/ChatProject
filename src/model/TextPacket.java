@@ -50,12 +50,10 @@ public class TextPacket {
     }
 
     public byte intToByte(int val){
-        byte b = (byte)val;
-        return b;
+        return (byte)val;
     }
 
     public byte[] StringToByte(String string){
-        byte[] b = string.getBytes();
-        return b;
+        return string.getBytes();
     }
 }

@@ -316,7 +316,7 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			JFileChooser fileChooser = new JFileChooser();
 			int returnValue = fileChooser.showOpenDialog(GUI.this);
-			if (returnValue == fileChooser.APPROVE_OPTION) {
+			if (returnValue == JFileChooser.APPROVE_OPTION) {
 				File selectedFile = fileChooser.getSelectedFile();
 				chatRoom.scrollmessages.messages.setText(chatRoom.scrollmessages.messages.getText() + "\n You: sent image" + selectedFile.getName() + "\n");
 				for (Integer i: participantsmap.get(chatRoom.scrollmessages)) {

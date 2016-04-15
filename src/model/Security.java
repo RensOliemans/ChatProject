@@ -1,14 +1,13 @@
 package model;
 
+import org.apache.commons.codec.binary.Base64;
+import view.GUI;
+
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.StringUtils;
-import view.GUI;
 
 /**
  * Created by Rens on 5-4-2016.
@@ -17,7 +16,7 @@ import view.GUI;
 public class Security {
     //HashMap with K: computerNumber and V: SecretKey. This is because every sender-receiver connection has a separate SecretKey
     private Map<Integer, SecretKey> symmetricKeys;
-    private GUI gui; //GUI to call errors that happen during encryption/decryption
+    private final GUI gui; //GUI to call errors that happen during encryption/decryption
     private KeyPair RSAKeyPair; //RSAKeyPair. Every MultiCast (person) has a separate Security object, so every person has a public and private key
     private static final String xform = "RSA/ECB/PKCS1Padding"; //The instance used for the public/private key (RSA)
 
@@ -110,7 +109,6 @@ public class Security {
      * @return String encryptedText, the encrypted text
      */
     public String encryptSymm(String text, SecretKey secretKey) {
-        byte[] raw;
         String encryptedString;
         SecretKeySpec secretKeySpec;
 //        byte[] encryptText = text.getBytes();

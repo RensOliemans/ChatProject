@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * This object has the data for a Routing packet.
  * Created by coen on 7-4-2016.
  */
 public class RoutingPacket {

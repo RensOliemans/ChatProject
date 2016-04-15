@@ -5,6 +5,7 @@ import java.security.PublicKey;
 import static controller.MultiCast.HEADER;
 
 /**
+ * This object has the data for a Public Key packet and an ACK for a Public Key packet.
  * Created by Rens on 12-4-2016.
  */
 public class KeyPacket {

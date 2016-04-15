@@ -3,7 +3,6 @@ package model;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
-import java.util.List;
 
 import controller.MultiCast;
 import view.GUI;
@@ -11,20 +10,24 @@ import view.GUI;
 import javax.imageio.ImageIO;
 
 /**
+ * This class is the class that handles the receiving of messages.
+ * While the method MultiCast.receive() handles the actual messages, this class has functionality to
+ *  order the messages that came in and put files that were received in a HashMap.
+ * For every connection, there is a Receiver instance.
  * Created by Birte on 7-4-2016.
  */
 public class Receiver {
 
-    public Boolean allReceived = false;
+    private Boolean allReceived = false;
     private GUI gui;
-    public Map<byte[], byte[]> received = new HashMap<byte[], byte[]>();
-    public int sender;
-    public List<Byte> goodOrderList = null;
+    private Map<byte[], byte[]> received = new HashMap<>();
+    private int sender;
+    private List<Byte> goodOrderList = null;
     public byte[] goodOrder;
 
     public Receiver(int sender) {
         this.sender = sender;
-        this.received = new HashMap<byte[], byte[]>();
+        this.received = new HashMap<>();
         this.allReceived = false;
         this.goodOrder = null;
     }
@@ -37,8 +40,8 @@ public class Receiver {
 //                System.out.println("seq nummer " + MultiCast.byteToInt(e.getKey()));
                 if (Arrays.equals(e.getKey(), j)) {
                     byte[] packet = e.getValue();
-                    for (int k = 0; k < packet.length; k++) {
-                        result.add(packet[k]);
+                    for (byte aPacket : packet) {
+                        result.add(aPacket);
                     }
                 }
             }

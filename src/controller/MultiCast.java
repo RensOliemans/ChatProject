@@ -50,12 +50,10 @@ public class MultiCast implements Runnable {
     private Receiver receiver;
     private GUI gui;
     private Security security;
-    private Map<Integer, SecretKey> symmetricKeys = new HashMap<>(); //HashMap with K: computerNumber and V: our symmetric key
     private Map<Integer, PublicKey> publicKeys = new HashMap<>(); //HashMap with K: computerNumber and V: their public keys
     private Map<Integer, Receiver> receivers = new HashMap<>();
     private Map<Integer, Sender> senders = new HashMap<>();
     private int computerNumber;
-    private int synint;
     private Routing routing;
     private Ping ping1 = new Ping(computerNumber, this);
     private Ping ping2 = new Ping(computerNumber, this);
@@ -169,12 +167,12 @@ public class MultiCast implements Runnable {
             byte[] seq;
             int seqint;
             for (Map.Entry<Integer, Sender> e : senders.entrySet()) {
-                if ((int) e.getKey() == (int) data[1]) {
+                if (e.getKey() == (int) data[1]) {
                     sender = e.getValue();
                 }
             }
             for (Map.Entry<Integer, Receiver> e : receivers.entrySet()) {
-                if ((int) e.getKey() == (int) data[1]) {
+                if (e.getKey() == (int) data[1]) {
                     receiver = e.getValue();
                 }
             }
@@ -580,7 +578,7 @@ public class MultiCast implements Runnable {
      * @result result, a List of byte arrays of sizes DATASIZE
      */
     private List<byte[]> splitMessages(byte[] msg) {
-        List<byte[]> result = new ArrayList<byte[]>();
+        List<byte[]> result = new ArrayList<>();
         int messagelength = msg.length;
         while (messagelength > DATASIZE) {
             byte[] packet = new byte[DATASIZE];

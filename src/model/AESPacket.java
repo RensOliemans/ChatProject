@@ -1,6 +1,7 @@
 package model;
 
 /**
+ * This object has the data for a symmetric key packet.
  * Created by Rens on 12-4-2016.
  */
 public class AESPacket {
@@ -30,9 +31,7 @@ public class AESPacket {
         AESPacket[3] = (byte) nextHop;
 
         //Add the AES key to the packet
-        for (int i = 0; i < EncryptedAESKey.length; i++) {
-            AESPacket[4+i] = EncryptedAESKey[i];
-        }
+        System.arraycopy(EncryptedAESKey, 0, AESPacket, 4, EncryptedAESKey.length);
 
         //Add the 'Rens byte' to the end of the packet
         AESPacket[AESPacket.length-1] = (byte) 1;

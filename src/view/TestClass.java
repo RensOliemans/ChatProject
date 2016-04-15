@@ -2,9 +2,10 @@ package view;
 
 
 /**
+ * eric doe er wat mee
  * Created by eric on 12-4-16.
  */
-public class TestClass {
+class TestClass {
 
 //	public static void main(String[] args) {
 //		GUI gui = new GUI(4, new MultiCast());

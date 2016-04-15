@@ -3,9 +3,10 @@ package model;
 import static controller.MultiCast.HEADER;
 
 /**
+ * This object has the data for an File packet.
  * Created by Rens on 13-4-2016.
  */
-public class FilePacket {
+class FilePacket {
 
     private int sourceAddress;
     private int destinationAddress;

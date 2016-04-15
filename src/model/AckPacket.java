@@ -1,6 +1,8 @@
 package model;
 
 /**
+ *
+ * This object has the data for an ACK packet.
  * Created by coen on 8-4-2016.
  */
 public class AckPacket {
@@ -31,9 +33,7 @@ public class AckPacket {
         ackpkt[3] = (byte) this.nextHop;
 
         //add the ack to the packet
-        for (int i = 0; i < this.ack.length; i++) {
-            ackpkt[4+i] = this.ack[i];
-        }
+        System.arraycopy(this.ack, 0, ackpkt, 4, this.ack.length);
 
         //add the "Rens-bit" as last bit to the packet
         //this is for padding purposes

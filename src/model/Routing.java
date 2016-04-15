@@ -1,8 +1,5 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Class to setup the routing tables and send them
  * Created by Rens on 5-4-2016.

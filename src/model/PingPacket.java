@@ -1,6 +1,7 @@
 package model;
 
 /**
+ * This object has the data for a PINGpacket.
  * Created by coen on 7-4-2016.
  */
 public class PingPacket {

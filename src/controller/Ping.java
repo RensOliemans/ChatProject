@@ -2,9 +2,10 @@ package controller;
 
 
 /**
+ * This class handles the sending of pings.
  * Created by Rens on 7-4-2016.
  */
-public class Ping implements Runnable {
+class Ping implements Runnable {
 
 	private MultiCast multiCast;
 	private int computerNumber;
